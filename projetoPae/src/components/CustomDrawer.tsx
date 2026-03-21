@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TextInput,
   ScrollView,
+  Platform
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -12,6 +13,9 @@ import { useEffect, useState } from "react";
 // 🔥 Firebase
 import { ref, onValue, update, push } from "firebase/database";
 import { db, auth } from "@/src/services/firebase";
+
+// 📅 DatePicker
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function CustomDrawer() {
   const router = useRouter();
@@ -26,7 +30,12 @@ export default function CustomDrawer() {
 
   const [showAdd, setShowAdd] = useState(false);
   const [novoNome, setNovoNome] = useState("");
-  const [novaData, setNovaData] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [novoPeso, setNovoPeso] = useState("");
+  const [novaAltura, setNovaAltura] = useState("");
+
+  const [dataNascimento, setDataNascimento] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -65,16 +74,27 @@ export default function CustomDrawer() {
     setAltura("");
   }
 
+  function formatarData(date: Date) {
+    return date.toLocaleDateString("pt-BR"); // dd/mm/aaaa
+  }
+
   async function adicionarFilho() {
-    if (!user || !novoNome || !novaData) return;
+    if (!user || !novoNome) return;
 
     await push(ref(db, `usuarios/${user.uid}/filhos`), {
       nome: novoNome,
-      dataNascimento: novaData,
+      dataNascimento: formatarData(dataNascimento),
+      descricao,
+      peso: novoPeso,
+      altura: novaAltura,
     });
 
+    // reset
     setNovoNome("");
-    setNovaData("");
+    setDescricao("");
+    setNovoPeso("");
+    setNovaAltura("");
+    setDataNascimento(new Date());
     setShowAdd(false);
   }
 
@@ -108,6 +128,7 @@ export default function CustomDrawer() {
 
         {showAdd && (
           <View style={styles.inputBox}>
+
             <TextInput
               style={styles.input}
               placeholder="Nome"
@@ -115,16 +136,50 @@ export default function CustomDrawer() {
               onChangeText={setNovoNome}
             />
 
+            {/* 📅 DATA COM PICKER */}
+            <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+              <Text style={styles.input}>
+                {formatarData(dataNascimento)}
+              </Text>
+            </TouchableOpacity>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={dataNascimento}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) setDataNascimento(selectedDate);
+                }}
+              />
+            )}
+
             <TextInput
               style={styles.input}
-              placeholder="Data de nascimento (YYYY-MM-DD)"
-              value={novaData}
-              onChangeText={setNovaData}
+              placeholder="Peso"
+              value={novoPeso}
+              onChangeText={setNovoPeso}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Altura"
+              value={novaAltura}
+              onChangeText={setNovaAltura}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Descrição"
+              value={descricao}
+              onChangeText={setDescricao}
             />
 
             <TouchableOpacity style={styles.saveButton} onPress={adicionarFilho}>
               <Text style={styles.saveText}>Salvar</Text>
             </TouchableOpacity>
+
           </View>
         )}
 
@@ -140,56 +195,27 @@ export default function CustomDrawer() {
               Nascimento: {filho.dataNascimento}
             </Text>
 
-            {filho.peso && filho.altura && editandoId !== filho.id && (
-              <>
-                <Text style={styles.info}>Peso: {filho.peso}</Text>
-                <Text style={styles.info}>Altura: {filho.altura}</Text>
-
-                <TouchableOpacity onPress={() => setEditandoId(filho.id)}>
-                  <Text style={styles.edit}>Editar</Text>
-                </TouchableOpacity>
-              </>
+            {filho.descricao && (
+              <Text style={styles.info}>{filho.descricao}</Text>
             )}
 
-            {(!filho.peso || !filho.altura || editandoId === filho.id) && (
-              <>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Peso"
-                  value={peso}
-                  onChangeText={setPeso}
-                />
-
-                <TextInput
-                  style={styles.input}
-                  placeholder="Altura"
-                  value={altura}
-                  onChangeText={setAltura}
-                />
-
-                <TouchableOpacity
-                  style={styles.saveButton}
-                  onPress={() => salvarDadosFilho(filho.id)}
-                >
-                  <Text style={styles.saveText}>Salvar</Text>
-                </TouchableOpacity>
-              </>
-            )}
+            {filho.peso && <Text style={styles.info}>Peso: {filho.peso}</Text>}
+            {filho.altura && <Text style={styles.info}>Altura: {filho.altura}</Text>}
 
           </View>
         ))}
       </View>
 
       {/* MENU */}
-      <TouchableOpacity onPress={() => router.push("/perfil")}>
+      <TouchableOpacity onPress={() => router.push("/perfil" as const)}>
         <Text style={styles.item}>Editar Perfil</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/configuracoes")}>
+      <TouchableOpacity onPress={() => router.push("/configuracoes" as const)}>
         <Text style={styles.item}>Configurações</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/notificacoes")}>
+      <TouchableOpacity onPress={() => router.push("/notificacoes" as const)}>
         <Text style={styles.item}>Notificações</Text>
       </TouchableOpacity>
 
@@ -202,11 +228,7 @@ export default function CustomDrawer() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 20,
-  },
+  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
 
   header: {
     backgroundColor: "#a855f7",
@@ -223,36 +245,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  avatarText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
+  avatarText: { color: "#fff", fontWeight: "bold" },
 
-  name: {
-    color: "#fff",
-    fontSize: 18,
-    marginTop: 10,
-  },
+  name: { color: "#fff", fontSize: 18, marginTop: 10 },
 
-  email: {
-    color: "#fff",
-    fontSize: 12,
-  },
+  email: { color: "#fff", fontSize: 12 },
 
-  section: {
-    marginTop: 20,
-  },
+  section: { marginTop: 20 },
 
-  title: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
+  title: { fontSize: 16, fontWeight: "bold" },
 
-  add: {
-    color: "#a855f7",
-    marginTop: 5,
-    fontWeight: "bold",
-  },
+  add: { color: "#a855f7", marginTop: 5, fontWeight: "bold" },
 
   inputBox: {
     marginTop: 10,
@@ -268,14 +271,9 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  childName: {
-    fontWeight: "bold",
-    fontSize: 15,
-  },
+  childName: { fontWeight: "bold", fontSize: 15 },
 
-  info: {
-    color: "#555",
-  },
+  info: { color: "#555" },
 
   input: {
     backgroundColor: "#fff",
@@ -292,21 +290,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  saveText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
+  saveText: { color: "#fff", fontWeight: "bold" },
 
-  edit: {
-    color: "#a855f7",
-    marginTop: 5,
-    fontWeight: "bold",
-  },
-
-  empty: {
-    marginTop: 10,
-    color: "#888",
-  },
+  empty: { marginTop: 10, color: "#888" },
 
   item: {
     paddingVertical: 15,
@@ -314,12 +300,7 @@ const styles = StyleSheet.create({
     borderColor: "#eee",
   },
 
-  logout: {
-    marginTop: 30,
-  },
+  logout: { marginTop: 30 },
 
-  logoutText: {
-    color: "red",
-    fontWeight: "bold",
-  },
+  logoutText: { color: "red", fontWeight: "bold" },
 });
