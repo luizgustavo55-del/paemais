@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 
 // 🔥 Firebase
 import { ref, onValue, update, push } from "firebase/database";
+import { onAuthStateChanged } from "firebase/auth";
 import { db, auth } from "@/src/services/firebase";
 
 // 📅 DatePicker
@@ -19,14 +20,10 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function CustomDrawer() {
   const router = useRouter();
-  const user = auth.currentUser;
 
+  const [user, setUser] = useState<any>(null);
   const [userData, setUserData] = useState<any>(null);
   const [filhos, setFilhos] = useState<any[]>([]);
-
-  const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [peso, setPeso] = useState("");
-  const [altura, setAltura] = useState("");
 
   const [showAdd, setShowAdd] = useState(false);
   const [novoNome, setNovoNome] = useState("");
@@ -37,8 +34,18 @@ export default function CustomDrawer() {
   const [dataNascimento, setDataNascimento] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
+  // 🔥 PEGAR USUÁRIO LOGADO
   useEffect(() => {
-    if (!user) return;
+    const unsubscribe = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  // 🔥 PEGAR DADOS DO FIREBASE
+  useEffect(() => {
+    if (!user?.uid) return;
 
     const refUser = ref(db, "usuarios/" + user.uid);
 
@@ -61,21 +68,8 @@ export default function CustomDrawer() {
     });
   }, [user]);
 
-  async function salvarDadosFilho(id: string) {
-    if (!user) return;
-
-    await update(ref(db, `usuarios/${user.uid}/filhos/${id}`), {
-      peso,
-      altura,
-    });
-
-    setEditandoId(null);
-    setPeso("");
-    setAltura("");
-  }
-
   function formatarData(date: Date) {
-    return date.toLocaleDateString("pt-BR"); // dd/mm/aaaa
+    return date.toLocaleDateString("pt-BR");
   }
 
   async function adicionarFilho() {
@@ -89,7 +83,6 @@ export default function CustomDrawer() {
       altura: novaAltura,
     });
 
-    // reset
     setNovoNome("");
     setDescricao("");
     setNovoPeso("");
@@ -109,12 +102,14 @@ export default function CustomDrawer() {
           </Text>
         </View>
 
+        {/* 🔥 NOME DO FIREBASE */}
         <Text style={styles.name}>
           {userData?.nome || "Usuário"}
         </Text>
 
+        {/* 🔥 EMAIL DO FIREBASE OU AUTH */}
         <Text style={styles.email}>
-          {user?.email}
+          {userData?.email || user?.email || ""}
         </Text>
       </View>
 
@@ -136,7 +131,7 @@ export default function CustomDrawer() {
               onChangeText={setNovoNome}
             />
 
-            {/* 📅 DATA COM PICKER */}
+            {/* DATA */}
             <TouchableOpacity onPress={() => setShowDatePicker(true)}>
               <Text style={styles.input}>
                 {formatarData(dataNascimento)}
@@ -189,7 +184,6 @@ export default function CustomDrawer() {
 
         {filhos.map((filho) => (
           <View key={filho.id} style={styles.childBox}>
-
             <Text style={styles.childName}>{filho.nome}</Text>
             <Text style={styles.info}>
               Nascimento: {filho.dataNascimento}
@@ -201,7 +195,6 @@ export default function CustomDrawer() {
 
             {filho.peso && <Text style={styles.info}>Peso: {filho.peso}</Text>}
             {filho.altura && <Text style={styles.info}>Altura: {filho.altura}</Text>}
-
           </View>
         ))}
       </View>
@@ -303,4 +296,4 @@ const styles = StyleSheet.create({
   logout: { marginTop: 30 },
 
   logoutText: { color: "red", fontWeight: "bold" },
-});
+}); 
