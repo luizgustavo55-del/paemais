@@ -32,18 +32,26 @@ export default function CustomDrawer() {
   const [novaAltura, setNovaAltura] = useState("");
 
   const [dataNascimento, setDataNascimento] = useState(new Date());
+  const [dataTexto, setDataTexto] = useState(formatarData(new Date()));
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // 🔥 PEGAR USUÁRIO LOGADO
+  // 🔥 EDIÇÃO
+  const [editandoFilhoId, setEditandoFilhoId] = useState<string | null>(null);
+  const [editNome, setEditNome] = useState("");
+  const [editDescricao, setEditDescricao] = useState("");
+  const [editPeso, setEditPeso] = useState("");
+  const [editAltura, setEditAltura] = useState("");
+  const [editData, setEditData] = useState(new Date());
+  const [editDataTexto, setEditDataTexto] = useState("");
+  const [showEditDatePicker, setShowEditDatePicker] = useState(false);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
     });
-
     return unsubscribe;
   }, []);
 
-  // 🔥 PEGAR DADOS DO FIREBASE
   useEffect(() => {
     if (!user?.uid) return;
 
@@ -72,12 +80,40 @@ export default function CustomDrawer() {
     return date.toLocaleDateString("pt-BR");
   }
 
+  // 🧠 CALCULAR IDADE
+  function calcularIdade(dataStr: string) {
+    const partes = dataStr.split("/");
+    if (partes.length !== 3) return "";
+
+    const nascimento = new Date(
+      Number(partes[2]),
+      Number(partes[1]) - 1,
+      Number(partes[0])
+    );
+
+    const hoje = new Date();
+
+    let anos = hoje.getFullYear() - nascimento.getFullYear();
+    let meses = hoje.getMonth() - nascimento.getMonth();
+
+    if (meses < 0) {
+      anos--;
+      meses += 12;
+    }
+
+    if (anos <= 0) {
+      return `${meses} meses`;
+    }
+
+    return `${anos} anos`;
+  }
+
   async function adicionarFilho() {
     if (!user || !novoNome) return;
 
     await push(ref(db, `usuarios/${user.uid}/filhos`), {
       nome: novoNome,
-      dataNascimento: formatarData(dataNascimento),
+      dataNascimento: dataTexto,
       descricao,
       peso: novoPeso,
       altura: novaAltura,
@@ -88,7 +124,40 @@ export default function CustomDrawer() {
     setNovoPeso("");
     setNovaAltura("");
     setDataNascimento(new Date());
+    setDataTexto(formatarData(new Date()));
     setShowAdd(false);
+  }
+
+  function iniciarEdicao(filho: any) {
+    setEditandoFilhoId(filho.id);
+    setEditNome(filho.nome);
+    setEditDescricao(filho.descricao || "");
+    setEditPeso(filho.peso || "");
+    setEditAltura(filho.altura || "");
+    setEditDataTexto(filho.dataNascimento);
+
+    const partes = filho.dataNascimento.split("/");
+    const data = new Date(
+      Number(partes[2]),
+      Number(partes[1]) - 1,
+      Number(partes[0])
+    );
+
+    setEditData(data);
+  }
+
+  async function salvarEdicaoFilho(id: string) {
+    if (!user) return;
+
+    await update(ref(db, `usuarios/${user.uid}/filhos/${id}`), {
+      nome: editNome,
+      dataNascimento: editDataTexto,
+      descricao: editDescricao,
+      peso: editPeso,
+      altura: editAltura,
+    });
+
+    setEditandoFilhoId(null);
   }
 
   return (
@@ -102,12 +171,10 @@ export default function CustomDrawer() {
           </Text>
         </View>
 
-        {/* 🔥 NOME DO FIREBASE */}
         <Text style={styles.name}>
           {userData?.nome || "Usuário"}
         </Text>
 
-        {/* 🔥 EMAIL DO FIREBASE OU AUTH */}
         <Text style={styles.email}>
           {userData?.email || user?.email || ""}
         </Text>
@@ -123,18 +190,20 @@ export default function CustomDrawer() {
 
         {showAdd && (
           <View style={styles.inputBox}>
+            <TextInput style={styles.input} placeholder="Nome" value={novoNome} onChangeText={setNovoNome} />
 
             <TextInput
               style={styles.input}
-              placeholder="Nome"
-              value={novoNome}
-              onChangeText={setNovoNome}
+              value={dataTexto}
+              placeholder="DD/MM/AAAA"
+              onChangeText={(text) => {
+                setDataTexto(text);
+              }}
             />
 
-            {/* DATA */}
             <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-              <Text style={styles.input}>
-                {formatarData(dataNascimento)}
+              <Text style={{ color: "#a855f7", marginTop: 5 }}>
+                Abrir calendário
               </Text>
             </TouchableOpacity>
 
@@ -145,56 +214,87 @@ export default function CustomDrawer() {
                 display={Platform.OS === "ios" ? "spinner" : "default"}
                 onChange={(event, selectedDate) => {
                   setShowDatePicker(false);
-                  if (selectedDate) setDataNascimento(selectedDate);
+                  if (selectedDate) {
+                    setDataNascimento(selectedDate);
+                    setDataTexto(formatarData(selectedDate));
+                  }
                 }}
               />
             )}
 
-            <TextInput
-              style={styles.input}
-              placeholder="Peso"
-              value={novoPeso}
-              onChangeText={setNovoPeso}
-            />
-
-            <TextInput
-              style={styles.input}
-              placeholder="Altura"
-              value={novaAltura}
-              onChangeText={setNovaAltura}
-            />
-
-            <TextInput
-              style={styles.input}
-              placeholder="Descrição"
-              value={descricao}
-              onChangeText={setDescricao}
-            />
+            <TextInput style={styles.input} placeholder="Peso" value={novoPeso} onChangeText={setNovoPeso} />
+            <TextInput style={styles.input} placeholder="Altura" value={novaAltura} onChangeText={setNovaAltura} />
+            <TextInput style={styles.input} placeholder="Descrição" value={descricao} onChangeText={setDescricao} />
 
             <TouchableOpacity style={styles.saveButton} onPress={adicionarFilho}>
               <Text style={styles.saveText}>Salvar</Text>
             </TouchableOpacity>
-
           </View>
-        )}
-
-        {filhos.length === 0 && (
-          <Text style={styles.empty}>Nenhum filho cadastrado</Text>
         )}
 
         {filhos.map((filho) => (
           <View key={filho.id} style={styles.childBox}>
-            <Text style={styles.childName}>{filho.nome}</Text>
-            <Text style={styles.info}>
-              Nascimento: {filho.dataNascimento}
-            </Text>
 
-            {filho.descricao && (
-              <Text style={styles.info}>{filho.descricao}</Text>
+            {editandoFilhoId === filho.id ? (
+              <>
+                <TextInput style={styles.input} value={editNome} onChangeText={setEditNome} />
+
+                <TextInput
+                  style={styles.input}
+                  value={editDataTexto}
+                  onChangeText={setEditDataTexto}
+                />
+
+                <TouchableOpacity onPress={() => setShowEditDatePicker(true)}>
+                  <Text style={{ color: "#a855f7", marginTop: 5 }}>
+                    Abrir calendário
+                  </Text>
+                </TouchableOpacity>
+
+                {showEditDatePicker && (
+                  <DateTimePicker
+                    value={editData}
+                    mode="date"
+                    display={Platform.OS === "ios" ? "spinner" : "default"}
+                    onChange={(event, selectedDate) => {
+                      setShowEditDatePicker(false);
+                      if (selectedDate) {
+                        setEditData(selectedDate);
+                        setEditDataTexto(formatarData(selectedDate));
+                      }
+                    }}
+                  />
+                )}
+
+                <TextInput style={styles.input} value={editPeso} onChangeText={setEditPeso} placeholder="Peso" />
+                <TextInput style={styles.input} value={editAltura} onChangeText={setEditAltura} placeholder="Altura" />
+                <TextInput style={styles.input} value={editDescricao} onChangeText={setEditDescricao} placeholder="Descrição" />
+
+                <TouchableOpacity style={styles.saveButton} onPress={() => salvarEdicaoFilho(filho.id)}>
+                  <Text style={styles.saveText}>Salvar</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={styles.childName}>{filho.nome}</Text>
+                <Text style={styles.info}>
+                  Nascimento: {filho.dataNascimento}
+                </Text>
+
+                <Text style={styles.info}>
+                  Idade: {calcularIdade(filho.dataNascimento)}
+                </Text>
+
+                {filho.descricao && <Text style={styles.info}>{filho.descricao}</Text>}
+                {filho.peso && <Text style={styles.info}>Peso: {filho.peso}</Text>}
+                {filho.altura && <Text style={styles.info}>Altura: {filho.altura}</Text>}
+
+                <TouchableOpacity onPress={() => iniciarEdicao(filho)}>
+                  <Text style={{ color: "#a855f7", marginTop: 5 }}>Editar</Text>
+                </TouchableOpacity>
+              </>
             )}
 
-            {filho.peso && <Text style={styles.info}>Peso: {filho.peso}</Text>}
-            {filho.altura && <Text style={styles.info}>Altura: {filho.altura}</Text>}
           </View>
         ))}
       </View>
@@ -296,4 +396,4 @@ const styles = StyleSheet.create({
   logout: { marginTop: 30 },
 
   logoutText: { color: "red", fontWeight: "bold" },
-}); 
+});
