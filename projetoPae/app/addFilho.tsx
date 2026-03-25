@@ -13,7 +13,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 
-// 🔥 USANDO DIRETO (SEM app)
 import { auth, db } from "@/src/services/firebase";
 import { ref, push, update } from "firebase/database";
 
@@ -29,7 +28,6 @@ export default function Filhos() {
 
     const router = useRouter();
 
-    // 📅 DIGITAÇÃO COM MÁSCARA
     function handleData(text: string) {
         let cleaned = text.replace(/\D/g, "");
 
@@ -46,7 +44,7 @@ export default function Filhos() {
         setData(formatted);
     }
 
-    // 📅 FORMATAR DATA DO CALENDÁRIO
+ 
     function formatarData(date: Date) {
         const dia = String(date.getDate()).padStart(2, "0");
         const mes = String(date.getMonth() + 1).padStart(2, "0");
