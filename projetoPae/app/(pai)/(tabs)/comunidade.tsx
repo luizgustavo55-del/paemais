@@ -12,22 +12,20 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { ref, onValue, get, update, remove, push } from "firebase/database";
 import { db, auth } from "@/src/services/firebase";
-import { useRouter } from "expo-router";
 
 export default function Comunidade() {
   const [posts, setPosts] = useState<any[]>([]);
   const [modalDenuncia, setModalDenuncia] = useState(false);
+  const [modalPost, setModalPost] = useState(false);
   const [postSelecionado, setPostSelecionado] = useState<any>(null);
   const [descricao, setDescricao] = useState("");
-
-  const router = useRouter();
+  const [textoPost, setTextoPost] = useState("");
 
   useEffect(() => {
     const postsRef = ref(db, "comunidade/posts");
 
     onValue(postsRef, (snapshot) => {
       const data = snapshot.val();
-
       if (!data) return setPosts([]);
 
       const lista = Object.keys(data).map((key) => ({
@@ -36,30 +34,19 @@ export default function Comunidade() {
       }));
 
       lista.sort((a, b) => b.createdAt - a.createdAt);
-
       setPosts(lista);
     });
   }, []);
 
-  // ❤️ LIKE COM ANIMAÇÃO
   const toggleLike = async (postId: string, scale: Animated.Value) => {
     const userId = auth.currentUser?.uid;
 
     const likeRef = ref(db, `comunidade/posts/${postId}/likes/${userId}`);
     const snap = await get(likeRef);
 
-    // animação
     Animated.sequence([
-      Animated.timing(scale, {
-        toValue: 1.4,
-        duration: 150,
-        useNativeDriver: true
-      }),
-      Animated.timing(scale, {
-        toValue: 1,
-        duration: 150,
-        useNativeDriver: true
-      })
+      Animated.timing(scale, { toValue: 1.4, duration: 150, useNativeDriver: true }),
+      Animated.timing(scale, { toValue: 1, duration: 150, useNativeDriver: true })
     ]).start();
 
     if (snap.exists()) {
@@ -71,19 +58,22 @@ export default function Comunidade() {
     }
   };
 
-  // 🚨 DENÚNCIA
-  const enviarDenuncia = () => {
+  const publicar = async () => {
     const user = auth.currentUser;
 
-    push(ref(db, "denuncias"), {
-      postId: postSelecionado.id,
+    const snap = await get(ref(db, `usuarios/${user?.uid}`));
+    const userData = snap.val();
+
+    await push(ref(db, "comunidade/posts"), {
       userId: user?.uid,
-      descricao,
+      nome: userData?.nome,
+      tipo: userData?.tipo,
+      texto: textoPost,
       createdAt: Date.now()
     });
 
-    setModalDenuncia(false);
-    setDescricao("");
+    setTextoPost("");
+    setModalPost(false); // 🔥 volta automaticamente
   };
 
   const renderPost = ({ item }: any) => {
@@ -93,11 +83,14 @@ export default function Comunidade() {
 
     return (
       <View style={styles.card}>
-        {/* HEADER */}
         <View style={styles.header}>
-          <Text style={styles.nome}>
-            {item.nome} • {item.tipo}
-          </Text>
+          <View style={styles.userRow}>
+            <View style={styles.avatar} />
+            <View>
+              <Text style={styles.nome}>{item.nome}</Text>
+              <Text style={styles.tipo}>{item.tipo}</Text>
+            </View>
+          </View>
 
           <TouchableOpacity
             onPress={() => {
@@ -109,36 +102,22 @@ export default function Comunidade() {
           </TouchableOpacity>
         </View>
 
-        {/* TEXTO */}
         <Text style={styles.texto}>{item.texto}</Text>
 
-        {/* AÇÕES */}
         <View style={styles.acoes}>
-          <TouchableOpacity
-            onPress={() => toggleLike(item.id, scale)}
-          >
+          <TouchableOpacity onPress={() => toggleLike(item.id, scale)}>
             <Animated.View style={{ transform: [{ scale }] }}>
               <Ionicons
                 name={liked ? "heart" : "heart-outline"}
                 size={22}
-                color={liked ? "red" : "black"}
+                color={liked ? "#ff4d6d" : "#555"}
               />
             </Animated.View>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() =>
-              router.push({
-                pathname: "/comentarios",
-                params: { postId: item.id }
-              })
-            }
-          >
-            <Ionicons name="chatbubble-outline" size={22} />
-          </TouchableOpacity>
+          <Ionicons name="chatbubble-outline" size={22} color="#555" />
         </View>
 
-        {/* CONTADOR */}
         <Text style={styles.likes}>
           {item.likes ? Object.keys(item.likes).length : 0} curtidas
         </Text>
@@ -149,13 +128,25 @@ export default function Comunidade() {
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Comunidade</Text>
+      <Text style={styles.subtitulo}>
+        Conecte-se com outras mamães e profissionais
+      </Text>
+
+      <View style={styles.tabs}>
+        <View style={styles.tabActive}>
+          <Text style={styles.tabTextActive}>Feed</Text>
+        </View>
+        <View style={styles.tab}>
+          <Text style={styles.tabText}>Profissionais</Text>
+        </View>
+      </View>
 
       <TouchableOpacity
-        style={styles.botaoPost}
-        onPress={() => router.push("/criarPost")}
+        style={styles.inputFake}
+        onPress={() => setModalPost(true)}
       >
-        <Text style={{ color: "#fff" }}>
-          Compartilhar algo com a comunidade
+        <Text style={{ color: "#999" }}>
+          No que você está pensando?
         </Text>
       </TouchableOpacity>
 
@@ -165,21 +156,28 @@ export default function Comunidade() {
         keyExtractor={(item) => item.id}
       />
 
-      {/* MODAL DENÚNCIA */}
-      <Modal visible={modalDenuncia} transparent animationType="slide">
+      {/* 🔥 MODAL CRIAR POST */}
+      <Modal visible={modalPost} transparent animationType="slide">
         <View style={styles.modal}>
           <View style={styles.modalBox}>
-            <Text>Denunciar post</Text>
+            <Text style={styles.modalTitulo}>Criar publicação</Text>
 
             <TextInput
-              placeholder="Descreva o problema"
-              value={descricao}
-              onChangeText={setDescricao}
+              placeholder="O que você quer compartilhar?"
+              multiline
+              value={textoPost}
+              onChangeText={setTextoPost}
               style={styles.input}
             />
 
-            <TouchableOpacity onPress={enviarDenuncia}>
-              <Text style={{ color: "red" }}>Enviar</Text>
+            <TouchableOpacity style={styles.botao} onPress={publicar}>
+              <Text style={{ color: "#fff" }}>Publicar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => setModalPost(false)}>
+              <Text style={{ marginTop: 10, color: "#999" }}>
+                Cancelar
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -189,32 +187,70 @@ export default function Comunidade() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
+  container: {
+    flex: 1,
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    backgroundColor: "#8E2DE2"
+  },
 
-  titulo: { fontSize: 22, fontWeight: "bold", marginBottom: 10 },
+  titulo: { fontSize: 24, fontWeight: "bold", color: "#fff" },
+  subtitulo: { color: "#EBD6F5", marginBottom: 15 },
 
-  botaoPost: {
-    backgroundColor: "#a855f7",
-    padding: 12,
+  tabs: {
+    flexDirection: "row",
+    backgroundColor: "#ffffff22",
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 15
+  },
+
+  tab: { flex: 1, padding: 10, alignItems: "center" },
+
+  tabActive: {
+    flex: 1,
+    padding: 10,
+    backgroundColor: "#fff",
     borderRadius: 10,
-    marginBottom: 10
+    alignItems: "center"
+  },
+
+  tabText: { color: "#fff" },
+  tabTextActive: { color: "#C642A6", fontWeight: "bold" },
+
+  inputFake: {
+    backgroundColor: "#fff",
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 15
   },
 
   card: {
-    backgroundColor: "#f3f3f3",
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 10
+    backgroundColor: "#F3F3F3",
+    padding: 15,
+    borderRadius: 15,
+    marginBottom: 15
   },
 
   header: {
     flexDirection: "row",
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    alignItems: "center"
   },
 
-  nome: { fontWeight: "bold" },
+  userRow: { flexDirection: "row", alignItems: "center", gap: 10 },
 
-  texto: { marginVertical: 10 },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#ccc"
+  },
+
+  nome: { fontWeight: "bold", color: "#333" },
+  tipo: { fontSize: 12, color: "#777" },
+
+  texto: { marginVertical: 10, color: "#444" },
 
   acoes: { flexDirection: "row", gap: 15 },
 
@@ -230,14 +266,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     margin: 20,
     padding: 20,
-    borderRadius: 12
+    borderRadius: 16
+  },
+
+  modalTitulo: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10
   },
 
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
     padding: 10,
-    borderRadius: 8,
-    marginTop: 10
+    borderRadius: 10,
+    height: 120
+  },
+
+  botao: {
+    backgroundColor: "#C642A6",
+    padding: 12,
+    marginTop: 10,
+    borderRadius: 10,
+    alignItems: "center"
   }
 });

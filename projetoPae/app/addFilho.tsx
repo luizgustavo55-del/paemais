@@ -1,18 +1,8 @@
 import { useState } from "react";
-import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    Alert,
-    Platform
-} from "react-native";
-
+import {View,Text,TextInput,TouchableOpacity, StyleSheet,Alert, Platform} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
-
 import { auth, db } from "@/src/services/firebase";
 import { ref, push, update } from "firebase/database";
 
@@ -103,7 +93,7 @@ export default function Filhos() {
             Alert.alert("Sucesso", "Filho cadastrado!");
 
             // 🔀 IR PARA TABS DO PAI
-            router.replace("/(pai)/(tabs)" as any);
+            router.replace("/(pai)/(tabs)/menu" as any);
 
         } catch (error) {
             console.log(error);
