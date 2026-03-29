@@ -300,8 +300,8 @@ export default function CustomDrawer() {
       </View>
 
       {/* MENU */}
-      <TouchableOpacity onPress={() => router.push("/perfil" as const)}>
-        <Text style={styles.item}>Editar Perfil</Text>
+      <TouchableOpacity onPress={() => router.push("/perfil" )}>
+        <Text style={styles.item}>Ver Perfil</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push("/configuracoes" as const)}>
