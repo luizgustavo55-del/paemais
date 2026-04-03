@@ -40,12 +40,10 @@ export default function Home() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // 🔔 PERMISSÃO
   useEffect(() => {
     Notifications.requestPermissionsAsync();
   }, []);
 
-  // ✅ NOME DO USUÁRIO (AGORA CORRETO COM UID)
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       if (!currentUser?.uid) return;
@@ -54,19 +52,13 @@ export default function Home() {
 
       onValue(userRef, (snapshot) => {
         const nome = snapshot.val();
-
-        if (nome) {
-          setUserName(nome);
-        } else {
-          setUserName("Usuário");
-        }
+        setUserName(nome || "Usuário");
       });
     });
 
     return () => unsubscribe();
   }, []);
 
-  // 🔥 LEMBRETES (mantido com email)
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((currentUser) => {
       if (!currentUser?.email) return;
@@ -143,8 +135,13 @@ export default function Home() {
       await scheduleNotification(title, finalDate);
     }
 
+    // ✅ LIMPAR CAMPOS
     setTitle("");
     setDescription("");
+    setDate(new Date());
+    setTime(new Date());
+
+    // ✅ RESET E FECHAR
     setEditingId(null);
     setShowForm(false);
   }
@@ -171,8 +168,6 @@ export default function Home() {
   return (
     <>
       <ScrollView style={styles.container}>
-
-        {/* HEADER */}
         <View style={styles.topHeader}>
           <View style={styles.topRow}>
             <TouchableOpacity onPress={() => navigation.openDrawer()}>
@@ -187,8 +182,6 @@ export default function Home() {
         </View>
 
         <View style={styles.content}>
-
-          {/* CARDS */}
           <View style={styles.cardList}>
             <TouchableOpacity style={styles.mainCard} onPress={() => setShowAgenda(true)}>
               <View style={styles.iconPink}>
@@ -201,7 +194,7 @@ export default function Home() {
               <Ionicons name="chevron-forward" size={18} color="#999" />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.mainCard} onPress={() => router.push("/saude")}>
+            <TouchableOpacity style={styles.mainCard} onPress={() => router.push("/MenuPage/saude")}>
               <View style={styles.iconRed}>
                 <Ionicons name="heart-outline" size={20} color="#fff" />
               </View>
@@ -212,7 +205,7 @@ export default function Home() {
               <Ionicons name="chevron-forward" size={18} color="#999" />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.mainCard} onPress={() => router.push("/desenvolvimento")}>
+            <TouchableOpacity style={styles.mainCard} onPress={() => router.push("/MenuPage/desenvolvimento")}>
               <View style={styles.iconPurple}>
                 <Ionicons name="trending-up-outline" size={20} color="#fff" />
               </View>
@@ -224,7 +217,6 @@ export default function Home() {
             </TouchableOpacity>
           </View>
 
-          {/* LEMBRETES */}
           <View style={styles.reminderBox}>
             <View style={styles.reminderHeader}>
               <Text style={styles.reminderTitle}>Lembretes</Text>
@@ -236,7 +228,6 @@ export default function Home() {
 
             {showForm && (
               <View style={styles.inputBox}>
-                {/* DATA */}
                 <View style={styles.row}>
                   <TextInput
                     style={styles.halfInput}
@@ -262,7 +253,6 @@ export default function Home() {
                   />
                 )}
 
-                {/* HORA */}
                 <View style={styles.row}>
                   <TextInput
                     style={styles.halfInput}
@@ -313,6 +303,19 @@ export default function Home() {
                     {editingId ? "Atualizar" : "Salvar"}
                   </Text>
                 </TouchableOpacity>
+
+                {/* ✅ BOTÃO CANCELAR */}
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => {
+                    setShowForm(false);
+                    setEditingId(null);
+                    setTitle("");
+                    setDescription("");
+                  }}
+                >
+                  <Text style={styles.cancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
               </View>
             )}
 
@@ -343,7 +346,6 @@ export default function Home() {
               ))
             )}
           </View>
-
         </View>
       </ScrollView>
 
@@ -371,7 +373,6 @@ const styles = StyleSheet.create({
   },
 
   hello: { color: "#fff", fontSize: 16 },
-
   name: { color: "#fff", fontSize: 22, fontWeight: "bold" },
 
   content: { padding: 16, marginTop: -20 },
@@ -404,7 +405,6 @@ const styles = StyleSheet.create({
   },
 
   reminderTitle: { fontSize: 16, fontWeight: "bold" },
-
   add: { color: "#e91e63", fontWeight: "bold" },
 
   inputBox: { marginBottom: 10 },
@@ -434,6 +434,20 @@ const styles = StyleSheet.create({
   },
 
   addButtonText: { color: "#fff", fontWeight: "bold" },
+
+  // ✅ NOVO STYLE
+  cancelButton: {
+    marginTop: 8,
+    backgroundColor: "#ccc",
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+
+  cancelButtonText: {
+    color: "#333",
+    fontWeight: "bold",
+  },
 
   reminderItem: {
     flexDirection: "row",

@@ -2,18 +2,15 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-nati
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
+import { useRouter } from "expo-router";
 
 export default function DicasScreen() {
-
   const [aba, setAba] = useState("rotina");
+  const router = useRouter();
 
   return (
-    <LinearGradient
-      colors={["#8E2DE2", "#C642A6"]}
-      style={styles.container}
-    >
+    <LinearGradient colors={["#8E2DE2", "#C642A6"]} style={styles.container}>
 
-      {/* HEADER FIXO (SEM SCROLL) */}
       <Text style={styles.title}>Dicas</Text>
       <Text style={styles.subtitle}>
         Informações úteis para você e seu bebê
@@ -21,7 +18,6 @@ export default function DicasScreen() {
 
       {/* TABS */}
       <View style={styles.tabs}>
-
         <TouchableOpacity
           style={aba === "rotina" ? styles.tabActive : styles.tab}
           onPress={() => setAba("rotina")}
@@ -42,14 +38,11 @@ export default function DicasScreen() {
         >
           <Text style={styles.tabText}>Bebê</Text>
         </TouchableOpacity>
-
       </View>
 
-      {/* CONTEÚDO COM SCROLL */}
       <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
 
-        {/* 🔁 TROCA DE CONTEÚDO */}
-
+        {/* ROTINA */}
         {aba === "rotina" && (
           <>
             <View style={styles.sliderContainer}>
@@ -81,26 +74,74 @@ export default function DicasScreen() {
           </>
         )}
 
+        {/* AUXÍLIOS */}
         {aba === "auxilios" && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Auxílios disponíveis</Text>
 
-            <View style={styles.tipBox}>
-              <Text style={styles.tipTitle}>Bolsa Família</Text>
-              <Text style={styles.tipText}>
-                Verifique se você tem direito ao benefício no CRAS mais próximo.
-              </Text>
-            </View>
+            <View style={styles.listContainer}>
 
-            <View style={styles.tipBox}>
-              <Text style={styles.tipTitle}>Auxílio maternidade</Text>
-              <Text style={styles.tipText}>
-                Benefício garantido para mães que contribuíram com o INSS.
-              </Text>
+              <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/marcoLegal")}>
+                <Text style={styles.tipTitle}>Marco Legal da Primeira Infância</Text>
+                <Text style={styles.tipText}>
+                  Aprovada em 2016, a Lei n.º 13.257 instituiu o Marco Legal da Primeira Infância.
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/cadUnico")}>
+                <Text style={styles.tipTitle}>Cadastro Único (CadÚnico)</Text>
+                <Text style={styles.tipText}>
+                  Entenda o que é, como funciona e seus variados usos.
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/redeAlyne")}>
+                <Text style={styles.tipTitle}>Rede Alyne</Text>
+                <Text style={styles.tipText}>
+                  Atendimento humanizado e seguro para mães e crianças.
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/brasilCarinhoso")}>
+                <Text style={styles.tipTitle}>Brasil Carinhoso</Text>
+                <Text style={styles.tipText}>
+                  Apoio à educação infantil e cuidado integral.
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/bolsaFamilia")}>
+                <Text style={styles.tipTitle}>Bolsa Família</Text>
+                <Text style={styles.tipText}>
+                  Verifique seu direito ao benefício.
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/auxMaternidade")}>
+                <Text style={styles.tipTitle}>Auxílio Maternidade</Text>
+                <Text style={styles.tipText}>
+                  Benefício para mães contribuintes do INSS.
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/criançaFeliz")}>
+                <Text style={styles.tipTitle}>Criança Feliz</Text>
+                <Text style={styles.tipText}>
+                  Apoio ao desenvolvimento infantil.
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/criancaCidada")}>
+                <Text style={styles.tipTitle}>Criança Cidadã</Text>
+                <Text style={styles.tipText}>
+                  Ajuda no pagamento de creches.
+                </Text>
+              </TouchableOpacity>
+
             </View>
           </View>
         )}
 
+        {/* BEBÊ */}
         {aba === "bebe" && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Cuidados com o bebê</Text>
@@ -146,24 +187,26 @@ const styles = StyleSheet.create({
 
   tabs: {
     flexDirection: "row",
-    gap: 12,
+    gap: 10,
     marginBottom: 18,
   },
 
   tab: {
+    flex: 1,
     paddingVertical: 8,
-    paddingHorizontal: 34,
     borderRadius: 20,
     backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
   },
 
   tabActive: {
+    flex: 1,
     paddingVertical: 8,
-    paddingHorizontal: 38,
     borderRadius: 20,
     backgroundColor: "#ffffff33",
     borderWidth: 1,
     borderColor: "#fff",
+    alignItems: "center",
   },
 
   tabText: {
@@ -186,10 +229,15 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: "#F3F3F3",
-    borderRadius: 15,
-    padding: 15,
+    backgroundColor: "#ba11f2",
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 20,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
   },
 
   cardHeader: {
@@ -203,6 +251,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#444",
+    marginBottom: 10,
   },
 
   plusBtn: {
@@ -223,20 +272,29 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
+  listContainer: {
+    gap: 12,
+  },
+
   tipBox: {
-    backgroundColor: "#E9D8F2",
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 10,
+    backgroundColor: "rgb(242, 215, 255)",
+    borderRadius: 14,
+    padding: 14,
+    borderLeftWidth: 4,
+    borderLeftColor: "#C642A6",
+    elevation: 2,
   },
 
   tipTitle: {
-    fontWeight: "bold",
-    color: "#7B2CBF",
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
   },
 
   tipText: {
     fontSize: 13,
-    color: "#555",
+    color: "#666",
+    lineHeight: 18,
   },
 });

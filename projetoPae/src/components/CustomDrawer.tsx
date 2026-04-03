@@ -5,13 +5,14 @@ import {
   StyleSheet,
   TextInput,
   ScrollView,
-  Platform
+  Platform,
+  Alert
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 
 // 🔥 Firebase
-import { ref, onValue, update, push } from "firebase/database";
+import { ref, onValue, update, push, remove } from "firebase/database";
 import { onAuthStateChanged } from "firebase/auth";
 import { db, auth } from "@/src/services/firebase";
 
@@ -35,7 +36,6 @@ export default function CustomDrawer() {
   const [dataTexto, setDataTexto] = useState(formatarData(new Date()));
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // 🔥 EDIÇÃO
   const [editandoFilhoId, setEditandoFilhoId] = useState<string | null>(null);
   const [editNome, setEditNome] = useState("");
   const [editDescricao, setEditDescricao] = useState("");
@@ -80,7 +80,6 @@ export default function CustomDrawer() {
     return date.toLocaleDateString("pt-BR");
   }
 
-  // 🧠 CALCULAR IDADE
   function calcularIdade(dataStr: string) {
     const partes = dataStr.split("/");
     if (partes.length !== 3) return "";
@@ -101,9 +100,7 @@ export default function CustomDrawer() {
       meses += 12;
     }
 
-    if (anos <= 0) {
-      return `${meses} meses`;
-    }
+    if (anos <= 0) return `${meses} meses`;
 
     return `${anos} anos`;
   }
@@ -119,6 +116,10 @@ export default function CustomDrawer() {
       altura: novaAltura,
     });
 
+    limparFormulario();
+  }
+
+  function limparFormulario() {
     setNovoNome("");
     setDescricao("");
     setNovoPeso("");
@@ -126,6 +127,29 @@ export default function CustomDrawer() {
     setDataNascimento(new Date());
     setDataTexto(formatarData(new Date()));
     setShowAdd(false);
+  }
+
+  function excluirFilho(id: string) {
+    Alert.alert(
+      "Excluir filho",
+      "Tem certeza que deseja excluir?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: async () => {
+            if (!user) return;
+
+            await remove(ref(db, `usuarios/${user.uid}/filhos/${id}`));
+
+            if (editandoFilhoId === id) {
+              setEditandoFilhoId(null);
+            }
+          },
+        },
+      ]
+    );
   }
 
   function iniciarEdicao(filho: any) {
@@ -163,7 +187,6 @@ export default function CustomDrawer() {
   return (
     <ScrollView style={styles.container}>
 
-      {/* HEADER */}
       <View style={styles.header}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>
@@ -180,7 +203,6 @@ export default function CustomDrawer() {
         </Text>
       </View>
 
-      {/* FILHOS */}
       <View style={styles.section}>
         <Text style={styles.title}>Filhos</Text>
 
@@ -196,9 +218,7 @@ export default function CustomDrawer() {
               style={styles.input}
               value={dataTexto}
               placeholder="DD/MM/AAAA"
-              onChangeText={(text) => {
-                setDataTexto(text);
-              }}
+              onChangeText={setDataTexto}
             />
 
             <TouchableOpacity onPress={() => setShowDatePicker(true)}>
@@ -229,6 +249,11 @@ export default function CustomDrawer() {
             <TouchableOpacity style={styles.saveButton} onPress={adicionarFilho}>
               <Text style={styles.saveText}>Salvar</Text>
             </TouchableOpacity>
+
+            {/* CANCELAR */}
+            <TouchableOpacity style={styles.cancelButton} onPress={limparFormulario}>
+              <Text style={styles.cancelText}>Cancelar</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -238,12 +263,7 @@ export default function CustomDrawer() {
             {editandoFilhoId === filho.id ? (
               <>
                 <TextInput style={styles.input} value={editNome} onChangeText={setEditNome} />
-
-                <TextInput
-                  style={styles.input}
-                  value={editDataTexto}
-                  onChangeText={setEditDataTexto}
-                />
+                <TextInput style={styles.input} value={editDataTexto} onChangeText={setEditDataTexto} />
 
                 <TouchableOpacity onPress={() => setShowEditDatePicker(true)}>
                   <Text style={{ color: "#a855f7", marginTop: 5 }}>
@@ -266,24 +286,23 @@ export default function CustomDrawer() {
                   />
                 )}
 
-                <TextInput style={styles.input} value={editPeso} onChangeText={setEditPeso} placeholder="Peso" />
-                <TextInput style={styles.input} value={editAltura} onChangeText={setEditAltura} placeholder="Altura" />
-                <TextInput style={styles.input} value={editDescricao} onChangeText={setEditDescricao} placeholder="Descrição" />
+                <TextInput style={styles.input} value={editPeso} onChangeText={setEditPeso} />
+                <TextInput style={styles.input} value={editAltura} onChangeText={setEditAltura} />
+                <TextInput style={styles.input} value={editDescricao} onChangeText={setEditDescricao} />
 
                 <TouchableOpacity style={styles.saveButton} onPress={() => salvarEdicaoFilho(filho.id)}>
                   <Text style={styles.saveText}>Salvar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => excluirFilho(filho.id)}>
+                  <Text style={styles.deleteText}>Excluir filho</Text>
                 </TouchableOpacity>
               </>
             ) : (
               <>
                 <Text style={styles.childName}>{filho.nome}</Text>
-                <Text style={styles.info}>
-                  Nascimento: {filho.dataNascimento}
-                </Text>
-
-                <Text style={styles.info}>
-                  Idade: {calcularIdade(filho.dataNascimento)}
-                </Text>
+                <Text style={styles.info}>Nascimento: {filho.dataNascimento}</Text>
+                <Text style={styles.info}>Idade: {calcularIdade(filho.dataNascimento)}</Text>
 
                 {filho.descricao && <Text style={styles.info}>{filho.descricao}</Text>}
                 {filho.peso && <Text style={styles.info}>Peso: {filho.peso}</Text>}
@@ -292,6 +311,10 @@ export default function CustomDrawer() {
                 <TouchableOpacity onPress={() => iniciarEdicao(filho)}>
                   <Text style={{ color: "#a855f7", marginTop: 5 }}>Editar</Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity onPress={() => excluirFilho(filho.id)}>
+                  <Text style={styles.deleteText}>Excluir</Text>
+                </TouchableOpacity>
               </>
             )}
 
@@ -299,16 +322,15 @@ export default function CustomDrawer() {
         ))}
       </View>
 
-      {/* MENU */}
-      <TouchableOpacity onPress={() => router.push("/perfil" )}>
+      <TouchableOpacity onPress={() => router.push("/MenuPage/perfil")}>
         <Text style={styles.item}>Ver Perfil</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/configuracoes" as const)}>
+      <TouchableOpacity onPress={() => router.push("/configuracoes")}>
         <Text style={styles.item}>Configurações</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/notificacoes" as const)}>
+      <TouchableOpacity onPress={() => router.push("/notificacoes")}>
         <Text style={styles.item}>Notificações</Text>
       </TouchableOpacity>
 
@@ -341,13 +363,11 @@ const styles = StyleSheet.create({
   avatarText: { color: "#fff", fontWeight: "bold" },
 
   name: { color: "#fff", fontSize: 18, marginTop: 10 },
-
   email: { color: "#fff", fontSize: 12 },
 
   section: { marginTop: 20 },
 
   title: { fontSize: 16, fontWeight: "bold" },
-
   add: { color: "#a855f7", marginTop: 5, fontWeight: "bold" },
 
   inputBox: {
@@ -365,7 +385,6 @@ const styles = StyleSheet.create({
   },
 
   childName: { fontWeight: "bold", fontSize: 15 },
-
   info: { color: "#555" },
 
   input: {
@@ -385,7 +404,21 @@ const styles = StyleSheet.create({
 
   saveText: { color: "#fff", fontWeight: "bold" },
 
-  empty: { marginTop: 10, color: "#888" },
+  cancelButton: {
+    backgroundColor: "#ccc",
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 8,
+    alignItems: "center",
+  },
+
+  cancelText: { fontWeight: "bold", color: "#333" },
+
+  deleteText: {
+    color: "red",
+    marginTop: 8,
+    fontWeight: "bold",
+  },
 
   item: {
     paddingVertical: 15,
@@ -394,6 +427,5 @@ const styles = StyleSheet.create({
   },
 
   logout: { marginTop: 30 },
-
   logoutText: { color: "red", fontWeight: "bold" },
 });

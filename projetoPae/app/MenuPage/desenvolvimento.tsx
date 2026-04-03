@@ -332,7 +332,7 @@ botaoVoltar: {
 
   tabs: {
     flexDirection: "row",
-    gap: 11,
+    gap: 10,
     marginBottom: 15
   },
 
@@ -345,7 +345,7 @@ botaoVoltar: {
   },
 
   tabActive: {
-    color: "#C642A6",
+    color: "#983a7f",
     backgroundColor: "#fff",
     borderRadius: 10,
     paddingVertical: 8,
@@ -433,4 +433,4 @@ botaoVoltar: {
     gap: 15,
     marginTop: 10
   }
-});
+}); 
