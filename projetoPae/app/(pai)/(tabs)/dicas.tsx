@@ -102,12 +102,7 @@ export default function DicasScreen() {
                 </Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/brasilCarinhoso")}>
-                <Text style={styles.tipTitle}>Brasil Carinhoso</Text>
-                <Text style={styles.tipText}>
-                  Apoio à educação infantil e cuidado integral.
-                </Text>
-              </TouchableOpacity>
+  
 
               <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/bolsaFamilia")}>
                 <Text style={styles.tipTitle}>Bolsa Família</Text>
@@ -185,35 +180,25 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 
-  tabs: {
+   tabs: {
     flexDirection: "row",
-    gap: 10,
-    marginBottom: 18,
+    backgroundColor: "#ffffff22",
+    borderRadius: 12,
+    padding: 4,
+    marginBottom: 15
   },
 
-  tab: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: "center",
-  },
+  tab: { flex: 1, padding: 10, alignItems: "center" },
 
   tabActive: {
     flex: 1,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: "#ffffff33",
-    borderWidth: 1,
-    borderColor: "#fff",
-    alignItems: "center",
+    padding: 10,
+    backgroundColor: "#ffffff",
+    borderRadius: 10,
+    alignItems: "center"
   },
 
-  tabText: {
-    color: "#fff",
-    fontSize: 14,
-  },
-
+  tabText: { color: "#800060" },
   sliderContainer: {
     flexDirection: "row",
     alignItems: "center",

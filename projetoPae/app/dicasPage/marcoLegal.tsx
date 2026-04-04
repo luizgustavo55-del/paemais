@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import { Image, Linking, View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
@@ -27,7 +27,9 @@ export default function TelaExemplo() {
       >
 
         <View style={styles.card}>
+           <Text style={styles.subtitle}> Resumo</Text>
           <Text style={styles.text}>
+
             O Marco Legal da Primeira Infância (Lei nº 13.257/2016) estabelece diretrizes para políticas públicas voltadas a crianças de até 6 anos.
             Reconhece a importância dos primeiros mil dias para o desenvolvimento físico, emocional e cognitivo.
             Destaca que essa fase é decisiva, mas também vulnerável a fatores como pobreza e violência.
@@ -47,8 +49,10 @@ export default function TelaExemplo() {
         </View>
 
         <View style={styles.card}>
+           <Text style={styles.subtitle}> A lei</Text>
           <Text style={styles.text}>
-            O Marco Legal da Primeira Infância (Lei nº 13.257/2016) traz importantes avanços na proteção aos direitos das crianças brasileiras de até seis anos de idade...
+           
+       O Marco Legal da Primeira Infância (Lei nº 13.257/2016) traz importantes avanços na proteção aos direitos das crianças brasileiras de até seis anos de idade, ao estabelecer princípios e diretrizes para a formulação e a implementação de políticas públicas voltadas a meninos e meninas nessa faixa etária. Trata-se do reconhecimento de que os primeiros mil dias (compreendendo a gestação e os dois primeiros anos de vida) configuram uma janela de oportunidade única para o desenvolvimento neurológico, cognitivo, psicomotor e emocional das crianças.
           </Text>
         </View>
 
@@ -135,6 +139,42 @@ export default function TelaExemplo() {
             Uso da tecnologia deve ser mediado.
           </Text>
         </View>
+        <View style={styles.card}>
+          <TouchableOpacity
+  style={styles.youtubeCard}
+  onPress={() =>
+    Linking.openURL("https://youtu.be/bV6bQNMFhq4?si=3vg2bncM8bcmhD1x")
+  }
+>
+  {/* 🎬 THUMBNAIL */}
+  <View style={styles.thumbnailContainer}>
+ <Image
+  source={require("../../assets/images/marcoLegal.jpg")}
+  style={styles.thumbnail}
+/>
+    <View style={styles.playButton}>
+      <Text style={styles.playText}>▶</Text>
+    </View>
+  </View>
+
+  {/* 📝 INFO */}
+  <View style={styles.info}>
+    <Text style={styles.subtitle}>Vídeo explicativo</Text>
+    <Text style={styles.text}>
+      Marco Legal da Primeira Infância explicado
+    </Text> 
+  </View>
+</TouchableOpacity>
+</View>
+        <View>
+        <TouchableOpacity
+        style={styles.card}
+  onPress={() => Linking.openURL("https://www.gov.br/mdh/pt-br/navegue-por-temas/crianca-e-adolescente/acoes-e-programas-de-gestoes-anteriores/primeira-infancia")}>
+    <Text style={styles.subtitle}> Veja mais sobre na web</Text>
+  <Text style={styles.text}>Clique e acesse o site do Governo Brasileiro</Text>
+</TouchableOpacity>
+
+</View>
 
       </ScrollView>
     </View>
@@ -201,4 +241,55 @@ const styles = StyleSheet.create({
     color: "#555",
     lineHeight: 20,
   },
+  botao: {
+  backgroundColor: "#ba11f2",
+  padding: 12,
+  borderRadius: 10,
+  marginTop: 10,
+},
+youtubeCard: {
+  backgroundColor: "#fff",
+  borderRadius: 10,
+  marginBottom: 8,
+  overflow: "hidden",
+
+  flexDirection: "row", // 🔥 deixa lado a lado
+
+  elevation: 3,
+  shadowColor: "#000",
+  shadowOpacity: 0.08,
+  shadowRadius: 5,
+  shadowOffset: { width: 0, height: 2 },
+},
+
+thumbnailContainer: {
+  position: "relative",
+},
+
+thumbnail: {
+  width: 80,   // 🔥 tamanho menor lateral
+  height: 80,
+  padding: 10,
+  borderRadius: 10,
+},
+
+playButton: {
+  position: "absolute",
+  top: "5%",
+  left: "5%",
+  backgroundColor: "rgba(0,0,0,0.6)",
+  padding: 6,
+  borderRadius: 50,
+},
+
+playText: {
+  color: "#fff",
+  fontSize: 14,
+},
+
+info: {
+  flex: 1, // 🔥 ocupa o resto do espaço
+  padding: 10,
+  justifyContent: "center",
+},
 });
