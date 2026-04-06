@@ -1,15 +1,117 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
+
+// 🔥 Firebase
+import { ref, push, onValue, remove, update } from "firebase/database";
+import { db, auth } from "@/src/services/firebase";
+import { Background } from "@react-navigation/elements";
+
+// ✅ TIPAGEM
+type Meta = {
+  id: string;
+  texto: string;
+  concluida: boolean;
+  dataConclusao: string;
+};
 
 export default function DicasScreen() {
   const [aba, setAba] = useState("rotina");
   const router = useRouter();
 
+  // 🔥 STATES
+  const [metas, setMetas] = useState<Meta[]>([]);
+  const [novaMeta, setNovaMeta] = useState("");
+  const [editandoId, setEditandoId] = useState<string | null>(null);
+
+  // 📅 SEMANA ATUAL
+  const getSemanaAtual = () => {
+    const hoje = new Date();
+    const primeiroDia = new Date(hoje.setDate(hoje.getDate() - hoje.getDay()));
+    return `semana_${primeiroDia.toISOString().split("T")[0]}`;
+  };
+
+  const semanaAtual = getSemanaAtual();
+
+  // 🔄 BUSCAR METAS
+  useEffect(() => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const metasRef = ref(db, `metasSemana/${user.uid}/${semanaAtual}`);
+
+    const unsubscribe = onValue(metasRef, (snapshot) => {
+      const data = snapshot.val();
+
+      if (data) {
+        const lista: Meta[] = Object.keys(data).map((key) => ({
+          id: key,
+          ...data[key],
+        }));
+        setMetas(lista);
+      } else {
+        setMetas([]);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [semanaAtual]);
+
+  // ➕ SALVAR
+  const salvarMeta = () => {
+    const user = auth.currentUser;
+    if (!user || !novaMeta.trim()) return;
+
+    if (editandoId) {
+      update(ref(db, `metasSemana/${user.uid}/${semanaAtual}/${editandoId}`), {
+        texto: novaMeta,
+      });
+      setEditandoId(null);
+    } else {
+      push(ref(db, `metasSemana/${user.uid}/${semanaAtual}`), {
+        texto: novaMeta,
+        concluida: false,
+        dataConclusao: "",
+      });
+    }
+
+    setNovaMeta("");
+  };
+
+  // ❌ EXCLUIR
+  const excluirMeta = (id: string) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    remove(ref(db, `metasSemana/${user.uid}/${semanaAtual}/${id}`));
+  };
+
+  // ✏️ EDITAR
+  const editarMeta = (meta: Meta) => {
+    setNovaMeta(meta.texto);
+    setEditandoId(meta.id);
+  };
+
+  // ✔️ CONCLUIR
+  const concluirMeta = (meta: Meta) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const hoje = new Date();
+    const dataFormatada = `${String(hoje.getDate()).padStart(2, "0")}/${String(
+      hoje.getMonth() + 1
+    ).padStart(2, "0")}/${hoje.getFullYear()}`;
+
+    update(ref(db, `metasSemana/${user.uid}/${semanaAtual}/${meta.id}`), {
+      concluida: !meta.concluida,
+      dataConclusao: !meta.concluida ? dataFormatada : "",
+    });
+  };
+
   return (
-    <LinearGradient colors={["#8E2DE2", "#C642A6"]} style={styles.container}>
+    <Background style={styles.container}>
 
       <Text style={styles.title}>Dicas</Text>
       <Text style={styles.subtitle}>
@@ -45,42 +147,86 @@ export default function DicasScreen() {
         {/* ROTINA */}
         {aba === "rotina" && (
           <>
-            <View style={styles.sliderContainer}>
-              <Ionicons name="chevron-back" size={20} color="#fff" />
-              <View style={styles.slider} />
-              <Ionicons name="chevron-forward" size={20} color="#fff" />
-            </View>
-
-            <View style={styles.card}>
+            <View style={styles.cardtwo}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>Metas da Semana</Text>
-                <TouchableOpacity style={styles.plusBtn}>
-                  <Ionicons name="add" size={18} color="#fff" />
-                </TouchableOpacity>
               </View>
 
-              {[
-                "Fazer exercícios leves 3x por semana",
-                "Dormir pelo menos 8 horas por noite",
-                "Beber 2L de água diariamente",
-                "Meditar 10 minutos por dia",
-              ].map((item, index) => (
-                <View key={index} style={styles.item}>
-                  <Ionicons name="radio-button-off" size={18} color="#C642A6" />
-                  <Text style={styles.itemText}>{item}</Text>
+              {/* INPUT */}
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Digite uma meta..."
+                  value={novaMeta}
+                  onChangeText={setNovaMeta}
+                />
+
+                <TouchableOpacity style={styles.plusBtn} onPress={salvarMeta}>
+                  <Ionicons name="save" size={18} color="#fff" />
+                </TouchableOpacity>
+
+                {editandoId && (
+                  <TouchableOpacity
+                    style={styles.cancelBtn}
+                    onPress={() => {
+                      setNovaMeta("");
+                      setEditandoId(null);
+                    }}
+                  >
+                    <Ionicons name="close" size={18} color="#fff" />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              {/* LISTA */}
+              {metas.map((meta) => (
+                <View key={meta.id} style={styles.item}>
+
+                  <TouchableOpacity onPress={() => concluirMeta(meta)}>
+                    <Ionicons
+                      name={meta.concluida ? "checkbox" : "square-outline"}
+                      size={20}
+                      color="#27001d"
+                    />
+                  </TouchableOpacity>
+
+                  <View style={{ flex: 1 }}>
+                    <Text
+                      style={[
+                        styles.itemText,
+                        meta.concluida && styles.itemDone,
+                      ]}
+                    >
+                      {meta.texto}
+                    </Text>
+
+                    {meta.concluida && (
+                      <Text style={styles.dataText}>
+                        Concluído em: {meta.dataConclusao}
+                      </Text>
+                    )}
+                  </View>
+
+                  <TouchableOpacity onPress={() => editarMeta(meta)}>
+                    <Ionicons name="create-outline" size={18} color="#555" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => excluirMeta(meta.id)}>
+                    <Ionicons name="trash-outline" size={18} color="red" />
+                  </TouchableOpacity>
+
                 </View>
               ))}
             </View>
           </>
         )}
 
-        {/* AUXÍLIOS */}
+        {/* AUXÍLIOS (INALTERADO) */}
         {aba === "auxilios" && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Auxílios disponíveis</Text>
 
             <View style={styles.listContainer}>
-
               <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/marcoLegal")}>
                 <Text style={styles.tipTitle}>Marco Legal da Primeira Infância</Text>
                 <Text style={styles.tipText}>
@@ -101,8 +247,6 @@ export default function DicasScreen() {
                   Atendimento humanizado e seguro para mães e crianças.
                 </Text>
               </TouchableOpacity>
-
-  
 
               <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/bolsaFamilia")}>
                 <Text style={styles.tipTitle}>Bolsa Família</Text>
@@ -131,12 +275,11 @@ export default function DicasScreen() {
                   Ajuda no pagamento de creches.
                 </Text>
               </TouchableOpacity>
-
             </View>
           </View>
         )}
 
-        {/* BEBÊ */}
+        {/* BEBÊ (INALTERADO) */}
         {aba === "bebe" && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Cuidados com o bebê</Text>
@@ -158,7 +301,7 @@ export default function DicasScreen() {
         )}
 
       </ScrollView>
-    </LinearGradient>
+    </Background>
   );
 }
 
@@ -167,6 +310,8 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 20,
+    backgroundColor: "#ba11f2"
+
   },
 
   title: {
@@ -180,7 +325,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
 
-   tabs: {
+  tabs: {
     flexDirection: "row",
     backgroundColor: "#ffffff22",
     borderRadius: 12,
@@ -199,6 +344,7 @@ const styles = StyleSheet.create({
   },
 
   tabText: { color: "#800060" },
+
   sliderContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -209,21 +355,23 @@ const styles = StyleSheet.create({
   slider: {
     flex: 1,
     height: 6,
-    backgroundColor: "#ffffff66",
+    backgroundColor: "#46073cd0",
     borderRadius: 10,
   },
 
   card: {
-    backgroundColor: "#ba11f2",
+    backgroundColor: "#dc0cea",
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
   },
+   cardtwo: {
+    backgroundColor: "#f459ff",
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 20,
+  },
+
 
   cardHeader: {
     flexDirection: "row",
@@ -235,14 +383,33 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#444",
+    color: "#000000",
     marginBottom: 10,
   },
 
   plusBtn: {
-    backgroundColor: "#C642A6",
-    padding: 6,
-    borderRadius: 20,
+    backgroundColor: "rgb(119, 0, 89)",
+    padding: 8,
+    borderRadius: 10,
+  },
+
+  cancelBtn: {
+    backgroundColor: "#999",
+    padding: 8,
+    borderRadius: 10,
+  },
+
+  inputRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 10,
+  },
+
+  input: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingHorizontal: 10,
   },
 
   item: {
@@ -253,8 +420,18 @@ const styles = StyleSheet.create({
   },
 
   itemText: {
-    color: "#555",
-    fontSize: 13,
+    color: "#230022c6",
+    fontSize: 15,
+  },
+
+  itemDone: {
+    textDecorationLine: "line-through",
+    color: "#40003a",
+  },
+
+  dataText: {
+    fontSize: 11,
+    color: "#3a0037",
   },
 
   listContainer: {
@@ -266,14 +443,14 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
     borderLeftWidth: 4,
-    borderLeftColor: "#C642A6",
+    borderLeftColor: "#a7067f",
     elevation: 2,
   },
 
   tipTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#333",
+    color: "#530c45",
     marginBottom: 4,
   },
 

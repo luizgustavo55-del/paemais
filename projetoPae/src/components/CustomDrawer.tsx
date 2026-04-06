@@ -343,10 +343,10 @@ export default function CustomDrawer() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 20 },
+  container: { flex: 1, backgroundColor: "#c039ea", padding: 20 },
 
   header: {
-    backgroundColor: "#a855f7",
+    backgroundColor: "#ad1af2",
     padding: 20,
     borderRadius: 12,
   },
@@ -362,13 +362,13 @@ const styles = StyleSheet.create({
 
   avatarText: { color: "#fff", fontWeight: "bold" },
 
-  name: { color: "#fff", fontSize: 18, marginTop: 10 },
-  email: { color: "#fff", fontSize: 12 },
+  name: { color: "#f9d3ff", fontSize: 18, marginTop: 10 },
+  email: { color: "#f9d3ff", fontSize: 12 },
 
   section: { marginTop: 20 },
 
   title: { fontSize: 16, fontWeight: "bold" },
-  add: { color: "#a855f7", marginTop: 5, fontWeight: "bold" },
+  add: { color: "#4e0053", marginTop: 5, fontWeight: "bold" },
 
   inputBox: {
     marginTop: 10,
@@ -378,14 +378,14 @@ const styles = StyleSheet.create({
   },
 
   childBox: {
-    backgroundColor: "#f1f2f6",
+    backgroundColor: "#dd87ff",
     padding: 12,
     borderRadius: 10,
     marginTop: 10,
   },
 
   childName: { fontWeight: "bold", fontSize: 15 },
-  info: { color: "#555" },
+  info: { color: "#280031" },
 
   input: {
     backgroundColor: "#fff",
