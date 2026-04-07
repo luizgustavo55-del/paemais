@@ -118,29 +118,42 @@ export default function DicasScreen() {
         Informações úteis para você e seu bebê
       </Text>
 
-      {/* TABS */}
-      <View style={styles.tabs}>
-        <TouchableOpacity
-          style={aba === "rotina" ? styles.tabActive : styles.tab}
-          onPress={() => setAba("rotina")}
-        >
-          <Text style={styles.tabText}>Rotina</Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity
-          style={aba === "auxilios" ? styles.tabActive : styles.tab}
-          onPress={() => setAba("auxilios")}
-        >
-          <Text style={styles.tabText}>Auxílios</Text>
-        </TouchableOpacity>
+{/* TABS */}
+<View style={styles.tabs}>
+  <TouchableOpacity
+    style={aba === "rotina" ? styles.tabActive : styles.tab}
+    onPress={() => setAba("rotina")}
+  >
+    <Text
+      style={aba === "rotina" ? styles.tabActiveText : styles.tabText}
+    >
+      Rotina
+    </Text>
+  </TouchableOpacity>
 
-        <TouchableOpacity
-          style={aba === "bebe" ? styles.tabActive : styles.tab}
-          onPress={() => setAba("bebe")}
-        >
-          <Text style={styles.tabText}>Bebê</Text>
-        </TouchableOpacity>
-      </View>
+  <TouchableOpacity
+    style={aba === "auxilios" ? styles.tabActive : styles.tab}
+    onPress={() => setAba("auxilios")}
+  >
+    <Text
+      style={aba === "auxilios" ? styles.tabActiveText : styles.tabText}
+    >
+      Auxílios
+    </Text>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    style={aba === "bebe" ? styles.tabActive : styles.tab}
+    onPress={() => setAba("bebe")}
+  >
+    <Text
+      style={aba === "bebe" ? styles.tabActiveText : styles.tabText}
+    >
+      Bebê
+    </Text>
+  </TouchableOpacity>
+</View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
 
@@ -310,7 +323,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 20,
-    backgroundColor: "#ba11f2"
+    backgroundColor: "#7050B3"
 
   },
 
@@ -342,8 +355,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center"
   },
+   tabActiveText: { color: "#28174cca" },
 
-  tabText: { color: "#800060" },
+  tabText: { color: "#ffffff" },
 
   sliderContainer: {
     flexDirection: "row",
@@ -360,13 +374,13 @@ const styles = StyleSheet.create({
   },
 
   card: {
-    backgroundColor: "#dc0cea",
+    backgroundColor: "#B390D7",
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
   },
    cardtwo: {
-    backgroundColor: "#f459ff",
+    backgroundColor: "#B390D7",
     borderRadius: 16,
     padding: 16,
     marginBottom: 20,
@@ -443,7 +457,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 14,
     borderLeftWidth: 4,
-    borderLeftColor: "#a7067f",
+    borderLeftColor: "#28174cca",
     elevation: 2,
   },
 

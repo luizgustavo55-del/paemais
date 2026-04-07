@@ -60,7 +60,7 @@ export default function BolsaFamilia() {
           </Text>
         </View>
 
-        {/* 👨‍👩‍👧 QUEM PODE */}
+        
         <View style={styles.card}>
           <Text style={styles.subtitle}>Quem pode participar</Text>
           <Text style={styles.text}>

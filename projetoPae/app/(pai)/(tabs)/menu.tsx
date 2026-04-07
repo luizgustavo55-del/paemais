@@ -357,10 +357,10 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#ba11f2" },
+  container: { flex: 1, backgroundColor: "#7050B3" },
 
   topHeader: {
-    backgroundColor: "#c837f9",
+    backgroundColor: "#8b64de",
     paddingTop: 50,
     paddingHorizontal: 20,
     paddingBottom: 30,

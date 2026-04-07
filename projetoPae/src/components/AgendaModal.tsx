@@ -11,6 +11,7 @@ import {
 import { useState, useEffect } from "react";
 import { Calendar } from "react-native-calendars";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Ionicons } from "@expo/vector-icons";
 
 import { ref, push, onValue, remove, update } from "firebase/database";
 import { db, auth } from "@/src/services/firebase";
@@ -27,6 +28,11 @@ export default function AgendaModal({ onClose }: any) {
 
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
+  const [categoria, setCategoria] = useState("Geral");
+
+  const [showCategorias, setShowCategorias] = useState(false);
+
+  const categorias = ["Geral", "Consulta", "Vacinação", "Exame"];
 
   const [eventos, setEventos] = useState<any[]>([]);
   const [editandoId, setEditandoId] = useState<string | null>(null);
@@ -52,19 +58,22 @@ export default function AgendaModal({ onClose }: any) {
   }, []);
 
   function juntarDataHora() {
-    const d = new Date(selectedDate);
+    const [year, month, day] = selectedDate.split("-").map(Number);
+
+    const d = new Date(year, month - 1, day);
     d.setHours(time.getHours());
     d.setMinutes(time.getMinutes());
     d.setSeconds(0);
+
     return d;
   }
 
   async function notificar(titulo: string, data: Date) {
-    if (data <= new Date()) return;
+    if (data <= new Date()) return null;
 
-    await Notifications.scheduleNotificationAsync({
+    const id = await Notifications.scheduleNotificationAsync({
       content: {
-        title: "📅 Evento",
+        title: "Evento",
         body: titulo,
       },
       trigger: {
@@ -72,6 +81,8 @@ export default function AgendaModal({ onClose }: any) {
         date: data,
       },
     });
+
+    return id;
   }
 
   async function adicionarEvento() {
@@ -83,11 +94,15 @@ export default function AgendaModal({ onClose }: any) {
     const path = user.email.replace(/[.#$[\]]/g, "_");
     const dataFinal = juntarDataHora();
 
+    let notificationId = await notificar(titulo, dataFinal);
+
     if (editandoId) {
       await update(ref(db, `eventos/${path}/${editandoId}`), {
         titulo,
         descricao,
+        categoria,
         data: dataFinal.toISOString(),
+        notificationId
       });
 
       setEditandoId(null);
@@ -95,14 +110,15 @@ export default function AgendaModal({ onClose }: any) {
       await push(ref(db, `eventos/${path}`), {
         titulo,
         descricao,
+        categoria,
         data: dataFinal.toISOString(),
+        notificationId
       });
-
-      await notificar(titulo, dataFinal);
     }
 
     setTitulo("");
     setDescricao("");
+    setCategoria("Geral");
   }
 
   function editarEvento(evento: any) {
@@ -110,6 +126,7 @@ export default function AgendaModal({ onClose }: any) {
 
     setTitulo(evento.titulo);
     setDescricao(evento.descricao || "");
+    setCategoria(evento.categoria || "Geral");
     setSelectedDate(evento.data.split("T")[0]);
     setTime(d);
     setEditandoId(evento.id);
@@ -120,7 +137,6 @@ export default function AgendaModal({ onClose }: any) {
     if (!user?.email) return;
 
     const path = user.email.replace(/[.#$[\]]/g, "_");
-
     await remove(ref(db, `eventos/${path}/${id}`));
   }
 
@@ -128,21 +144,22 @@ export default function AgendaModal({ onClose }: any) {
     e.data.startsWith(selectedDate)
   );
 
-  const historico = eventos.filter((e) => {
-    return new Date(e.data) < new Date();
-  });
+  // 🔥 AQUI ESTÁ A CORREÇÃO PEDIDA (HISTÓRICO)
+  const historico = eventos.filter((e) =>
+    new Date(e.data) < new Date()
+  );
 
   const marked: any = {};
 
   eventos.forEach((e) => {
     const d = e.data.split("T")[0];
-    marked[d] = { marked: true, dotColor: "#e91e63" };
+    marked[d] = { marked: true, dotColor: "#7050b3" };
   });
 
   if (selectedDate) {
     marked[selectedDate] = {
       selected: true,
-      selectedColor: "#8b5cf6",
+      selectedColor: "#28174c",
     };
   }
 
@@ -152,7 +169,6 @@ export default function AgendaModal({ onClose }: any) {
 
       <View style={styles.container}>
 
-        {/* TABS */}
         <View style={styles.tabs}>
           <TouchableOpacity onPress={() => setAba("agenda")}>
             <Text style={[styles.tab, aba === "agenda" && styles.active]}>
@@ -169,7 +185,6 @@ export default function AgendaModal({ onClose }: any) {
 
         <ScrollView style={styles.content}>
 
-          {/* AGENDA */}
           {aba === "agenda" && (
             <>
               <Calendar
@@ -183,39 +198,30 @@ export default function AgendaModal({ onClose }: any) {
 
                   {eventosDoDia.map((e) => (
                     <View key={e.id} style={styles.card}>
-                      <Text style={{ fontWeight: "bold" }}>{e.titulo}</Text>
+                      <Text style={styles.title}>{e.titulo}</Text>
                       <Text>{e.descricao}</Text>
+                      <Text style={styles.category}>{e.categoria}</Text>
 
-                      <View style={{ flexDirection: "row", marginTop: 5 }}>
+                      <View style={styles.actions}>
                         <TouchableOpacity onPress={() => editarEvento(e)}>
-                          <Text style={{ marginRight: 15 }}>✏️</Text>
+                          <Ionicons name="create-outline" size={20} color="#7050b3" />
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={() => excluirEvento(e.id)}>
-                          <Text>🗑️</Text>
+                          <Ionicons name="trash-outline" size={20} color="#e11d48" />
                         </TouchableOpacity>
                       </View>
                     </View>
                   ))}
 
-                  {/* HORA */}
                   <View style={styles.timeRow}>
                     <TextInput
                       style={styles.timeInput}
                       value={time.toLocaleTimeString("pt-BR").slice(0, 5)}
-                      onChangeText={(t) => {
-                        const [h, m] = t.split(":");
-                        if (h && m) {
-                          const d = new Date(time);
-                          d.setHours(Number(h));
-                          d.setMinutes(Number(m));
-                          setTime(d);
-                        }
-                      }}
                     />
 
                     <TouchableOpacity onPress={() => setShowTimePicker(true)}>
-                      <Text style={{ fontSize: 18 }}>🕒</Text>
+                      <Ionicons name="time-outline" size={22} color="#28174c" />
                     </TouchableOpacity>
                   </View>
 
@@ -245,6 +251,29 @@ export default function AgendaModal({ onClose }: any) {
                     onChangeText={setDescricao}
                   />
 
+                  <TouchableOpacity
+                    style={styles.input}
+                    onPress={() => setShowCategorias(!showCategorias)}
+                  >
+                    <Text>{categoria}</Text>
+                  </TouchableOpacity>
+
+                  {showCategorias && (
+                    <View style={styles.dropdown}>
+                      {categorias.map((cat) => (
+                        <TouchableOpacity
+                          key={cat}
+                          onPress={() => {
+                            setCategoria(cat);
+                            setShowCategorias(false);
+                          }}
+                        >
+                          <Text style={styles.dropdownItem}>{cat}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+
                   <TouchableOpacity style={styles.add} onPress={adicionarEvento}>
                     <Text style={{ color: "#fff" }}>
                       {editandoId ? "Atualizar" : "Salvar"}
@@ -255,25 +284,16 @@ export default function AgendaModal({ onClose }: any) {
             </>
           )}
 
-          {/* HISTÓRICO */}
+          {/* 🔥 HISTÓRICO AGORA FUNCIONANDO */}
           {aba === "historico" && (
             <>
               <Text style={styles.section}>Eventos passados</Text>
 
               {historico.map((e) => (
                 <View key={e.id} style={styles.card}>
-                  <Text style={{ fontWeight: "bold" }}>{e.titulo}</Text>
+                  <Text style={styles.title}>{e.titulo}</Text>
                   <Text>{e.descricao}</Text>
-
-                  <View style={{ flexDirection: "row", marginTop: 5 }}>
-                    <TouchableOpacity onPress={() => editarEvento(e)}>
-                      <Text style={{ marginRight: 15 }}>✏️</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={() => excluirEvento(e.id)}>
-                      <Text>🗑️</Text>
-                    </TouchableOpacity>
-                  </View>
+                  <Text style={styles.category}>{e.categoria}</Text>
                 </View>
               ))}
             </>
@@ -311,7 +331,7 @@ const styles = StyleSheet.create({
 
   tab: { fontSize: 16, color: "#888" },
 
-  active: { color: "#8b5cf6", fontWeight: "bold" },
+  active: { color: "#28174c", fontWeight: "bold" },
 
   content: { padding: 15 },
 
@@ -319,14 +339,14 @@ const styles = StyleSheet.create({
 
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#b390d8",
     padding: 10,
     borderRadius: 10,
     marginBottom: 10,
   },
 
   add: {
-    backgroundColor: "#8b5cf6",
+    backgroundColor: "#7050b3",
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
@@ -334,9 +354,25 @@ const styles = StyleSheet.create({
 
   card: {
     padding: 10,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#f9f7ff",
     borderRadius: 10,
     marginBottom: 8,
+  },
+
+  title: {
+    fontWeight: "bold",
+    color: "#28174c",
+  },
+
+  category: {
+    color: "#7050b3",
+    fontSize: 12,
+  },
+
+  actions: {
+    flexDirection: "row",
+    marginTop: 5,
+    gap: 15,
   },
 
   timeRow: {
@@ -348,9 +384,23 @@ const styles = StyleSheet.create({
   timeInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#b390d8",
     padding: 10,
     borderRadius: 10,
     marginRight: 10,
+  },
+
+  dropdown: {
+    backgroundColor: "#7050d8",
+    borderWidth: 1,
+    borderColor: "#b390d8",
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+
+  dropdownItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
   },
 });

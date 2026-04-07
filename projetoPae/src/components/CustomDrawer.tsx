@@ -14,7 +14,8 @@ import { useEffect, useState } from "react";
 // 🔥 Firebase
 import { ref, onValue, update, push, remove } from "firebase/database";
 import { onAuthStateChanged } from "firebase/auth";
-import { db, auth } from "@/src/services/firebase";
+import { db, auth, } from "@/src/services/firebase";
+import { signOut } from "firebase/auth";
 
 // 📅 DatePicker
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -330,23 +331,30 @@ export default function CustomDrawer() {
         <Text style={styles.item}>Configurações</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/notificacoes")}>
-        <Text style={styles.item}>Notificações</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.logout}>
-        <Text style={styles.logoutText}>Sair</Text>
-      </TouchableOpacity>
+     
+      <TouchableOpacity
+  onPress={async () => {
+    try {
+      await signOut(auth); // 🔥 faz logout do Firebase
+      router.replace("/login"); // 🔁 redireciona
+    } catch (error) {
+      console.log("Erro ao sair:", error);
+    }
+  }}
+  style={styles.logout}
+>
+  <Text style={styles.logoutText}>Sair</Text>
+</TouchableOpacity>
 
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#c039ea", padding: 20 },
+  container: { flex: 1, backgroundColor: "#7050B3", padding: 20 },
 
   header: {
-    backgroundColor: "#ad1af2",
+    backgroundColor: "#7b5ac4b7",
     padding: 20,
     borderRadius: 12,
   },
@@ -355,7 +363,7 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     borderRadius: 25,
-    backgroundColor: "#9333ea",
+    backgroundColor: "#8569c199",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -368,24 +376,24 @@ const styles = StyleSheet.create({
   section: { marginTop: 20 },
 
   title: { fontSize: 16, fontWeight: "bold" },
-  add: { color: "#4e0053", marginTop: 5, fontWeight: "bold" },
+  add: { color: "#28174cca", marginTop: 5, fontWeight: "bold" },
 
   inputBox: {
     marginTop: 10,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#7f5acf",
     padding: 10,
     borderRadius: 10,
   },
 
   childBox: {
-    backgroundColor: "#dd87ff",
+    backgroundColor: "#7f5acf",
     padding: 12,
     borderRadius: 10,
     marginTop: 10,
   },
 
   childName: { fontWeight: "bold", fontSize: 15 },
-  info: { color: "#280031" },
+  info: { color: "#28174cca" },
 
   input: {
     backgroundColor: "#fff",

@@ -10,13 +10,13 @@ export default function PaiTabs() {
 
         tabBarStyle: {
           height: 60,
-          backgroundColor: "#fff",
+          backgroundColor: "#ece3ff",
           borderTopWidth: 0.5,
           borderTopColor: "#ddd",
         },
 
-        tabBarActiveTintColor: "#C642A6",
-        tabBarInactiveTintColor: "#999",
+        tabBarActiveTintColor: "#16004f",
+        tabBarInactiveTintColor: "#6f50b397",
       }}
     >
       <Tabs.Screen

@@ -26,7 +26,6 @@ export default function Comunidade() {
   const [textoComentario, setTextoComentario] = useState("");
   const [comentarios, setComentarios] = useState<any[]>([]);
 
-  // ✅ NOVOS STATES
   const [modalOpcoes, setModalOpcoes] = useState(false);
   const [postOpcoes, setPostOpcoes] = useState<any>(null);
 
@@ -131,7 +130,7 @@ export default function Comunidade() {
     setTextoComentario("");
   };
 
-  // ✅ DENUNCIAR
+  // 🚨 DENUNCIAR
   const denunciarPost = async () => {
     const user = auth.currentUser;
 
@@ -146,7 +145,7 @@ export default function Comunidade() {
     setModalOpcoes(false);
   };
 
-  // ✅ DELETAR
+  // ❌ DELETAR
   const deletarPost = async () => {
     await remove(ref(db, `comunidade/posts/${postOpcoes.id}`));
     setModalOpcoes(false);
@@ -173,7 +172,6 @@ export default function Comunidade() {
             </View>
           </View>
 
-          {/* ✅ 3 PONTINHOS */}
           <TouchableOpacity
             onPress={() => {
               setPostOpcoes(item);
@@ -247,9 +245,12 @@ export default function Comunidade() {
             style={styles.inputFake}
             onPress={() => setModalPost(true)}
           >
-            <Text style={{ color: "#999" }}>
-              No que você está pensando?
-            </Text>
+            <View style={styles.inputFakeContent}>
+              <View style={styles.avatarFake} />
+              <Text style={styles.inputFakeText}>
+                Compartilhe algo com a comunidade...
+              </Text>
+            </View>
           </TouchableOpacity>
 
           <FlatList
@@ -284,6 +285,16 @@ export default function Comunidade() {
 
             <TouchableOpacity style={styles.botao} onPress={publicar}>
               <Text style={{ color: "#fff" }}>Publicar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.botaoCancelar}
+              onPress={() => {
+                setTextoPost("");
+                setModalPost(false);
+              }}
+            >
+              <Text style={styles.textoCancelar}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -324,11 +335,10 @@ export default function Comunidade() {
         </View>
       </Modal>
 
-      {/* ✅ MODAL OPÇÕES */}
+      {/* ⚙️ MODAL OPÇÕES */}
       <Modal visible={modalOpcoes} transparent animationType="fade">
         <View style={styles.modal}>
           <View style={styles.modalBox}>
-
             {postOpcoes?.userId === auth.currentUser?.uid ? (
               <TouchableOpacity style={styles.botao} onPress={deletarPost}>
                 <Text style={{ color: "#fff" }}>Apagar publicação</Text>
@@ -344,7 +354,6 @@ export default function Comunidade() {
                 Cancelar
               </Text>
             </TouchableOpacity>
-
           </View>
         </View>
       </Modal>
@@ -357,7 +366,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 20,
-    backgroundColor: "#ba11f2"
+    backgroundColor: "#7050B3"
   },
 
   titulo: { fontSize: 24, fontWeight: "bold", color: "#fff" },
@@ -382,17 +391,36 @@ const styles = StyleSheet.create({
   },
 
   tabText: { color: "#fff" },
-  tabTextActive: { color: "#C642A6", fontWeight: "bold" },
+  tabTextActive: { color: "#28174cca", fontWeight: "bold" },
 
   inputFake: {
-    backgroundColor: "#fff",
+    backgroundColor: "#ece3ff",
     padding: 14,
-    borderRadius: 12,
-    marginBottom: 15
+    borderRadius: 16,
+    marginBottom: 15,
+    elevation: 3
+  },
+
+  inputFakeContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10
+  },
+
+  avatarFake: {
+    width: 35,
+    height: 35,
+    borderRadius: 20,
+    backgroundColor: "#ddd"
+  },
+
+  inputFakeText: {
+    color: "#777",
+    fontSize: 14
   },
 
   card: {
-    backgroundColor: "#F3F3F3",
+    backgroundColor: "#ece3ff",
     padding: 15,
     borderRadius: 15,
     marginBottom: 15
@@ -456,5 +484,16 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 10,
     alignItems: "center"
+  },
+
+  botaoCancelar: {
+    marginTop: 8,
+    padding: 10,
+    alignItems: "center"
+  },
+
+  textoCancelar: {
+    color: "#C642A6",
+    fontWeight: "bold"
   }
 });

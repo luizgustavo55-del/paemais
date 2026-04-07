@@ -259,7 +259,7 @@ export default function Perfil() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#8E2DE2" },
+  container: { flex: 1, backgroundColor: "#7050B3" },
 
   botaoVoltar: {
     position: "absolute",
