@@ -31,6 +31,7 @@ export default function AgendaModal({ onClose }: any) {
   const [categoria, setCategoria] = useState("Geral");
 
   const [showCategorias, setShowCategorias] = useState(false);
+  const [modoAdicionar, setModoAdicionar] = useState(false); // 🔥 NOVO
 
   const categorias = ["Geral", "Consulta", "Vacinação", "Exame"];
 
@@ -119,6 +120,7 @@ export default function AgendaModal({ onClose }: any) {
     setTitulo("");
     setDescricao("");
     setCategoria("Geral");
+    setModoAdicionar(false); // 🔥 fecha após salvar
   }
 
   function editarEvento(evento: any) {
@@ -130,6 +132,7 @@ export default function AgendaModal({ onClose }: any) {
     setSelectedDate(evento.data.split("T")[0]);
     setTime(d);
     setEditandoId(evento.id);
+    setModoAdicionar(true); // 🔥 abre modo edição
     setAba("agenda");
   }
 
@@ -142,11 +145,6 @@ export default function AgendaModal({ onClose }: any) {
 
   const eventosDoDia = eventos.filter((e) =>
     e.data.startsWith(selectedDate)
-  );
-
-  // 🔥 AQUI ESTÁ A CORREÇÃO PEDIDA (HISTÓRICO)
-  const historico = eventos.filter((e) =>
-    new Date(e.data) < new Date()
   );
 
   const marked: any = {};
@@ -175,45 +173,50 @@ export default function AgendaModal({ onClose }: any) {
               Agenda
             </Text>
           </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => setAba("historico")}>
-            <Text style={[styles.tab, aba === "historico" && styles.active]}>
-              Histórico
-            </Text>
-          </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.content}>
 
-          {aba === "agenda" && (
+          <Calendar
+            onDayPress={(d) => setSelectedDate(d.dateString)}
+            markedDates={marked}
+          />
+
+          {selectedDate !== "" && (
             <>
-              <Calendar
-                onDayPress={(d) => setSelectedDate(d.dateString)}
-                markedDates={marked}
-              />
+              <Text style={styles.section}>Eventos do dia</Text>
 
-              {selectedDate !== "" && (
+              {eventosDoDia.map((e) => (
+                <View key={e.id} style={styles.card}>
+                  <Text style={styles.title}>{e.titulo}</Text>
+                  <Text>{e.descricao}</Text>
+                  <Text style={styles.category}>{e.categoria}</Text>
+
+                  <View style={styles.actions}>
+                    <TouchableOpacity onPress={() => editarEvento(e)}>
+                      <Ionicons name="create-outline" size={20} color="#7050b3" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={() => excluirEvento(e.id)}>
+                      <Ionicons name="trash-outline" size={20} color="#e11d48" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+
+              {/* 🔥 BOTÃO + */}
+              {!modoAdicionar && (
+                <TouchableOpacity
+                  style={styles.addButton}
+                  onPress={() => setModoAdicionar(true)}
+                >
+                  <Ionicons name="add" size={28} color="#fff" />
+                </TouchableOpacity>
+              )}
+
+              {/* 🔥 FORMULÁRIO CONDICIONAL */}
+              {modoAdicionar && (
                 <>
-                  <Text style={styles.section}>Eventos do dia</Text>
-
-                  {eventosDoDia.map((e) => (
-                    <View key={e.id} style={styles.card}>
-                      <Text style={styles.title}>{e.titulo}</Text>
-                      <Text>{e.descricao}</Text>
-                      <Text style={styles.category}>{e.categoria}</Text>
-
-                      <View style={styles.actions}>
-                        <TouchableOpacity onPress={() => editarEvento(e)}>
-                          <Ionicons name="create-outline" size={20} color="#7050b3" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={() => excluirEvento(e.id)}>
-                          <Ionicons name="trash-outline" size={20} color="#e11d48" />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                  ))}
-
                   <View style={styles.timeRow}>
                     <TextInput
                       style={styles.timeInput}
@@ -274,31 +277,41 @@ export default function AgendaModal({ onClose }: any) {
                     </View>
                   )}
 
-                  <TouchableOpacity style={styles.add} onPress={adicionarEvento}>
-                    <Text style={{ color: "#fff" }}>
-                      {editandoId ? "Atualizar" : "Salvar"}
+                  {/* BOTÕES */}
+                  <View style={styles.actionsButtons}>
+                    <TouchableOpacity
+                      style={styles.cancel}
+                      onPress={() => {
+                        setModoAdicionar(false);
+                        setTitulo("");
+                        setDescricao("");
+                        setCategoria("Geral");
+                        setEditandoId(null);
+                      }}
+                    >
+                      <Text style={{ color: "#fff" }}>Cancelar</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.add} onPress={adicionarEvento}>
+                      <Text style={{ color: "#fff" }}>
+                        {editandoId ? "Atualizar" : "Adicionar"}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* PREVIEW */}
+                  <Text style={styles.section}>Pré-visualização</Text>
+                  <View style={styles.card}>
+                    <Text style={styles.title}>
+                      {titulo || "Título do evento"}
                     </Text>
-                  </TouchableOpacity>
+                    <Text>{descricao || "Descrição do evento"}</Text>
+                    <Text style={styles.category}>{categoria}</Text>
+                  </View>
                 </>
               )}
             </>
           )}
-
-          {/* 🔥 HISTÓRICO AGORA FUNCIONANDO */}
-          {aba === "historico" && (
-            <>
-              <Text style={styles.section}>Eventos passados</Text>
-
-              {historico.map((e) => (
-                <View key={e.id} style={styles.card}>
-                  <Text style={styles.title}>{e.titulo}</Text>
-                  <Text>{e.descricao}</Text>
-                  <Text style={styles.category}>{e.categoria}</Text>
-                </View>
-              ))}
-            </>
-          )}
-
         </ScrollView>
       </View>
     </View>
@@ -350,6 +363,29 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
+    flex: 1,
+  },
+
+  cancel: {
+    backgroundColor: "#28174c",
+    padding: 12,
+    borderRadius: 10,
+    alignItems: "center",
+    flex: 1,
+  },
+
+  actionsButtons: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 10,
+  },
+
+  addButton: {
+    backgroundColor: "#7050b3",
+    padding: 15,
+    borderRadius: 50,
+    alignItems: "center",
+    marginVertical: 10,
   },
 
   card: {
@@ -391,7 +427,7 @@ const styles = StyleSheet.create({
   },
 
   dropdown: {
-    backgroundColor: "#7050d8",
+    backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#b390d8",
     borderRadius: 10,
