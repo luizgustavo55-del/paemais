@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Image,
   FlatList,
-  TextInput
+  TextInput,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -30,7 +30,6 @@ export default function Perfil() {
 
   const user = auth.currentUser;
 
-  // 🔥 CORREÇÃO AQUI
   const handleVoltar = () => {
     router.replace("/menu"); // sempre vai pro menu
   };
@@ -54,7 +53,7 @@ export default function Perfil() {
       if (data?.filhos) {
         const lista = Object.keys(data.filhos).map((id) => ({
           id,
-          ...data.filhos[id]
+          ...data.filhos[id],
         }));
         setFilhos(lista);
       } else {
@@ -76,7 +75,7 @@ export default function Perfil() {
       const lista = Object.keys(data)
         .map((key) => ({
           id: key,
-          ...data[key]
+          ...data[key],
         }))
         .filter((post) => post.userId === user.uid);
 
@@ -92,7 +91,7 @@ export default function Perfil() {
     await update(ref(db, `usuarios/${user.uid}`), {
       nome,
       cidade,
-      bio
+      bio,
     });
 
     setEditando(false);
@@ -107,9 +106,8 @@ export default function Perfil() {
 
   return (
     <View style={styles.container}>
-      
       <TouchableOpacity style={styles.botaoVoltar} onPress={handleVoltar}>
-        <Ionicons name="arrow-back" size={20} color="#C642A6" />
+        <Ionicons name="arrow-back" size={24} color="#C642A6" />
       </TouchableOpacity>
 
       <View style={styles.header}>
@@ -135,7 +133,7 @@ export default function Perfil() {
             />
 
             <TextInput
-              style={styles.input}
+              style={[styles.input, { height: 80 }]}
               value={bio}
               onChangeText={setBio}
               placeholder="Bio"
@@ -144,56 +142,72 @@ export default function Perfil() {
           </>
         ) : (
           <>
-            <Text style={styles.nome}>
-              {userData?.nome || "Carregando..."}
-            </Text>
+            <Text style={styles.nome}>{userData?.nome || "Carregando..."}</Text>
 
             <Text style={styles.usuario}>
               @{userData?.nome?.toLowerCase().replace(" ", "")}
             </Text>
 
             <View style={styles.bioBox}>
-              <Text style={styles.bio}>
-                {userData?.bio || "Adicione uma bio 💖"}
-              </Text>
+              <Text style={styles.bio}>{userData?.bio || "Adicione uma bio"}</Text>
             </View>
 
             <Text style={styles.info}>
-              📍 {userData?.cidade || "Não informado"}
+              <Ionicons name="location-outline" size={14} color="#EBD6F5" />{" "}
+              {userData?.cidade || "Não informado"}
             </Text>
 
             <Text style={styles.info}>
-              📧 {userData?.email || user?.email}
+              <Ionicons name="mail-outline" size={14} color="#EBD6F5" />{" "}
+              {userData?.email || user?.email}
             </Text>
           </>
         )}
 
         {editando ? (
-          <>
-            <TouchableOpacity style={styles.botaoEditar} onPress={salvarPerfil}>
-              <Text style={styles.textBotao}>💾 Salvar</Text>
+          <View style={{ flexDirection: "row", marginTop: 12 }}>
+            <TouchableOpacity
+              style={[styles.botaoEditar, { flex: 1, marginRight: 8 }]}
+              onPress={salvarPerfil}
+            >
+              <Text style={styles.textBotao}>
+                <Ionicons name="save-outline" size={16} /> Salvar
+              </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.botaoCancelar} onPress={cancelarEdicao}>
+            <TouchableOpacity
+              style={[styles.botaoCancelar, { flex: 1 }]}
+              onPress={cancelarEdicao}
+            >
               <Text style={styles.textCancelar}>Cancelar</Text>
             </TouchableOpacity>
-          </>
+          </View>
         ) : (
           <TouchableOpacity
             style={styles.botaoEditar}
             onPress={() => setEditando(true)}
           >
-            <Text style={styles.textBotao}>✏️ Editar Perfil</Text>
+            <Text style={styles.textBotao}>
+              <Ionicons name="create-outline" size={16} /> Editar Perfil
+            </Text>
           </TouchableOpacity>
         )}
       </View>
 
+      {/* 🔹 TABS MELHORADAS */}
       <View style={styles.tabs}>
         <TouchableOpacity
           style={aba === "posts" ? styles.tabActive : styles.tab}
           onPress={() => setAba("posts")}
         >
-          <Text style={aba === "posts" ? styles.tabTextActive : styles.tabText}>
+          <Ionicons
+            name="reader-outline"
+            size={18}
+            color={aba === "posts" ? "#fff" : "#555"}
+          />
+          <Text
+            style={aba === "posts" ? styles.tabTextActive : styles.tabText}
+          >
             Minhas Publicações
           </Text>
         </TouchableOpacity>
@@ -202,12 +216,20 @@ export default function Perfil() {
           style={aba === "filhos" ? styles.tabActive : styles.tab}
           onPress={() => setAba("filhos")}
         >
-          <Text style={aba === "filhos" ? styles.tabTextActive : styles.tabText}>
+          <Ionicons
+            name="people-outline"
+            size={18}
+            color={aba === "filhos" ? "#fff" : "#555"}
+          />
+          <Text
+            style={aba === "filhos" ? styles.tabTextActive : styles.tabText}
+          >
             Meus Filhos
           </Text>
         </TouchableOpacity>
       </View>
 
+      {/* 🔹 CONTEÚDO */}
       {aba === "posts" && (
         <FlatList
           data={posts}
@@ -216,8 +238,8 @@ export default function Perfil() {
           renderItem={({ item }) => (
             <View style={styles.card}>
               <Text style={styles.texto}>{item.texto}</Text>
-
               <Text style={styles.infoPost}>
+                <Ionicons name="time-outline" size={12} />{" "}
                 {new Date(item.createdAt).toLocaleString()}
               </Text>
             </View>
@@ -239,16 +261,21 @@ export default function Perfil() {
             <View style={styles.card}>
               <Text style={styles.texto}>{item.nome}</Text>
               <Text style={styles.infoPost}>
-                Nascimento: {item.dataNascimento}
+                <Ionicons name="gift-outline" size={12} /> Nascimento:{" "}
+                {item.dataNascimento}
               </Text>
               {item.descricao && (
                 <Text style={styles.infoPost}>{item.descricao}</Text>
               )}
               {item.peso && (
-                <Text style={styles.infoPost}>Peso: {item.peso}</Text>
+                <Text style={styles.infoPost}>
+                  <Ionicons name="barbell-outline" size={12} /> Peso: {item.peso}
+                </Text>
               )}
               {item.altura && (
-                <Text style={styles.infoPost}>Altura: {item.altura}</Text>
+                <Text style={styles.infoPost}>
+                  <Ionicons name="resize-outline" size={12} /> Altura: {item.altura}
+                </Text>
               )}
             </View>
           )}
@@ -271,106 +298,132 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 10
+    zIndex: 10,
   },
 
   header: {
     alignItems: "center",
     paddingTop: 50,
     paddingBottom: 20,
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
   },
 
   avatar: {
-    width: 90,
-    height: 90,
+    width: 100,
+    height: 100,
     borderRadius: 50,
     borderWidth: 3,
-    borderColor: "#fff"
+    borderColor: "#fff",
   },
 
   nome: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#fff",
-    marginTop: 10
+    marginTop: 10,
   },
 
   usuario: {
     color: "#EBD6F5",
-    marginBottom: 10
+    marginBottom: 10,
   },
 
   bioBox: {
     backgroundColor: "#ffffff22",
     padding: 12,
     borderRadius: 12,
-    marginVertical: 10
+    marginVertical: 10,
+    width: "90%",
   },
 
   bio: { color: "#fff", textAlign: "center" },
 
-  info: { color: "#EBD6F5", fontSize: 12 },
+  info: {
+    color: "#EBD6F5",
+    fontSize: 13,
+    marginTop: 3,
+  },
 
   input: {
     backgroundColor: "#fff",
     width: "100%",
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 8
+    padding: 12,
+    borderRadius: 15,
+    marginTop: 10,
+    fontSize: 16,
   },
 
   botaoEditar: {
     backgroundColor: "#fff",
     paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginTop: 10
+    paddingVertical: 10,
+    borderRadius: 25,
+    marginTop: 12,
+    alignItems: "center",
   },
 
   textBotao: { color: "#C642A6", fontWeight: "bold" },
 
   botaoCancelar: {
-    marginTop: 8
+    backgroundColor: "#ffffff44",
+    paddingVertical: 10,
+    borderRadius: 25,
+    marginTop: 12,
+    alignItems: "center",
   },
 
   textCancelar: {
     color: "#fff",
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
 
   tabs: {
     flexDirection: "row",
-    margin: 15,
+    marginHorizontal: 15,
+    marginTop: 15,
     backgroundColor: "#fff",
-    borderRadius: 12
+    borderRadius: 12,
+    overflow: "hidden",
   },
 
-  tab: { flex: 1, padding: 12, alignItems: "center" },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 6,
+  },
 
   tabActive: {
     flex: 1,
-    padding: 12,
+    paddingVertical: 12,
     backgroundColor: "#C642A6",
-    alignItems: "center"
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 6,
   },
 
-  tabText: { color: "#555" },
-
+  tabText: { color: "#555", fontWeight: "600" },
   tabTextActive: { color: "#fff", fontWeight: "bold" },
 
   card: {
     backgroundColor: "#fff",
     padding: 15,
-    borderRadius: 12,
-    marginBottom: 10
+    borderRadius: 15,
+    marginBottom: 12,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
   },
 
-  texto: { color: "#333" },
+  texto: { color: "#333", fontSize: 15, marginBottom: 4 },
 
   infoPost: {
     fontSize: 12,
     color: "#777",
-    marginTop: 5
-  }
-});  
+    marginTop: 4,
+  },
+});

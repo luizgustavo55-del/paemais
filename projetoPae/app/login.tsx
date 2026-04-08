@@ -137,7 +137,7 @@ export default function Login() {
           disabled={!formularioValido || loading}
         >
           <LinearGradient
-            colors={['#ff4db8', '#7b2cff']}
+            colors={['#28174cca', '#7050d8']}
             style={[
               styles.botao,
               (!formularioValido || loading) && styles.botaoDesativado
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     padding: 30,
-    backgroundColor: "#ffeef5"
+    backgroundColor: "#b390d8"
   },
 
   content: {
@@ -185,13 +185,13 @@ const styles = StyleSheet.create({
     fontSize: 42,
     fontWeight: "bold",
     textAlign: "center",
-    color: "#7b2cff"
+    color: "#28174cca"
   },
 
   subtitulo: {
     textAlign: "center",
     fontSize: 16,
-    color: "#555",
+    color: "#7050b3",
     marginBottom: 20
   },
 
@@ -219,12 +219,14 @@ const styles = StyleSheet.create({
   },
 
   botao: {
+
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center"
   },
 
   botaoDesativado: {
+    borderColor: "#905ec5",
     opacity: 0.5
   },
 
@@ -241,14 +243,15 @@ const styles = StyleSheet.create({
 
   botaoColaborador: {
     borderWidth: 2,
-    borderColor: "#ff4db8",
+    borderColor: "#a381c7",
+    backgroundColor: "#7050b3",
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 10
   },
 
   textoColaborador: {
-    color: "#ff4db8",
+    color: "#ece3ff",
     fontWeight: "bold",
     fontSize: 16
   }

@@ -351,7 +351,7 @@ export default function CustomDrawer() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#7050B3", padding: 20 },
+  container: { flex: 1, backgroundColor: "#8b64de", padding: 20 },
 
   header: {
     backgroundColor: "#7b5ac4b7",

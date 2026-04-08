@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, Alert, Platform
+  StyleSheet, ScrollView, Alert
 } from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import MaskInput from "react-native-mask-input";
 import { Eye, EyeOff, Calendar } from "lucide-react-native";
 import { useRouter } from "expo-router";
@@ -33,11 +33,10 @@ export default function Cadastro() {
   const [showSenha,setShowSenha] = useState(false);
   const [showConfirmSenha,setShowConfirmSenha] = useState(false);
 
-  const [data,setData] = useState(new Date());
+  const [data,setData] = useState<Date>(new Date());
   const [dataTexto,setDataTexto] = useState("");
   const [mostrarDate,setMostrarDate] = useState(false);
 
-  // 🔥 NOVO
   const [tipo, setTipo] = useState<"pai" | "gestante" | "">("");
 
   function handleData(text: string){
@@ -91,7 +90,7 @@ export default function Cadastro() {
         telefone,
         cidade,
         dataNascimento: dataTexto,
-        tipo, // 🔥 SALVA SÓ ISSO
+        tipo,
         criadoEm: new Date().toISOString()
       });
 
@@ -103,125 +102,241 @@ export default function Cadastro() {
         router.replace("/dum");
       }
 
-    }catch(error: any){
+    }catch(error: unknown){
 
-      if (error.code === "auth/email-already-in-use") {
-        Alert.alert("Erro", "Email já em uso");
-      } else if (error.code === "auth/invalid-email") {
-        Alert.alert("Erro", "Email inválido");
-      } else if (error.code === "auth/weak-password") {
-        Alert.alert("Erro", "Senha fraca");
+      if (typeof error === "object" && error !== null && "code" in error) {
+
+        const err = error as { code?: string };
+
+        if (err.code === "auth/email-already-in-use") {
+          Alert.alert("Erro", "Email já em uso");
+        } else if (err.code === "auth/invalid-email") {
+          Alert.alert("Erro", "Email inválido");
+        } else if (err.code === "auth/weak-password") {
+          Alert.alert("Erro", "Senha fraca");
+        } else {
+          Alert.alert("Erro","Erro ao criar conta");
+        }
+
       } else {
-        Alert.alert("Erro","Erro ao criar conta");
+        Alert.alert("Erro","Erro inesperado");
       }
     }
   }
 
   return(
-    <ScrollView contentContainerStyle={styles.container}>
+    <LinearGradient
+      colors={["#ece3ff", "#ffc2e8"]}
+      style={{flex:1}}
+    >
+      <ScrollView contentContainerStyle={styles.container}>
 
-      <View style={styles.card}>
+        <View style={styles.card}>
 
-        <Text style={styles.titulo}>Criar Conta</Text>
+          <Text style={styles.titulo}>Criar Conta</Text>
 
-        <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome}/>
-        <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail}/>
+          <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome}/>
+          <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={setEmail}/>
 
-        <MaskInput
-          style={styles.input}
-          value={telefone}
-          onChangeText={setTelefone}
-          mask={["(",/\d/,/\d/,")"," ",/\d/,/\d/,/\d/,/\d/,/\d/,"-",/\d/,/\d/,/\d/,/\d/]}
-        />
-
-        <View style={styles.dataContainer}>
-          <TextInput
-            style={styles.dataInput}
-            placeholder="dd/mm/aaaa"
-            value={dataTexto}
-            onChangeText={handleData}
+          <MaskInput
+            style={styles.input}
+            value={telefone}
+            onChangeText={(masked)=>setTelefone(masked)}
+            mask={["(",/\d/,/\d/,")"," ",/\d/,/\d/,/\d/,/\d/,/\d/,"-",/\d/,/\d/,/\d/,/\d/]}
           />
-          <TouchableOpacity onPress={()=>setMostrarDate(true)}>
-            <Calendar size={22}/>
+
+          <View style={styles.dataContainer}>
+            <TextInput
+              style={styles.dataInput}
+              placeholder="dd/mm/aaaa"
+              value={dataTexto}
+              onChangeText={handleData}
+            />
+            <TouchableOpacity onPress={()=>setMostrarDate(true)}>
+              <Calendar size={22} color="#7050b3"/>
+            </TouchableOpacity>
+          </View>
+
+          {mostrarDate && (
+            <DateTimePicker
+              value={data}
+              mode="date"
+              onChange={(event: DateTimePickerEvent, date?: Date)=>{
+                if(date){
+                  const dia = String(date.getDate()).padStart(2,"0");
+                  const mes = String(date.getMonth()+1).padStart(2,"0");
+                  const ano = date.getFullYear();
+                  setDataTexto(`${dia}/${mes}/${ano}`);
+                  setData(date);
+                }
+                setMostrarDate(false);
+              }}
+            />
+          )}
+
+          <TextInput style={styles.input} placeholder="Cidade" value={cidade} onChangeText={setCidade}/>
+
+          <View style={styles.senhaContainer}>
+            <TextInput
+              secureTextEntry={!showSenha}
+              style={styles.senhaInput}
+              placeholder="Senha"
+              value={senha}
+              onChangeText={setSenha}
+            />
+            <TouchableOpacity onPress={()=>setShowSenha(!showSenha)}>
+              {showSenha ? <EyeOff color="#7050b3"/> : <Eye color="#7050b3"/>}
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.senhaContainer}>
+            <TextInput
+              secureTextEntry={!showConfirmSenha}
+              style={styles.senhaInput}
+              placeholder="Confirmar senha"
+              value={confirmarSenha}
+              onChangeText={setConfirmarSenha}
+            />
+            <TouchableOpacity onPress={()=>setShowConfirmSenha(!showConfirmSenha)}>
+              {showConfirmSenha ? <EyeOff color="#7050b3"/> : <Eye color="#7050b3"/>}
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.opcaoContainer}>
+            <TouchableOpacity
+              style={[styles.opcao, tipo === "pai" && styles.opcaoAtiva]}
+              onPress={()=>setTipo("pai")}
+            >
+              <Text style={styles.textoOpcao}>Já tenho filho</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.opcao, tipo === "gestante" && styles.opcaoAtiva]}
+              onPress={()=>setTipo("gestante")}
+            >
+              <Text style={styles.textoOpcao}>Estou grávida</Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity onPress={salvar}>
+            <LinearGradient
+              colors={["#7050b3","#99acff"]}
+              style={styles.botao}
+            >
+              <Text style={styles.textoBotao}>Criar Conta</Text>
+            </LinearGradient>
           </TouchableOpacity>
+
         </View>
-
-        {mostrarDate && (
-          <DateTimePicker
-            value={data}
-            mode="date"
-            onChange={(e,date)=>{
-              if(date){
-                const dia = String(date.getDate()).padStart(2,"0");
-                const mes = String(date.getMonth()+1).padStart(2,"0");
-                const ano = date.getFullYear();
-                setDataTexto(`${dia}/${mes}/${ano}`);
-              }
-              setMostrarDate(false);
-            }}
-          />
-        )}
-
-        <TextInput style={styles.input} placeholder="Cidade" value={cidade} onChangeText={setCidade}/>
-
-        <View style={styles.senhaContainer}>
-          <TextInput secureTextEntry={!showSenha} style={styles.senhaInput} value={senha} onChangeText={setSenha}/>
-          <TouchableOpacity onPress={()=>setShowSenha(!showSenha)}>
-            {showSenha ? <EyeOff/> : <Eye/>}
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.senhaContainer}>
-          <TextInput secureTextEntry={!showConfirmSenha} style={styles.senhaInput} value={confirmarSenha} onChangeText={setConfirmarSenha}/>
-          <TouchableOpacity onPress={()=>setShowConfirmSenha(!showConfirmSenha)}>
-            {showConfirmSenha ? <EyeOff/> : <Eye/>}
-          </TouchableOpacity>
-        </View>
-
-        {/* 🔥 ESCOLHA */}
-        <View style={styles.opcaoContainer}>
-          <TouchableOpacity
-            style={[styles.opcao, tipo === "pai" && styles.opcaoAtiva]}
-            onPress={()=>setTipo("pai")}
-          >
-            <Text>Já tenho filho</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.opcao, tipo === "gestante" && styles.opcaoAtiva]}
-            onPress={()=>setTipo("gestante")}
-          >
-            <Text>Estou grávida</Text>
-          </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity onPress={salvar}>
-          <LinearGradient colors={["#ff5fa2","#a75dff"]} style={styles.botao}>
-            <Text style={{color:"#fff"}}>Criar Conta</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container:{ flexGrow:1, padding:20, backgroundColor:"#ffe4ec" },
-  card:{ backgroundColor:"#fff", padding:20, borderRadius:20 },
-  titulo:{ fontSize:22, textAlign:"center", fontWeight:"bold" },
+
+  container:{
+    flexGrow:1,
+    padding:20,
+    justifyContent:"center"
+  },
+
+  card:{
+    backgroundColor:"#fff",
+    padding:22,
+    borderRadius:25,
+    shadowColor:"#28174cca",
+    shadowOffset:{width:0,height:8},
+    shadowOpacity:0.2,
+    shadowRadius:15,
+    elevation:10
+  },
+
+  titulo:{
+    fontSize:26,
+    textAlign:"center",
+    fontWeight:"bold",
+    color:"#28174cca",
+    marginBottom:15
+  },
+
   input:{
-     borderWidth:1, 
-     marginTop:10, 
-     padding:12, 
-     borderRadius:10 
-    },
-  dataContainer:{ flexDirection:"row", alignItems:"center", borderWidth:1, borderRadius:10, marginTop:10, paddingHorizontal:10 },
-  dataInput:{ flex:1, padding:10 },
-  senhaContainer:{ flexDirection:"row", alignItems:"center", borderWidth:1, borderRadius:10, marginTop:10, paddingHorizontal:10 },
-  senhaInput:{ flex:1, padding:10 },
-  opcaoContainer:{ flexDirection:"row", gap:10, marginTop:20 },
-  opcao:{ flex:1, padding:12, borderWidth:1, borderRadius:10, alignItems:"center" },
-  opcaoAtiva:{ backgroundColor:"#ffd6e7" },
-  botao:{ marginTop:20, padding:15, borderRadius:12, alignItems:"center" }
+    borderWidth:1,
+    borderColor:"#b390d8",
+    marginTop:12,
+    padding:14,
+    borderRadius:12,
+    backgroundColor:"#f8f4ff"
+  },
+
+  dataContainer:{
+    flexDirection:"row",
+    alignItems:"center",
+    borderWidth:1,
+    borderColor:"#b390d8",
+    borderRadius:12,
+    marginTop:12,
+    paddingHorizontal:12,
+    backgroundColor:"#f8f4ff"
+  },
+
+  dataInput:{
+    flex:1,
+    padding:12
+  },
+
+  senhaContainer:{
+    flexDirection:"row",
+    alignItems:"center",
+    borderWidth:1,
+    borderColor:"#b390d8",
+    borderRadius:12,
+    marginTop:12,
+    paddingHorizontal:12,
+    backgroundColor:"#f8f4ff"
+  },
+
+  senhaInput:{
+    flex:1,
+    padding:12
+  },
+
+  opcaoContainer:{
+    flexDirection:"row",
+    gap:12,
+    marginTop:25
+  },
+
+  opcao:{
+    flex:1,
+    padding:14,
+    borderWidth:1,
+    borderColor:"#7050b3",
+    borderRadius:14,
+    alignItems:"center",
+    backgroundColor:"#ece3ff"
+  },
+
+  opcaoAtiva:{
+    backgroundColor:"#7050b3"
+  },
+
+  textoOpcao:{
+    color:"#28174cca",
+    fontWeight:"500"
+  },
+
+  botao:{
+    marginTop:25,
+    padding:16,
+    borderRadius:14,
+    alignItems:"center"
+  },
+
+  textoBotao:{
+    color:"#fff",
+    fontWeight:"bold",
+    fontSize:16
+  }
+
 });

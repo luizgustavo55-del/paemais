@@ -263,9 +263,10 @@ export default function Comunidade() {
 
       {aba === "profissionais" && (
         <View style={styles.card}>
-          <Text style={styles.nome}>👩‍⚕️ Pediatra</Text>
-          <Text style={styles.nome}>🧠 Psicóloga</Text>
-          <Text style={styles.nome}>🍼 Consultora de amamentação</Text>
+          <Text style={styles.nometwo}>Aqui estarão os profissionais cadastrados na plataforma como: </Text>
+          <Text style={styles.nome}> - Pediatra</Text>
+          <Text style={styles.nome}> - Psicóloga</Text>
+          <Text style={styles.nome}> - Consultora de amamentação</Text>
         </View>
       )}
 
@@ -440,7 +441,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "#ccc"
   },
-
+   nometwo: { fontWeight: "bold", color: "#333" },
   nome: { fontWeight: "bold", color: "#333" },
   tipo: { fontSize: 12, color: "#777" },
 

@@ -190,7 +190,7 @@ export default function DicasScreen() {
                   </TouchableOpacity>
                 )}
               </View>
-
+              
               {/* LISTA */}
               {metas.map((meta) => (
                 <View key={meta.id} style={styles.item}>
@@ -229,8 +229,23 @@ export default function DicasScreen() {
                   </TouchableOpacity>
 
                 </View>
+                
+                
               ))}
-            </View>
+            </View> 
+              <View style={styles.card}>
+            <Text style={styles.cardTitle}>Dicas de organização</Text>
+
+            <View style={styles.listContainer}> 
+              <TouchableOpacity style={styles.tipBox} onPress={() => router.push("/dicasPage/docDica")}>
+                <Text style={styles.tipTitle}>Organização de Documentos</Text>
+                <Text style={styles.tipText}>
+                 Veja dicas de organização de documentos
+                </Text>
+              </TouchableOpacity>
+              </View>
+              </View>
+
           </>
         )}
 
@@ -295,7 +310,7 @@ export default function DicasScreen() {
         {/* BEBÊ (INALTERADO) */}
         {aba === "bebe" && (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Cuidados com o bebê</Text>
+            <Text style={styles.cardTitle}>CUIDADOS COM O BEBE (Aqui estarão dicas adicionadas pelos profissionais para o cuidado com os bebês)</Text>
 
             <View style={styles.tipBox}>
               <Text style={styles.tipTitle}>Sono do bebê</Text>

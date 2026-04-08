@@ -263,15 +263,20 @@ export default function Saude() {
         {aba === "locais" && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Locais de vacinação</Text>
-            <Text>📍 UBS mais próxima</Text>
-            <Text>📍 Postos de saúde</Text>
+            <Text> UBS mais próxima</Text>
+
+            <Text> Postos de saúde e locais para vacinação</Text>
+            <Text> Consultorios particulares</Text>
+            <Text> Hospitais Proximos</Text>
           </View>
         )}
 
         {aba === "historico" && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Histórico</Text>
-            <Text>📄 Vacinas já aplicadas aparecerão aqui</Text>
+            <Text> Aqui estarão os relatorios de consultas adicionados pelos profissionais, 
+              com resultados de exames e os documentos necessarios (atestados, exames como raio x, hemograma etc )
+            </Text>
           </View>
         )}
       </ScrollView>
@@ -314,7 +319,7 @@ const styles = StyleSheet.create({
   },
 
   filhoAtivo: {
-    backgroundColor: "#970cca",
+    backgroundColor: "#28174cca",
   },
 
   filhoText: {
@@ -343,9 +348,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
+  tabAtiveText: {
+    color: "#fff7fd",
+    fontWeight: "500",
+  },
 
   tabText: {
-    color: "#800060",
+    color: "#36265a",
     fontWeight: "500",
   },
 
