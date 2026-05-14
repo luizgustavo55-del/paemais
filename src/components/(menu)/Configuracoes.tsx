@@ -1,67 +1,118 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, ScrollView, Switch, Alert } from 'react-native'; 
+import { theme } from "@/src/constants/theme";
 import { Feather, Ionicons } from "@expo/vector-icons";
-import { theme } from '@/src/constants/theme';
-import { saveData, getData } from '@/src/services/database';
-import { deleteUserAccount, getCurrentUser } from '@/src/services/auth';
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+// 🔥 Imports do Firebase
+import { auth, firestore } from "@/src/services/firebase";
+import { deleteUser } from "firebase/auth";
+import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
 
 export function Configuracoes() {
   const [visivel, setVisivel] = useState(false);
-  const [situacao, setSituacao] = useState<'gestante' | 'filhos'>('gestante'); 
+  const [situacao, setSituacao] = useState<"gestante" | "filhos">("gestante");
   const [modoEscuro, setModoEscuro] = useState(false);
   const [sonsDoApp, setSonsDoApp] = useState(true);
 
+  // Carrega as preferências sempre que o modal abrir
   useEffect(() => {
     const carregarPreferencias = async () => {
-      const userLogado = await getCurrentUser();
-      if (!userLogado) return;
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
 
-      const dados = await getData(userLogado.uid);
-      if (dados && dados.perfil) {
-        setSituacao(dados.perfil);
+        const userRef = doc(firestore, "usuarios", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          const dados = userSnap.data();
+          if (dados.perfil) {
+            setSituacao(dados.perfil);
+          }
+        }
+      } catch (error) {
+        console.log("Erro ao carregar configurações:", error);
       }
     };
-    carregarPreferencias();
-  }, []);
 
-  const ativarFuncao = () => {
-    setVisivel(!visivel);
-  };
+    if (visivel) {
+      carregarPreferencias();
+    }
+  }, [visivel]);
 
-  const handleMudarPerfil = async (novoPerfil: 'gestante' | 'filhos') => {
+  // Atualiza o perfil (Gestante/Filhos) no Firestore
+  const handleMudarPerfil = async (novoPerfil: "gestante" | "filhos") => {
     setSituacao(novoPerfil);
     try {
-      const userLogado = await getCurrentUser();
-      if (!userLogado) return;
+      const user = auth.currentUser;
+      if (!user) return;
 
-      const dadosAtuais = await getData(userLogado.uid) || {};
-      await saveData(userLogado.uid, { ...dadosAtuais, perfil: novoPerfil });
+      const userRef = doc(firestore, "usuarios", user.uid);
+
+      // Salva usando merge: true para não apagar outros campos do usuário
+      await setDoc(userRef, { perfil: novoPerfil }, { merge: true });
     } catch (error) {
       console.error("Erro ao salvar o perfil", error);
     }
   };
 
+  // Função para APAGAR TUDO
   const handleExcluirConta = () => {
     Alert.alert(
       "Excluir Conta",
-      "Tem certeza? Esta ação é permanente.",
+      "Tem a certeza? Esta ação é permanente e apagará todos os seus dados de perfil e o seu acesso.",
       [
         { text: "Cancelar", style: "cancel" },
-        { 
-          text: "Excluir", 
-          style: "destructive", 
+        {
+          text: "Excluir Permanentemente",
+          style: "destructive",
           onPress: async () => {
-            await deleteUserAccount();
-          } 
-        }
-      ]
+            try {
+              const user = auth.currentUser;
+              if (!user) return;
+
+              // 1. Apagar o documento no Firestore
+              const userRef = doc(firestore, "usuarios", user.uid);
+              await deleteDoc(userRef);
+
+              // 2. Apagar a conta no Firebase Auth
+              await deleteUser(user);
+
+              Alert.alert("Sucesso", "A sua conta foi eliminada.");
+              setVisivel(false);
+            } catch (error: any) {
+              console.error(error);
+              if (error.code === "auth/requires-recent-login") {
+                Alert.alert(
+                  "Segurança",
+                  "Para eliminar a conta, precisa de ter feito login recentemente. Saia e entre de novo para confirmar.",
+                );
+              } else {
+                Alert.alert("Erro", "Não foi possível eliminar a conta.");
+              }
+            }
+          },
+        },
+      ],
     );
   };
 
   return (
     <View>
-      <TouchableOpacity style={styles.menuItem} onPress={ativarFuncao}>
-        <Feather name="settings" size={20} color="#333" />
+      <TouchableOpacity
+        style={styles.menuItem}
+        onPress={() => setVisivel(true)}
+      >
+        <Feather name="settings" size={22} color="#333" />
         <Text style={styles.menuItemText}>Configurações</Text>
       </TouchableOpacity>
 
@@ -75,31 +126,80 @@ export function Configuracoes() {
               </TouchableOpacity>
             </View>
 
-            <ScrollView>
+            <ScrollView showsVerticalScrollIndicator={false}>
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Seu Perfil Atual</Text>
-                <TouchableOpacity 
-                  style={[styles.situacaoItem, situacao === 'gestante' && styles.situacaoItemAtiva]}
-                  onPress={() => handleMudarPerfil('gestante')}
+
+                <TouchableOpacity
+                  style={[
+                    styles.situacaoItem,
+                    situacao === "gestante" && styles.situacaoItemAtiva,
+                  ]}
+                  onPress={() => handleMudarPerfil("gestante")}
                 >
-                  <Ionicons name="heart" size={24} color={situacao === 'gestante' ? '#fff' : theme.colors.cards} />
+                  <Ionicons
+                    name="heart"
+                    size={24}
+                    color={
+                      situacao === "gestante" ? "#fff" : theme.colors.cards
+                    }
+                  />
                   <View style={styles.situacaoTextContainer}>
-                    <Text style={[styles.situacaoTextMain, situacao === 'gestante' && {color: '#fff'}]}>Estou Gestante</Text>
-                    <Text style={[styles.situacaoTextSub, situacao === 'gestante' && {color: '#eee'}]}>Acompanhe sua gravidez</Text>
+                    <Text
+                      style={[
+                        styles.situacaoTextMain,
+                        situacao === "gestante" && { color: "#fff" },
+                      ]}
+                    >
+                      Estou Gestante
+                    </Text>
+                    <Text
+                      style={[
+                        styles.situacaoTextSub,
+                        situacao === "gestante" && { color: "#eee" },
+                      ]}
+                    >
+                      Acompanhe sua gravidez
+                    </Text>
                   </View>
-                  {situacao === 'gestante' && <Feather name="check" size={20} color="#fff" />}
+                  {situacao === "gestante" && (
+                    <Feather name="check" size={20} color="#fff" />
+                  )}
                 </TouchableOpacity>
 
-                <TouchableOpacity 
-                  style={[styles.situacaoItem, situacao === 'filhos' && styles.situacaoItemAtiva]}
-                  onPress={() => handleMudarPerfil('filhos')}
+                <TouchableOpacity
+                  style={[
+                    styles.situacaoItem,
+                    situacao === "filhos" && styles.situacaoItemAtiva,
+                  ]}
+                  onPress={() => handleMudarPerfil("filhos")}
                 >
-                  <Ionicons name="people" size={24} color={situacao === 'filhos' ? '#fff' : theme.colors.cards} />
+                  <Ionicons
+                    name="people"
+                    size={24}
+                    color={situacao === "filhos" ? "#fff" : theme.colors.cards}
+                  />
                   <View style={styles.situacaoTextContainer}>
-                    <Text style={[styles.situacaoTextMain, situacao === 'filhos' && {color: '#fff'}]}>Já tenho Filhos</Text>
-                    <Text style={[styles.situacaoTextSub, situacao === 'filhos' && {color: '#eee'}]}>Dicas para os pequenos</Text>
+                    <Text
+                      style={[
+                        styles.situacaoTextMain,
+                        situacao === "filhos" && { color: "#fff" },
+                      ]}
+                    >
+                      Já tenho Filhos
+                    </Text>
+                    <Text
+                      style={[
+                        styles.situacaoTextSub,
+                        situacao === "filhos" && { color: "#eee" },
+                      ]}
+                    >
+                      Dicas para os pequenos
+                    </Text>
                   </View>
-                  {situacao === 'filhos' && <Feather name="check" size={20} color="#fff" />}
+                  {situacao === "filhos" && (
+                    <Feather name="check" size={20} color="#fff" />
+                  )}
                 </TouchableOpacity>
               </View>
 
@@ -108,25 +208,49 @@ export function Configuracoes() {
                 <View style={styles.settingItemRow}>
                   <View style={styles.textColumn}>
                     <Text style={styles.settingItemMain}>Modo Escuro</Text>
-                    <Text style={styles.settingItemSub}>Visual mais confortável</Text>
+                    <Text style={styles.settingItemSub}>
+                      Visual mais confortável
+                    </Text>
                   </View>
-                  <Switch value={modoEscuro} onValueChange={setModoEscuro} trackColor={{ true: theme.colors.cards }} />
+                  <Switch
+                    value={modoEscuro}
+                    onValueChange={setModoEscuro}
+                    trackColor={{ true: theme.colors.cards, false: "#ddd" }}
+                  />
                 </View>
 
                 <View style={styles.settingItemRow}>
                   <View style={styles.textColumn}>
                     <Text style={styles.settingItemMain}>Sons do App</Text>
-                    <Text style={styles.settingItemSub}>Alertas e notificações</Text>
+                    <Text style={styles.settingItemSub}>
+                      Alertas e notificações
+                    </Text>
                   </View>
-                  <Switch value={sonsDoApp} onValueChange={setSonsDoApp} trackColor={{ true: theme.colors.cards }} />
+                  <Switch
+                    value={sonsDoApp}
+                    onValueChange={setSonsDoApp}
+                    trackColor={{ true: theme.colors.cards, false: "#ddd" }}
+                  />
                 </View>
               </View>
 
               <View style={[styles.section, { borderBottomWidth: 0 }]}>
-                <Text style={[styles.sectionTitle, { color: '#ff4d4d' }]}>Zona de Perigo</Text>
-                <TouchableOpacity style={styles.settingLinkItem} onPress={handleExcluirConta}>
+                <Text style={[styles.sectionTitle, { color: "#ff4d4d" }]}>
+                  Zona de Perigo
+                </Text>
+                <TouchableOpacity
+                  style={styles.settingLinkItem}
+                  onPress={handleExcluirConta}
+                >
                   <Feather name="trash-2" size={20} color="#ff4d4d" />
-                  <Text style={[styles.settingItemMain, { color: '#ff4d4d', marginLeft: 15 }]}>Excluir minha conta</Text>
+                  <Text
+                    style={[
+                      styles.settingItemMain,
+                      { color: "#ff4d4d", marginLeft: 15 },
+                    ]}
+                  >
+                    Excluir minha conta
+                  </Text>
                 </TouchableOpacity>
               </View>
             </ScrollView>
@@ -147,97 +271,74 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     marginLeft: 15,
-    fontSize: 16,
+    fontSize: theme.texts.subtitle,
     color: "#333",
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    height: '80%',
+    height: "80%",
     padding: 20,
   },
   modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 20,
     paddingBottom: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: "#F0F0F0",
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
+  modalTitle: { fontSize: 20, fontWeight: "bold", color: "#333" },
   section: {
     marginBottom: 25,
     paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: "#f0f0f0",
   },
   sectionTitle: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#999',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    color: "#999",
+    textTransform: "uppercase",
     marginBottom: 15,
     letterSpacing: 1,
   },
   situacaoItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderRadius: 15,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: "#f8f9fa",
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: "#eee",
   },
   situacaoItemAtiva: {
     backgroundColor: theme.colors.cards,
     borderColor: theme.colors.cards,
   },
-  situacaoTextContainer: {
-    marginLeft: 15,
-    flex: 1,
-  },
-  situacaoTextMain: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-  },
-  situacaoTextSub: {
-    fontSize: 12,
-    color: '#777',
-  },
+  situacaoTextContainer: { marginLeft: 15, flex: 1 },
+  situacaoTextMain: { fontSize: 16, fontWeight: "600", color: "#333" },
+  situacaoTextSub: { fontSize: 12, color: "#777" },
   settingItemRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 12,
   },
-  textColumn: {
-    flex: 1,
-  },
-  settingItemMain: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
-  },
-  settingItemSub: {
-    fontSize: 12,
-    color: '#888',
-  },
+  textColumn: { flex: 1 },
+  settingItemMain: { fontSize: 16, color: "#333", fontWeight: "500" },
+  settingItemSub: { fontSize: 12, color: "#888" },
   settingLinkItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingVertical: 15,
   },
 });

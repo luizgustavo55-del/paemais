@@ -1,32 +1,21 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { AMBIENTE } from '@/src/constants/config';
+import { AMBIENTE } from "@/src/constants/config";
 
 // 🔥 FIREBASE
-import { db } from '@/src/services/firebase';
+import { db } from "@/src/services/firebase";
 
 // 🔥 REALTIME DATABASE
-import {
-  ref,
-  get,
-  update,
-  remove,
-} from 'firebase/database';
+import { get, ref, remove, update } from "firebase/database";
 
 /* =========================
    SALVAR DADOS
 ========================= */
-export const saveData = async (
-  uid: string,
-  data: any
-): Promise<boolean> => {
+export const saveData = async (uid: string, data: any): Promise<boolean> => {
   try {
     // 🔥 REALTIME DATABASE
-    if (AMBIENTE === 'nuvem') {
-      const userRef = ref(
-        db,
-        `usuarios/${uid}`
-      );
+    if (AMBIENTE === "nuvem") {
+      const userRef = ref(db, `usuarios/${uid}`);
 
       // 🔥 Faz merge dos dados
       await update(userRef, data);
@@ -34,18 +23,12 @@ export const saveData = async (
 
     // 🔥 LOCAL
     else {
-      await AsyncStorage.setItem(
-        `@user_${uid}`,
-        JSON.stringify(data)
-      );
+      await AsyncStorage.setItem(`@user_${uid}`, JSON.stringify(data));
     }
 
     return true;
   } catch (error) {
-    console.log(
-      'Erro ao salvar dados:',
-      error
-    );
+    console.log("Erro ao salvar dados:", error);
 
     return false;
   }
@@ -54,20 +37,13 @@ export const saveData = async (
 /* =========================
    BUSCAR DADOS
 ========================= */
-export const getData = async (
-  uid: string
-): Promise<any | null> => {
+export const getData = async (uid: string): Promise<any | null> => {
   try {
     // 🔥 REALTIME DATABASE
-    if (AMBIENTE === 'nuvem') {
-      const userRef = ref(
-        db,
-        `usuarios/${uid}`
-      );
+    if (AMBIENTE === "nuvem") {
+      const userRef = ref(db, `usuarios/${uid}`);
 
-      const snapshot = await get(
-        userRef
-      );
+      const snapshot = await get(userRef);
 
       if (snapshot.exists()) {
         return snapshot.val();
@@ -78,10 +54,7 @@ export const getData = async (
 
     // 🔥 LOCAL
     else {
-      const data =
-        await AsyncStorage.getItem(
-          `@user_${uid}`
-        );
+      const data = await AsyncStorage.getItem(`@user_${uid}`);
 
       if (data) {
         return JSON.parse(data);
@@ -90,10 +63,7 @@ export const getData = async (
       return null;
     }
   } catch (error) {
-    console.log(
-      'Erro ao buscar dados:',
-      error
-    );
+    console.log("Erro ao buscar dados:", error);
 
     return null;
   }
@@ -104,26 +74,19 @@ export const getData = async (
 ========================= */
 export const updateData = async (
   uid: string,
-  newData: any
+  newData: any,
 ): Promise<boolean> => {
   try {
-    const currentData =
-      (await getData(uid)) || {};
+    const currentData = (await getData(uid)) || {};
 
     const updatedData = {
       ...currentData,
       ...newData,
     };
 
-    return await saveData(
-      uid,
-      updatedData
-    );
+    return await saveData(uid, updatedData);
   } catch (error) {
-    console.log(
-      'Erro ao atualizar dados:',
-      error
-    );
+    console.log("Erro ao atualizar dados:", error);
 
     return false;
   }
@@ -132,30 +95,21 @@ export const updateData = async (
 /* =========================
    LIMPAR DADOS
 ========================= */
-export const clearData = async (
-  uid: string
-): Promise<boolean> => {
+export const clearData = async (uid: string): Promise<boolean> => {
   try {
     // 🔥 REALTIME DATABASE
-    if (AMBIENTE === 'nuvem') {
-      await remove(
-        ref(db, `usuarios/${uid}`)
-      );
+    if (AMBIENTE === "nuvem") {
+      await remove(ref(db, `usuarios/${uid}`));
     }
 
     // 🔥 LOCAL
     else {
-      await AsyncStorage.removeItem(
-        `@user_${uid}`
-      );
+      await AsyncStorage.removeItem(`@user_${uid}`);
     }
 
     return true;
   } catch (error) {
-    console.log(
-      'Erro ao limpar dados:',
-      error
-    );
+    console.log("Erro ao limpar dados:", error);
 
     return false;
   }

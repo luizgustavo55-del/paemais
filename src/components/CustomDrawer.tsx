@@ -1,21 +1,20 @@
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  TextInput,
-  ScrollView,
-  Platform,
-  Alert
-} from "react-native";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import {
+  Alert,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 // 🔥 Firebase
-import { ref, onValue, update, push, remove } from "firebase/database";
-import { onAuthStateChanged } from "firebase/auth";
-import { db, auth, } from "@/src/services/firebase";
-import { signOut } from "firebase/auth";
+import { auth, db } from "@/src/services/firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onValue, push, ref, remove, update } from "firebase/database";
 
 // 📅 DatePicker
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -88,7 +87,7 @@ export default function CustomDrawer() {
     const nascimento = new Date(
       Number(partes[2]),
       Number(partes[1]) - 1,
-      Number(partes[0])
+      Number(partes[0]),
     );
 
     const hoje = new Date();
@@ -131,26 +130,22 @@ export default function CustomDrawer() {
   }
 
   function excluirFilho(id: string) {
-    Alert.alert(
-      "Excluir filho",
-      "Tem certeza que deseja excluir?",
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Excluir",
-          style: "destructive",
-          onPress: async () => {
-            if (!user) return;
+    Alert.alert("Excluir filho", "Tem certeza que deseja excluir?", [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Excluir",
+        style: "destructive",
+        onPress: async () => {
+          if (!user) return;
 
-            await remove(ref(db, `usuarios/${user.uid}/filhos/${id}`));
+          await remove(ref(db, `usuarios/${user.uid}/filhos/${id}`));
 
-            if (editandoFilhoId === id) {
-              setEditandoFilhoId(null);
-            }
-          },
+          if (editandoFilhoId === id) {
+            setEditandoFilhoId(null);
+          }
         },
-      ]
-    );
+      },
+    ]);
   }
 
   function iniciarEdicao(filho: any) {
@@ -165,7 +160,7 @@ export default function CustomDrawer() {
     const data = new Date(
       Number(partes[2]),
       Number(partes[1]) - 1,
-      Number(partes[0])
+      Number(partes[0]),
     );
 
     setEditData(data);
@@ -187,21 +182,14 @@ export default function CustomDrawer() {
 
   return (
     <ScrollView style={styles.container}>
-
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {userData?.nome?.[0] || "U"}
-          </Text>
+          <Text style={styles.avatarText}>{userData?.nome?.[0] || "U"}</Text>
         </View>
 
-        <Text style={styles.name}>
-          {userData?.nome || "Usuário"}
-        </Text>
+        <Text style={styles.name}>{userData?.nome || "Usuário"}</Text>
 
-        <Text style={styles.email}>
-          {userData?.email || user?.email || ""}
-        </Text>
+        <Text style={styles.email}>{userData?.email || user?.email || ""}</Text>
       </View>
 
       <View style={styles.section}>
@@ -213,7 +201,12 @@ export default function CustomDrawer() {
 
         {showAdd && (
           <View style={styles.inputBox}>
-            <TextInput style={styles.input} placeholder="Nome" value={novoNome} onChangeText={setNovoNome} />
+            <TextInput
+              style={styles.input}
+              placeholder="Nome"
+              value={novoNome}
+              onChangeText={setNovoNome}
+            />
 
             <TextInput
               style={styles.input}
@@ -243,16 +236,37 @@ export default function CustomDrawer() {
               />
             )}
 
-            <TextInput style={styles.input} placeholder="Peso" value={novoPeso} onChangeText={setNovoPeso} />
-            <TextInput style={styles.input} placeholder="Altura" value={novaAltura} onChangeText={setNovaAltura} />
-            <TextInput style={styles.input} placeholder="Descrição" value={descricao} onChangeText={setDescricao} />
+            <TextInput
+              style={styles.input}
+              placeholder="Peso"
+              value={novoPeso}
+              onChangeText={setNovoPeso}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Altura"
+              value={novaAltura}
+              onChangeText={setNovaAltura}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Descrição"
+              value={descricao}
+              onChangeText={setDescricao}
+            />
 
-            <TouchableOpacity style={styles.saveButton} onPress={adicionarFilho}>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={adicionarFilho}
+            >
               <Text style={styles.saveText}>Salvar</Text>
             </TouchableOpacity>
 
             {/* CANCELAR */}
-            <TouchableOpacity style={styles.cancelButton} onPress={limparFormulario}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={limparFormulario}
+            >
               <Text style={styles.cancelText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
@@ -260,11 +274,18 @@ export default function CustomDrawer() {
 
         {filhos.map((filho) => (
           <View key={filho.id} style={styles.childBox}>
-
             {editandoFilhoId === filho.id ? (
               <>
-                <TextInput style={styles.input} value={editNome} onChangeText={setEditNome} />
-                <TextInput style={styles.input} value={editDataTexto} onChangeText={setEditDataTexto} />
+                <TextInput
+                  style={styles.input}
+                  value={editNome}
+                  onChangeText={setEditNome}
+                />
+                <TextInput
+                  style={styles.input}
+                  value={editDataTexto}
+                  onChangeText={setEditDataTexto}
+                />
 
                 <TouchableOpacity onPress={() => setShowEditDatePicker(true)}>
                   <Text style={{ color: "#a855f7", marginTop: 5 }}>
@@ -287,11 +308,26 @@ export default function CustomDrawer() {
                   />
                 )}
 
-                <TextInput style={styles.input} value={editPeso} onChangeText={setEditPeso} />
-                <TextInput style={styles.input} value={editAltura} onChangeText={setEditAltura} />
-                <TextInput style={styles.input} value={editDescricao} onChangeText={setEditDescricao} />
+                <TextInput
+                  style={styles.input}
+                  value={editPeso}
+                  onChangeText={setEditPeso}
+                />
+                <TextInput
+                  style={styles.input}
+                  value={editAltura}
+                  onChangeText={setEditAltura}
+                />
+                <TextInput
+                  style={styles.input}
+                  value={editDescricao}
+                  onChangeText={setEditDescricao}
+                />
 
-                <TouchableOpacity style={styles.saveButton} onPress={() => salvarEdicaoFilho(filho.id)}>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={() => salvarEdicaoFilho(filho.id)}
+                >
                   <Text style={styles.saveText}>Salvar</Text>
                 </TouchableOpacity>
 
@@ -302,12 +338,22 @@ export default function CustomDrawer() {
             ) : (
               <>
                 <Text style={styles.childName}>{filho.nome}</Text>
-                <Text style={styles.info}>Nascimento: {filho.dataNascimento}</Text>
-                <Text style={styles.info}>Idade: {calcularIdade(filho.dataNascimento)}</Text>
+                <Text style={styles.info}>
+                  Nascimento: {filho.dataNascimento}
+                </Text>
+                <Text style={styles.info}>
+                  Idade: {calcularIdade(filho.dataNascimento)}
+                </Text>
 
-                {filho.descricao && <Text style={styles.info}>{filho.descricao}</Text>}
-                {filho.peso && <Text style={styles.info}>Peso: {filho.peso}</Text>}
-                {filho.altura && <Text style={styles.info}>Altura: {filho.altura}</Text>}
+                {filho.descricao && (
+                  <Text style={styles.info}>{filho.descricao}</Text>
+                )}
+                {filho.peso && (
+                  <Text style={styles.info}>Peso: {filho.peso}</Text>
+                )}
+                {filho.altura && (
+                  <Text style={styles.info}>Altura: {filho.altura}</Text>
+                )}
 
                 <TouchableOpacity onPress={() => iniciarEdicao(filho)}>
                   <Text style={{ color: "#a855f7", marginTop: 5 }}>Editar</Text>
@@ -318,7 +364,6 @@ export default function CustomDrawer() {
                 </TouchableOpacity>
               </>
             )}
-
           </View>
         ))}
       </View>
@@ -328,24 +373,22 @@ export default function CustomDrawer() {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.push("/configuracoes")}>
-        <Text style={styles.item}>Configurações</Text>
+        <Text style={styles.item}>nada</Text>
       </TouchableOpacity>
 
-     
       <TouchableOpacity
-  onPress={async () => {
-    try {
-      await signOut(auth); // 🔥 faz logout do Firebase
-      router.replace("/login"); // 🔁 redireciona
-    } catch (error) {
-      console.log("Erro ao sair:", error);
-    }
-  }}
-  style={styles.logout}
->
-  <Text style={styles.logoutText}>Sair</Text>
-</TouchableOpacity>
-
+        onPress={async () => {
+          try {
+            await signOut(auth); // 🔥 faz logout do Firebase
+            router.replace("/login"); // 🔁 redireciona
+          } catch (error) {
+            console.log("Erro ao sair:", error);
+          }
+        }}
+        style={styles.logout}
+      >
+        <Text style={styles.logoutText}>Sair</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }

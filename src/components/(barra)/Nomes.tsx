@@ -1,46 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import { theme } from "@/src/constants/theme";
+import { auth, firestore } from "@/src/services/firebase";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
+  ActivityIndicator,
+  Alert,
+  FlatList,
   StyleSheet,
+  Text,
   TextInput,
-  ScrollView,
   TouchableOpacity,
-  Alert
-} from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
-import { getData, saveData } from '@/src/services/database';
-import { auth } from '@/src/services/firebase';
+  View,
+} from "react-native";
 
 export default function Nomes() {
+  const [nomes, setNomes] = useState<any[]>([]);
   const [favoritos, setFavoritos] = useState<string[]>([]);
+  const [busca, setBusca] = useState("");
+  const [aba, setAba] = useState<"sugestoes" | "favoritos">("sugestoes");
+  const [carregando, setCarregando] = useState(true);
 
-  // 🔥 Carregar nomes ao iniciar
   useEffect(() => {
-    async function carregarNomes() {
-      const uid = auth.currentUser?.uid;
-
-      if (!uid) {
-        console.log("Usuário não logado");
-        return;
-      }
-
+    async function carregarDados() {
       try {
-        const dados = await getData(uid);
+        const resposta = await fetch(
+          "https://raw.githubusercontent.com/Ander-sonx/Nomes/refs/heads/main/nomes.json",
+        );
+        const dadosNomes = await resposta.json();
+        setNomes(dadosNomes);
 
-        if (dados?.nomesFavoritos) {
-          setFavoritos(dados.nomesFavoritos);
+        const uid = auth.currentUser?.uid;
+        if (uid) {
+          const userRef = doc(firestore, "usuarios", uid);
+          const userSnap = await getDoc(userRef);
+
+          if (userSnap.exists() && userSnap.data().nomesFavoritos) {
+            setFavoritos(userSnap.data().nomesFavoritos);
+          }
         }
       } catch (error) {
-        console.log("Erro ao carregar dados:", error);
+        Alert.alert("Erro", "Não foi possível carregar os nomes.");
+      } finally {
+        setCarregando(false);
       }
     }
 
-    carregarNomes();
+    carregarDados();
   }, []);
 
-  // 🔥 Favoritar / desfavoritar
   async function favoritar(nome: string) {
     const uid = auth.currentUser?.uid;
 
@@ -52,7 +60,7 @@ export default function Nomes() {
     let novaLista = [...favoritos];
 
     if (novaLista.includes(nome)) {
-      novaLista = novaLista.filter(n => n !== nome);
+      novaLista = novaLista.filter((favNome) => favNome !== nome);
     } else {
       novaLista.push(nome);
     }
@@ -60,155 +68,248 @@ export default function Nomes() {
     setFavoritos(novaLista);
 
     try {
-      const dados = await getData(uid);
-
-      await saveData(uid, {
-        ...dados,
-        nomesFavoritos: novaLista
-      });
+      const userRef = doc(firestore, "usuarios", uid);
+      await updateDoc(userRef, { nomesFavoritos: novaLista });
     } catch (error) {
-      console.log("Erro ao salvar:", error);
+      Alert.alert("Erro", "Não foi possível salvar.");
     }
   }
 
+  const nomesFiltrados = nomes.filter((item) => {
+    const nomeMatch = item.nome.toLowerCase().includes(busca.toLowerCase());
+    const abaMatch = aba === "sugestoes" ? true : favoritos.includes(item.nome);
+    return nomeMatch && abaMatch;
+  });
+
+  if (carregando) {
+    return (
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <ActivityIndicator size="large" color="#A855F7" />
+      </View>
+    );
+  }
+
   return (
-    <ScrollView style={styles.container}>
-      {/* 🔍 Busca */}
+    <View style={styles.container}>
       <View style={styles.searchBar}>
-        <MaterialCommunityIcons name="magnify" size={24} color="#BBB" />
-        <TextInput placeholder="Buscar nomes..." style={styles.input} />
+        <MaterialCommunityIcons name="magnify" size={18} color="#BBB" />
+        <TextInput
+          placeholder="Buscar nomes"
+          style={styles.input}
+          value={busca}
+          onChangeText={setBusca}
+        />
       </View>
 
-      {/* ⭐ Favoritos */}
-      <TouchableOpacity style={styles.favBtn}>
-        <MaterialCommunityIcons name="star-outline" size={20} color="#555" />
-        <Text style={styles.favBtnText}>
-          Meus Favoritos ({favoritos.length})
-        </Text>
-      </TouchableOpacity>
-
-      {/* 👶 Card exemplo */}
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => favoritar("Arthur")}
-      >
-        <View style={styles.cardHeader}>
-          <Text style={styles.nameText}>Arthur</Text>
-
-          <MaterialCommunityIcons
-            name={
-              favoritos.includes("Arthur")
-                ? "heart"
-                : "heart-outline"
+      <View style={styles.filterContainer}>
+        <TouchableOpacity
+          style={
+            aba === "sugestoes"
+              ? [
+                  styles.filterBtnActive,
+                  { backgroundColor: theme.colors.quaternary },
+                ]
+              : styles.filterBtn
+          }
+          onPress={() => setAba("sugestoes")}
+        >
+          <Text
+            style={
+              aba === "sugestoes"
+                ? styles.filterTextActive
+                : {
+                    color: theme.colors.subtitle,
+                    fontSize: theme.texts.subtitle,
+                  }
             }
-            size={24}
-            color="#D81B60"
-          />
-        </View>
-      </TouchableOpacity>
-    </ScrollView>
+          >
+            Sugestões
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={
+            aba === "favoritos"
+              ? [
+                  styles.filterBtnActive,
+                  { backgroundColor: theme.colors.secondary },
+                ]
+              : styles.filterBtn
+          }
+          onPress={() => setAba("favoritos")}
+        >
+          <Text
+            style={
+              aba === "favoritos"
+                ? styles.filterTextActive
+                : {
+                    color: theme.colors.subtitle,
+                    fontSize: theme.texts.subtitle,
+                  }
+            }
+          >
+            Favoritos ({favoritos.length})
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <FlatList
+        data={nomesFiltrados}
+        keyExtractor={(item) => String(item.nome)}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        ListEmptyComponent={
+          <Text
+            style={{
+              textAlign: "center",
+              marginTop: 20,
+              color: "#666",
+              fontSize: theme.texts.text,
+            }}
+          >
+            Nenhum nome encontrado.
+          </Text>
+        }
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.card}
+            activeOpacity={0.8}
+            onPress={() => favoritar(item.nome)}
+          >
+            <View style={styles.cardHeader}>
+              <Text style={styles.nameText}>{item.nome}</Text>
+
+              <MaterialCommunityIcons
+                name={favoritos.includes(item.nome) ? "heart" : "heart-outline"}
+                size={28}
+                color={favoritos.includes(item.nome) ? "#D81B60" : "#BBB"}
+              />
+            </View>
+
+            <Text style={styles.infoText}>
+              <Text style={styles.bold}>Significado: </Text>
+              {item.significado}
+            </Text>
+
+            <View
+              style={[
+                styles.genderTag,
+                {
+                  backgroundColor:
+                    item.genero === "F"
+                      ? theme.colors.terceary
+                      : theme.colors.quaternary,
+                },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.genderTagText,
+                  { color: item.genero === "F" ? "#D81B60" : "#2196F3" },
+                ]}
+              >
+                {item.genero === "F" ? "Feminino" : "Masculino"}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        )}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16
+    padding: 16,
+    backgroundColor: "#f8fafc",
   },
-
   searchBar: {
-    flexDirection: 'row',
-    backgroundColor: '#FFF',
-    padding: 12,
+    flexDirection: "row",
+    backgroundColor: "#FFF",
+    padding: 10,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#EEE'
+    borderColor: "#EEE",
   },
-
   input: {
     marginLeft: 10,
-    flex: 1
+    flex: 1,
+    fontSize: theme.texts.text,
   },
-
   filterContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 15
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 15,
   },
-
   filterBtnActive: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: "center",
+    borderRadius: 10,
+    marginHorizontal: 5,
   },
-
   filterBtn: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    flex: 1,
+    paddingVertical: 12,
+    alignItems: "center",
     borderRadius: 10,
-    backgroundColor: '#F0F0F0'
+    backgroundColor: theme.colors.terceary,
+    marginHorizontal: 5,
   },
-
   filterTextActive: {
-    color: '#FFF',
-    fontWeight: 'bold'
+    color: theme.colors.texts,
+    fontSize: theme.texts.subtitle,
+    fontWeight: "bold",
   },
-
-  favBtn: {
-    flexDirection: 'row',
-    backgroundColor: '#F0F0F0',
-    padding: 12,
-    borderRadius: 10,
-    justifyContent: 'center',
-    marginBottom: 20
-  },
-
-  favBtnText: {
-    marginLeft: 8,
-    fontWeight: '500'
-  },
-
   card: {
-    backgroundColor: '#FFF',
+    backgroundColor: theme.colors.cards,
     padding: 16,
     borderRadius: 15,
-    marginBottom: 15
+    marginBottom: 15,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
-
   cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 10,
-    justifyContent: 'space-between'
+    justifyContent: "space-between",
   },
-
   nameText: {
-    fontSize: 18,
-    fontWeight: 'bold'
+    fontSize: theme.texts.title,
+    fontWeight: "bold",
+    color: "#333",
   },
-
   genderTag: {
-    backgroundColor: '#E3F2FD',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10
+    alignSelf: "flex-start",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    marginTop: 8,
   },
-
   genderTagText: {
-    color: '#2196F3',
-    fontSize: 12,
-    fontWeight: 'bold'
+    fontSize: theme.texts.text,
+    fontWeight: "bold",
   },
-
   infoText: {
-    color: '#666',
-    marginBottom: 4
+    color: theme.colors.texts,
+    marginBottom: 4,
+    fontSize: theme.texts.text,
+    lineHeight: 20,
   },
-
   bold: {
-    fontWeight: 'bold',
-    color: '#333'
-  }
+    fontWeight: "bold",
+    color: "#333",
+  },
 });
