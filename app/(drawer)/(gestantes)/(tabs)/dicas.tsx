@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
 } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
@@ -174,17 +175,17 @@ export default function DicasScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={aba === "auxilios" ? styles.tabActive : styles.tab}
-          onPress={() => setAba("auxilios")}
+          style={aba === "direitos" ? styles.tabActive : styles.tab}
+          onPress={() => setAba("direitos")}
         >
           <Text
             style={
-              aba === "auxilios"
+              aba === "direitos"
                 ? styles.tabActiveText
                 : styles.tabText
             }
           >
-            Auxílios
+            Direitos
           </Text>
         </TouchableOpacity>
 
@@ -208,6 +209,7 @@ export default function DicasScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 30 }}
       >
+
         {/* GESTAÇÃO */}
         {aba === "rotina" && (
           <>
@@ -311,131 +313,237 @@ export default function DicasScreen() {
               ))}
             </View>
 
+            {/* SAÚDE DA GESTANTE */}
             <View style={styles.card}>
               <Text style={styles.cardTitle}>
-                Dicas de organização
+                Saúde da Gestante
               </Text>
 
               <View style={styles.listContainer}>
-                <TouchableOpacity
-                  style={styles.tipBox}
-                  onPress={() =>
-                    router.push("/dicasPage/docDica")
-                  }
-                >
-                  <Text style={styles.tipTitle}>
-                    Organização de Documentos
-                  </Text>
 
-                  <Text style={styles.tipText}>
-                    Veja dicas de organização de documentos
-                  </Text>
-                </TouchableOpacity>
+                {renderTip(
+                  "restaurant-outline",
+                  "Alimentação",
+                  "Cuidados com alimentação saudável na gestação.",
+                  "/dicasPage/gestante/alimentacao"
+                )}
+
+                {renderTip(
+                  "water-outline",
+                  "Hidratação",
+                  "Importância da hidratação para mãe e bebê.",
+                  "/dicasPage/gestante/hidratacao"
+                )}
+
+                {renderTip(
+                  "moon-outline",
+                  "Sono e Descanso",
+                  "Dicas para melhorar descanso e qualidade do sono.",
+                  "/dicasPage/gestante/Sono"
+                )}
+
+                {renderTip(
+                  "barbell-outline",
+                  "Exercícios",
+                  "Atividades físicas seguras durante a gravidez.",
+                  "/dicasPage/gestante/Exercicios"
+                )}
+
+                {renderTip(
+                  "medical-outline",
+                  "Saúde Bucal",
+                  "Cuidados importantes com dentes e gengivas.",
+                  "/dicasPage/gestante/SaudeBocal"
+                )}
+
+                {renderTip(
+                  "heart-outline",
+                  "Saúde Emocional",
+                  "Cuidados emocionais e apoio psicológico.",
+                  "/dicasPage/gestante/SaudeEmocional"
+                )}
+
+                {renderTip(
+                  "shield-checkmark-outline",
+                  "Vacinas",
+                  "Vacinas recomendadas durante a gestação.",
+                  "/dicasPage/gestante/Vacinas"
+                )}
+
+                {renderTip(
+                  "pulse-outline",
+                  "Controle de Doenças",
+                  "Acompanhamento de condições e doenças gestacionais.",
+                  "/dicasPage/gestante/ControleDoenças"
+                )}
+
+                {renderTip(
+                  "body-outline",
+                  "Segurança Física",
+                  "Cuidados físicos e prevenção de acidentes.",
+                  "/dicasPage/gestante/SegurançaFisica"
+                )}
+
+                {renderTip(
+                  "warning-outline",
+                  "Sinais de Alerta",
+                  "Sintomas importantes que exigem atenção.",
+                  "/dicasPage/gestante/SinaisAlerta"
+                )}
+              </View>
+            </View>
+
+            {/* PRÉ-NATAL */}
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>
+                Pré-natal
+              </Text>
+
+              <View style={styles.listContainer}>
+
+                {renderTip(
+                  "book-outline",
+                  "Visão Geral",
+                  "Informações gerais sobre o pré-natal.",
+                  "/dicasPage/prenatal/visaoGeral"
+                )}
+
+                {renderTip(
+                  "calendar-outline",
+                  "Consultas",
+                  "Acompanhamento médico durante a gravidez.",
+                  "/dicasPage/prenatal/consultas"
+                )}
+
+                {renderTip(
+                  "medkit-outline",
+                  "Exames",
+                  "Acompanhe os exames importantes do pré-natal.",
+                  "/dicasPage/prenatal/exames"
+                )}
+
               </View>
             </View>
           </>
         )}
 
         {/* AUXÍLIOS */}
-        {aba === "auxilios" && (
+        {aba === "direitos" && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>
-              Auxílios disponíveis
+             Direitos da Gestante e Auxílios
             </Text>
 
             <View style={styles.listContainer}>
-              <TouchableOpacity
-                style={styles.tipBox}
-                onPress={() =>
-                  router.push("/dicasPage/marcoLegal")
-                }
-              >
-                <View style={styles.tipRow}>
-                  <View
-                    style={[
-                      styles.iconCircle,
-                      { backgroundColor: "#ece3ff" },
-                    ]}
-                  >
-                    <Ionicons
-                      name="document-text-outline"
-                      size={20}
-                      color="#7050b3"
-                    />
-                  </View>
 
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.tipTitle}>
-                      Marco Legal da Primeira Infância
-                    </Text>
+              {renderTip(
+                "document-text-outline",
+                "Marco Legal da Primeira Infância",
+                "Lei voltada ao desenvolvimento infantil.",
+                "/dicasPage/marcoLegal"
+              )}
 
-                    <Text style={styles.tipText}>
-                      Lei voltada ao desenvolvimento infantil.
-                    </Text>
-                  </View>
-
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color="#7050b3"
-                  />
-                </View>
-              </TouchableOpacity>
             </View>
           </View>
         )}
 
         {/* SAÚDE */}
         {aba === "saude" && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>
-              Dicas de Saúde na Gestação
-            </Text>
+          <>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>
+                Saúde do Bebê
+              </Text>
 
-            <View style={styles.listContainer}>
-              <TouchableOpacity
-                style={styles.tipBox}
-                onPress={() =>
-                  router.push("/dicasPage/dicasSaude/anemia")
-                }
-              >
-                <View style={styles.tipRow}>
-                  <View
-                    style={[
-                      styles.iconCircle,
-                      { backgroundColor: "#ffc2e8" },
-                    ]}
-                  >
-                    <Ionicons
-                      name="fitness-outline"
-                      size={20}
-                      color="#28174c"
-                    />
-                  </View>
+              <View style={styles.listContainer}>
 
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.tipTitle}>
-                      Anemia na Gestação
-                    </Text>
+                {renderTip(
+                  "brain-outline",
+                  "Desenvolvimento Cerebral",
+                  "Importância do desenvolvimento cerebral do bebê.",
+                  "/dicasPage/bebe/cerebral"
+                )}
 
-                    <Text style={styles.tipText}>
-                      Saiba identificar sintomas e tratamentos.
-                    </Text>
-                  </View>
+                {renderTip(
+                  "body-outline",
+                  "Formação dos Órgãos",
+                  "Entenda a formação dos órgãos do bebê.",
+                  "/dicasPage/bebe/orgaos"
+                )}
 
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color="#7050b3"
-                  />
-                </View>
-              </TouchableOpacity>
+                {renderTip(
+                  "resize-outline",
+                  "Crescimento do Feto",
+                  "Fases do crescimento fetal durante a gestação.",
+                  "/dicasPage/bebe/crescimento"
+                )}
+
+                {renderTip(
+                  "heart-circle-outline",
+                  "Cuidados Importantes",
+                  "Cuidados essenciais para a saúde do bebê.",
+                  "/dicasPage/bebe/cuidadosImportantes"
+                )}
+
+                {renderTip(
+                  "medical-outline",
+                  "Doenças Congênitas",
+                  "Informações sobre doenças congênitas.",
+                  "/dicasPage/bebe/doençasCongenitas"
+                )}
+
+              </View>
             </View>
-          </View>
+          </>
         )}
       </ScrollView>
     </View>
   );
+
+  function renderTip(
+    icon: any,
+    title: string,
+    description: string,
+    route: string
+  ) {
+    return (
+      <TouchableOpacity
+        style={styles.tipBox}
+        onPress={() => router.push(route as any)}
+      >
+        <View style={styles.tipRow}>
+          <View
+            style={[
+              styles.iconCircle,
+              { backgroundColor: "#ece3ff" },
+            ]}
+          >
+            <Ionicons
+              name={icon}
+              size={20}
+              color="#7050b3"
+            />
+          </View>
+
+          <View style={{ flex: 1 }}>
+            <Text style={styles.tipTitle}>
+              {title}
+            </Text>
+
+            <Text style={styles.tipText}>
+              {description}
+            </Text>
+          </View>
+
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color="#7050b3"
+          />
+        </View>
+      </TouchableOpacity>
+    );
+  }
 }
 
 const styles = StyleSheet.create({
@@ -582,7 +690,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "bold",
     color: "#28174c",
-    marginBottom: 4,
+    marginBottom: 3,
   },
 
   tipText: {

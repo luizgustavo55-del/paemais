@@ -93,7 +93,7 @@ export default function Filhos() {
             Alert.alert("Sucesso", "Filho cadastrado!");
 
             // 🔀 IR PARA TABS DO PAI
-            router.replace("/(pai)/(tabs)/menu" as any);
+            router.replace("/(pais)/(tabs)/menu" as any);
 
         } catch (error) {
             console.log(error);

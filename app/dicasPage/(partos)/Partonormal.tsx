@@ -4,17 +4,46 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import {
+  MaterialCommunityIcons,
+  Ionicons,
+} from '@expo/vector-icons';
+
 import { theme } from '@/src/constants/theme';
+import { useRouter } from 'expo-router';
 
 export default function PartoNormal() {
+  const router = useRouter();
+
   return (
     <ScrollView
       style={styles.container}
       showsVerticalScrollIndicator={false}
     >
+
+      {/* HEADER VOLTAR */}
+      <View style={styles.topHeader}>
+     <TouchableOpacity
+  style={styles.backButton}
+  onPress={() =>
+    router.push("/(funcoes)/(planejamento)/planoParto")
+  }
+>
+  <Ionicons
+    name="arrow-back"
+    size={24}
+    color="#1E293B"
+  />
+</TouchableOpacity>
+
+        <Text style={styles.backText}>
+          Voltar
+        </Text>
+      </View>
+
       {/* HEADER */}
       <View style={styles.headerCard}>
         <MaterialCommunityIcons
@@ -349,6 +378,34 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FCF9FA',
     padding: 16,
+  },
+
+  topHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 40,
+    marginBottom: 16,
+  },
+
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+  },
+
+  backText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1E293B',
+    marginLeft: 12,
   },
 
   headerCard: {

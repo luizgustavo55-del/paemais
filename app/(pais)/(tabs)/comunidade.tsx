@@ -9,8 +9,18 @@ import {
   TextInput,
   Animated
 } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
-import { ref, onValue, get, update, remove, push } from "firebase/database";
+
+import {
+  ref,
+  onValue,
+  get,
+  update,
+  remove,
+  push
+} from "firebase/database";
+
 import { db, auth } from "@/src/services/firebase";
 
 export default function Comunidade() {
@@ -31,19 +41,34 @@ export default function Comunidade() {
 
   // 🔥 POSTS
   useEffect(() => {
-    const postsRef = ref(db, "comunidade/posts");
+    const usuariosRef = ref(db, "usuarios");
 
-    onValue(postsRef, (snapshot) => {
+    onValue(usuariosRef, (snapshot) => {
       const data = snapshot.val();
-      if (!data) return setPosts([]);
 
-      const lista = Object.keys(data).map((key) => ({
-        id: key,
-        ...data[key]
-      }));
+      if (!data) {
+        setPosts([]);
+        return;
+      }
 
-      lista.sort((a, b) => b.createdAt - a.createdAt);
-      setPosts(lista);
+      let listaPosts: any[] = [];
+
+      Object.keys(data).forEach((uid) => {
+        const usuario = data[uid];
+
+        if (usuario.posts) {
+          Object.keys(usuario.posts).forEach((postId) => {
+            listaPosts.push({
+              id: postId,
+              ...usuario.posts[postId]
+            });
+          });
+        }
+      });
+
+      listaPosts.sort((a, b) => b.createdAt - a.createdAt);
+
+      setPosts(listaPosts);
     });
   }, []);
 
@@ -53,12 +78,16 @@ export default function Comunidade() {
 
     const comentariosRef = ref(
       db,
-      `comunidade/posts/${postSelecionado.id}/comentarios`
+      `usuarios/${postSelecionado.userId}/posts/${postSelecionado.id}/comentarios`
     );
 
     onValue(comentariosRef, (snapshot) => {
       const data = snapshot.val();
-      if (!data) return setComentarios([]);
+
+      if (!data) {
+        setComentarios([]);
+        return;
+      }
 
       const lista = Object.keys(data).map((key) => ({
         id: key,
@@ -66,27 +95,44 @@ export default function Comunidade() {
       }));
 
       lista.sort((a, b) => a.createdAt - b.createdAt);
+
       setComentarios(lista);
     });
   }, [postSelecionado]);
 
   // ❤️ LIKE
-  const toggleLike = async (postId: string, scale: Animated.Value) => {
+  const toggleLike = async (
+    postId: string,
+    donoPostId: string,
+    scale: Animated.Value
+  ) => {
     const userId = auth.currentUser?.uid;
 
-    const likeRef = ref(db, `comunidade/posts/${postId}/likes/${userId}`);
+    const likeRef = ref(
+      db,
+      `usuarios/${donoPostId}/posts/${postId}/likes/${userId}`
+    );
+
     const snap = await get(likeRef);
 
     Animated.sequence([
-      Animated.timing(scale, { toValue: 1.4, duration: 150, useNativeDriver: true }),
-      Animated.timing(scale, { toValue: 1, duration: 150, useNativeDriver: true })
+      Animated.timing(scale, {
+        toValue: 1.4,
+        duration: 150,
+        useNativeDriver: true
+      }),
+      Animated.timing(scale, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true
+      })
     ]).start();
 
     if (snap.exists()) {
       await remove(likeRef);
     } else {
       await update(ref(db), {
-        [`comunidade/posts/${postId}/likes/${userId}`]: true
+        [`usuarios/${donoPostId}/posts/${postId}/likes/${userId}`]: true
       });
     }
   };
@@ -95,11 +141,14 @@ export default function Comunidade() {
   const publicar = async () => {
     const user = auth.currentUser;
 
-    const snap = await get(ref(db, `usuarios/${user?.uid}`));
+    if (!user) return;
+
+    const snap = await get(ref(db, `usuarios/${user.uid}`));
+
     const userData = snap.val();
 
-    await push(ref(db, "comunidade/posts"), {
-      userId: user?.uid,
+    await push(ref(db, `usuarios/${user.uid}/posts`), {
+      userId: user.uid,
       nome: userData?.nome,
       tipo: userData?.tipo,
       texto: textoPost,
@@ -114,13 +163,19 @@ export default function Comunidade() {
   const enviarComentario = async () => {
     const user = auth.currentUser;
 
-    const snap = await get(ref(db, `usuarios/${user?.uid}`));
+    if (!user || !postSelecionado) return;
+
+    const snap = await get(ref(db, `usuarios/${user.uid}`));
+
     const userData = snap.val();
 
     await push(
-      ref(db, `comunidade/posts/${postSelecionado.id}/comentarios`),
+      ref(
+        db,
+        `usuarios/${postSelecionado.userId}/posts/${postSelecionado.id}/comentarios`
+      ),
       {
-        userId: user?.uid,
+        userId: user.uid,
         nome: userData?.nome,
         texto: textoComentario,
         createdAt: Date.now()
@@ -147,15 +202,26 @@ export default function Comunidade() {
 
   // ❌ DELETAR
   const deletarPost = async () => {
-    await remove(ref(db, `comunidade/posts/${postOpcoes.id}`));
+    await remove(
+      ref(
+        db,
+        `usuarios/${postOpcoes.userId}/posts/${postOpcoes.id}`
+      )
+    );
+
     setModalOpcoes(false);
   };
 
   // 🔁 RENDER POST
   const renderPost = ({ item }: any) => {
     const scale = new Animated.Value(1);
+
     const userId = auth.currentUser?.uid;
-    const liked = item.likes && item.likes[userId];
+
+   const liked =
+  item.likes &&
+  userId &&
+  item.likes[userId];
 
     const totalComentarios = item.comentarios
       ? Object.keys(item.comentarios).length
@@ -166,8 +232,10 @@ export default function Comunidade() {
         <View style={styles.header}>
           <View style={styles.userRow}>
             <View style={styles.avatar} />
+
             <View>
               <Text style={styles.nome}>{item.nome}</Text>
+
               <Text style={styles.tipo}>{item.tipo}</Text>
             </View>
           </View>
@@ -178,15 +246,25 @@ export default function Comunidade() {
               setModalOpcoes(true);
             }}
           >
-            <Ionicons name="ellipsis-vertical" size={20} color="#555" />
+            <Ionicons
+              name="ellipsis-vertical"
+              size={20}
+              color="#555"
+            />
           </TouchableOpacity>
         </View>
 
         <Text style={styles.texto}>{item.texto}</Text>
 
         <View style={styles.acoes}>
-          <TouchableOpacity onPress={() => toggleLike(item.id, scale)}>
-            <Animated.View style={{ transform: [{ scale }] }}>
+          <TouchableOpacity
+            onPress={() =>
+              toggleLike(item.id, item.userId, scale)
+            }
+          >
+            <Animated.View
+              style={{ transform: [{ scale }] }}
+            >
               <Ionicons
                 name={liked ? "heart" : "heart-outline"}
                 size={22}
@@ -201,12 +279,19 @@ export default function Comunidade() {
               setModalComentario(true);
             }}
           >
-            <Ionicons name="chatbubble-outline" size={22} color="#555" />
+            <Ionicons
+              name="chatbubble-outline"
+              size={22}
+              color="#555"
+            />
           </TouchableOpacity>
         </View>
 
         <Text style={styles.likes}>
-          {item.likes ? Object.keys(item.likes).length : 0} curtidas • {totalComentarios} comentários
+          {item.likes
+            ? Object.keys(item.likes).length
+            : 0}{" "}
+          curtidas • {totalComentarios} comentários
         </Text>
       </View>
     );
@@ -215,25 +300,46 @@ export default function Comunidade() {
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Comunidade</Text>
+
       <Text style={styles.subtitulo}>
         Conecte-se com mães, pais e profissionais
       </Text>
 
       <View style={styles.tabs}>
         <TouchableOpacity
-          style={aba === "feed" ? styles.tabActive : styles.tab}
+          style={
+            aba === "feed"
+              ? styles.tabActive
+              : styles.tab
+          }
           onPress={() => setAba("feed")}
         >
-          <Text style={aba === "feed" ? styles.tabTextActive : styles.tabText}>
+          <Text
+            style={
+              aba === "feed"
+                ? styles.tabTextActive
+                : styles.tabText
+            }
+          >
             Feed
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={aba === "profissionais" ? styles.tabActive : styles.tab}
+          style={
+            aba === "profissionais"
+              ? styles.tabActive
+              : styles.tab
+          }
           onPress={() => setAba("profissionais")}
         >
-          <Text style={aba === "profissionais" ? styles.tabTextActive : styles.tabText}>
+          <Text
+            style={
+              aba === "profissionais"
+                ? styles.tabTextActive
+                : styles.tabText
+            }
+          >
             Profissionais
           </Text>
         </TouchableOpacity>
@@ -247,6 +353,7 @@ export default function Comunidade() {
           >
             <View style={styles.inputFakeContent}>
               <View style={styles.avatarFake} />
+
               <Text style={styles.inputFakeText}>
                 Compartilhe algo com a comunidade...
               </Text>
@@ -263,18 +370,36 @@ export default function Comunidade() {
 
       {aba === "profissionais" && (
         <View style={styles.card}>
-          <Text style={styles.nometwo}>Aqui estarão os profissionais cadastrados na plataforma como: </Text>
-          <Text style={styles.nome}> - Pediatra</Text>
-          <Text style={styles.nome}> - Psicóloga</Text>
-          <Text style={styles.nome}> - Consultora de amamentação</Text>
+          <Text style={styles.nometwo}>
+            Aqui estarão os profissionais cadastrados
+            na plataforma como:
+          </Text>
+
+          <Text style={styles.nome}>
+            - Pediatra
+          </Text>
+
+          <Text style={styles.nome}>
+            - Psicóloga
+          </Text>
+
+          <Text style={styles.nome}>
+            - Consultora de amamentação
+          </Text>
         </View>
       )}
 
       {/* 📝 MODAL POST */}
-      <Modal visible={modalPost} transparent animationType="slide">
+      <Modal
+        visible={modalPost}
+        transparent
+        animationType="slide"
+      >
         <View style={styles.modal}>
           <View style={styles.modalBox}>
-            <Text style={styles.modalTitulo}>Criar publicação</Text>
+            <Text style={styles.modalTitulo}>
+              Criar publicação
+            </Text>
 
             <TextInput
               placeholder="O que você quer compartilhar?"
@@ -284,8 +409,13 @@ export default function Comunidade() {
               style={styles.input}
             />
 
-            <TouchableOpacity style={styles.botao} onPress={publicar}>
-              <Text style={{ color: "#fff" }}>Publicar</Text>
+            <TouchableOpacity
+              style={styles.botao}
+              onPress={publicar}
+            >
+              <Text style={{ color: "#fff" }}>
+                Publicar
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -295,23 +425,33 @@ export default function Comunidade() {
                 setModalPost(false);
               }}
             >
-              <Text style={styles.textoCancelar}>Cancelar</Text>
+              <Text style={styles.textoCancelar}>
+                Cancelar
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
       {/* 💬 MODAL COMENTÁRIOS */}
-      <Modal visible={modalComentario} animationType="slide">
+      <Modal
+        visible={modalComentario}
+        animationType="slide"
+      >
         <View style={styles.container}>
-          <Text style={styles.titulo}>Comentários</Text>
+          <Text style={styles.titulo}>
+            Comentários
+          </Text>
 
           <FlatList
             data={comentarios}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <View style={styles.card}>
-                <Text style={styles.nome}>{item.nome}</Text>
+                <Text style={styles.nome}>
+                  {item.nome}
+                </Text>
+
                 <Text>{item.texto}</Text>
               </View>
             )}
@@ -324,12 +464,26 @@ export default function Comunidade() {
             style={styles.input}
           />
 
-          <TouchableOpacity style={styles.botao} onPress={enviarComentario}>
-            <Text style={{ color: "#fff" }}>Enviar</Text>
+          <TouchableOpacity
+            style={styles.botao}
+            onPress={enviarComentario}
+          >
+            <Text style={{ color: "#fff" }}>
+              Enviar
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => setModalComentario(false)}>
-            <Text style={{ textAlign: "center", marginTop: 10 }}>
+          <TouchableOpacity
+            onPress={() =>
+              setModalComentario(false)
+            }
+          >
+            <Text
+              style={{
+                textAlign: "center",
+                marginTop: 10
+              }}
+            >
               Fechar
             </Text>
           </TouchableOpacity>
@@ -337,21 +491,45 @@ export default function Comunidade() {
       </Modal>
 
       {/* ⚙️ MODAL OPÇÕES */}
-      <Modal visible={modalOpcoes} transparent animationType="fade">
+      <Modal
+        visible={modalOpcoes}
+        transparent
+        animationType="fade"
+      >
         <View style={styles.modal}>
           <View style={styles.modalBox}>
-            {postOpcoes?.userId === auth.currentUser?.uid ? (
-              <TouchableOpacity style={styles.botao} onPress={deletarPost}>
-                <Text style={{ color: "#fff" }}>Apagar publicação</Text>
+            {postOpcoes?.userId ===
+            auth.currentUser?.uid ? (
+              <TouchableOpacity
+                style={styles.botao}
+                onPress={deletarPost}
+              >
+                <Text style={{ color: "#fff" }}>
+                  Apagar publicação
+                </Text>
               </TouchableOpacity>
             ) : (
-              <TouchableOpacity style={styles.botao} onPress={denunciarPost}>
-                <Text style={{ color: "#fff" }}>Denunciar</Text>
+              <TouchableOpacity
+                style={styles.botao}
+                onPress={denunciarPost}
+              >
+                <Text style={{ color: "#fff" }}>
+                  Denunciar
+                </Text>
               </TouchableOpacity>
             )}
 
-            <TouchableOpacity onPress={() => setModalOpcoes(false)}>
-              <Text style={{ textAlign: "center", marginTop: 10 }}>
+            <TouchableOpacity
+              onPress={() =>
+                setModalOpcoes(false)
+              }
+            >
+              <Text
+                style={{
+                  textAlign: "center",
+                  marginTop: 10
+                }}
+              >
                 Cancelar
               </Text>
             </TouchableOpacity>
@@ -370,8 +548,16 @@ const styles = StyleSheet.create({
     backgroundColor: "#7050B3"
   },
 
-  titulo: { fontSize: 24, fontWeight: "bold", color: "#fff" },
-  subtitulo: { color: "#e1ceea", marginBottom: 15 },
+  titulo: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#fff"
+  },
+
+  subtitulo: {
+    color: "#e1ceea",
+    marginBottom: 15
+  },
 
   tabs: {
     flexDirection: "row",
@@ -381,7 +567,11 @@ const styles = StyleSheet.create({
     marginBottom: 15
   },
 
-  tab: { flex: 1, padding: 10, alignItems: "center" },
+  tab: {
+    flex: 1,
+    padding: 10,
+    alignItems: "center"
+  },
 
   tabActive: {
     flex: 1,
@@ -391,8 +581,14 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
 
-  tabText: { color: "#fff" },
-  tabTextActive: { color: "#28174cca", fontWeight: "bold" },
+  tabText: {
+    color: "#fff"
+  },
+
+  tabTextActive: {
+    color: "#28174cca",
+    fontWeight: "bold"
+  },
 
   inputFake: {
     backgroundColor: "#ece3ff",
@@ -433,7 +629,11 @@ const styles = StyleSheet.create({
     alignItems: "center"
   },
 
-  userRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  userRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10
+  },
 
   avatar: {
     width: 40,
@@ -441,15 +641,36 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: "#ccc"
   },
-   nometwo: { fontWeight: "bold", color: "#333" },
-  nome: { fontWeight: "bold", color: "#333" },
-  tipo: { fontSize: 12, color: "#777" },
 
-  texto: { marginVertical: 10, color: "#444" },
+  nometwo: {
+    fontWeight: "bold",
+    color: "#333"
+  },
 
-  acoes: { flexDirection: "row", gap: 15 },
+  nome: {
+    fontWeight: "bold",
+    color: "#333"
+  },
 
-  likes: { marginTop: 5, color: "#555" },
+  tipo: {
+    fontSize: 12,
+    color: "#777"
+  },
+
+  texto: {
+    marginVertical: 10,
+    color: "#444"
+  },
+
+  acoes: {
+    flexDirection: "row",
+    gap: 15
+  },
+
+  likes: {
+    marginTop: 5,
+    color: "#555"
+  },
 
   modal: {
     flex: 1,

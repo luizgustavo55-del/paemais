@@ -351,7 +351,7 @@ export default function PlanoPartoScreen() {
         <TouchableOpacity
           onPress={() =>
             router.push(
-              '/(gestacao)/(tabs)/gestacao' as any
+              '/(drawer)/(gestantes)/(tabs)/gestacao' as any
             )
           }
           style={styles.headerLeft}
@@ -669,7 +669,7 @@ export default function PlanoPartoScreen() {
                 style={styles.partoCard}
                 onPress={() =>
                   router.push(
-                    '(partos)/Partonormal' as any
+                    '/dicasPage/(partos)/Partonormal' as any
                   )
                 }
               >
@@ -713,7 +713,7 @@ export default function PlanoPartoScreen() {
                 style={styles.partoCard}
                 onPress={() =>
                   router.push(
-                    '/app/(funcoes)/(planejamento)/(partos)/Cesarea' as any
+                    '/dicasPage/(partos)/Cesarea' as any
                   )
                 }
               >
@@ -757,7 +757,7 @@ export default function PlanoPartoScreen() {
                 style={styles.partoCard}
                 onPress={() =>
                   router.push(
-                    '(partos)/PartoHumanizado' as any
+                    '/dicasPage/(partos)/PartoHumanizado' as any
                   )
                 }
               >
@@ -801,7 +801,7 @@ export default function PlanoPartoScreen() {
                 style={styles.partoCard}
                 onPress={() =>
                   router.push(
-                    '/(partos)/PartoAgua' as any
+                    '/dicasPage/(partos)/PartoNaAgua' as any
                   )
                 }
               >

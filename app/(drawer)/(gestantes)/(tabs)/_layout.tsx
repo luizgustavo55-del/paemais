@@ -20,22 +20,13 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen
-        name="mapa"
-        options={{
-          title: "Mapa",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="map" size={24} color={color} />
-          ),
-        }}
-      />
 
       <Tabs.Screen
         name="dicas"
         options={{
           title: "Dicas",
           tabBarIcon: ({ color }) => (
-            <FontAwesome name="lightbulb-o" size={24} color={color} />
+           <Ionicons name="bulb-outline" size={24 } color={color} />
           ),
         }}
       />
@@ -45,7 +36,17 @@ export default function TabLayout() {
         options={{
           title: "Comunidade",
           tabBarIcon: ({ color }) => (
-            <FontAwesome name="users" size={24} color={color} />
+             <Ionicons name="people-outline" size={24} color={color} />
+          ),
+        }}
+      />
+      
+      <Tabs.Screen
+        name="mapa"
+        options={{
+          title: "Mapa",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="map" size={24} color={color} />
           ),
         }}
       />

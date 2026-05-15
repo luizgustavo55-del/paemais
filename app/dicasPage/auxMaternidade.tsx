@@ -11,7 +11,7 @@ export default function TelaExemplo() {
       {/* 🔙 BOTÃO VOLTAR */}
       <TouchableOpacity
         style={styles.backButton}
-        onPress={() => router.push("/(pai)/(tabs)/dicas" as any)} // volta pra tela Dicas
+        onPress={() => router.push("/(pais)/(tabs)/dicas" as any)} // volta pra tela Dicas
       >
         <Ionicons name="arrow-back" size={24} color="#C642A6" />
       </TouchableOpacity>

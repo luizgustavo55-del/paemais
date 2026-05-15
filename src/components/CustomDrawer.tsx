@@ -308,20 +308,26 @@ export default function CustomDrawer() {
                   />
                 )}
 
-                <TextInput
+                <TextInput 
                   style={styles.input}
                   value={editPeso}
                   onChangeText={setEditPeso}
+                  placeholder="Peso"
+                  placeholderTextColor="gray"
                 />
                 <TextInput
                   style={styles.input}
                   value={editAltura}
                   onChangeText={setEditAltura}
+                   placeholder="Altura"
+                  placeholderTextColor="gray"
                 />
                 <TextInput
                   style={styles.input}
                   value={editDescricao}
                   onChangeText={setEditDescricao}
+                   placeholder="Descrição"
+                  placeholderTextColor="gray"
                 />
 
                 <TouchableOpacity
@@ -439,7 +445,7 @@ const styles = StyleSheet.create({
   info: { color: "#28174cca" },
 
   input: {
-    backgroundColor: "#fff",
+    backgroundColor: "#fafafa",
     padding: 10,
     borderRadius: 8,
     marginTop: 10,

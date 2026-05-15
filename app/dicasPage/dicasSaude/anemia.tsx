@@ -21,7 +21,7 @@ export default function AnemiaGestacao() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.push("/(pai)/(tabs)/dicas")}
+          onPress={() => router.push("/(pais)/(tabs)/dicas" as any)}
         >
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>

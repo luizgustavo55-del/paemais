@@ -11,7 +11,7 @@ export default function TelaExemplo() {
       {/* 🔝 HEADER */}
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => router.push("/(pai)/(tabs)/dicas" as any)}
+          onPress={() => router.push("/(pais)/(tabs)/dicas" as any)}
         >
           <Ionicons name="arrow-back" size={24} color="#ba11f2" />
         </TouchableOpacity>
