@@ -169,7 +169,7 @@ export default function DicasScreen() {
                 : styles.tabText
             }
           >
-            Rotina
+            Autocuidado
           </Text>
         </TouchableOpacity>
 
@@ -202,30 +202,16 @@ export default function DicasScreen() {
             Bebê
           </Text>
         </TouchableOpacity>
-
-        <TouchableOpacity
-          style={aba === "saude" ? styles.tabActive : styles.tab}
-          onPress={() => setAba("saude")}
-        >
-          <Text
-            style={
-              aba === "saude"
-                ? styles.tabActiveText
-                : styles.tabText
-            }
-          >
-            Saúde
-          </Text>
-        </TouchableOpacity>
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 30 }}
       >
-        {/* ROTINA */}
+        {/* ROTINA + SAÚDE */}
         {aba === "rotina" && (
           <>
+            {/* METAS */}
             <View style={styles.card}>
               <View style={styles.cardHeader}>
                 <Text style={styles.cardTitle}>
@@ -326,34 +312,474 @@ export default function DicasScreen() {
               ))}
             </View>
 
-            {/* DICAS */}
+            {/* ORGANIZAÇÃO */}
             <View style={styles.card}>
               <Text style={styles.cardTitle}>
                 Dicas de organização
               </Text>
 
               <View style={styles.listContainer}>
-                <TouchableOpacity
-                  style={styles.tipBox}
-                  onPress={() =>
-                    router.push("/dicasPage/docDica")
-                  }
-                >
-                  <Text style={styles.tipTitle}>
-                    Organização de Documentos
-                  </Text>
+              <TouchableOpacity
+  style={styles.tipBox}
+  activeOpacity={0.8}
+  onPress={() =>
+    router.push("/dicasPage/docDica")
+  }
+>
+  <View style={styles.tipRow}>
 
-                  <Text style={styles.tipText}>
-                    Veja dicas de organização de documentos
-                  </Text>
-                </TouchableOpacity>
+    <View
+      style={[
+        styles.iconCircle,
+        { backgroundColor: "#ece3ff" },
+      ]}
+    >
+      <Ionicons
+        name="folder-open-outline"
+        size={22}
+        color="#7050b3"
+      />
+    </View>
+
+    <View style={styles.textContainer}>
+      <Text style={styles.tipTitle}>
+        Organização de Documentos
+      </Text>
+
+      <Text
+        style={styles.tipText}
+        numberOfLines={1}
+      >
+        Veja dicas de organização de documentos
+      </Text>
+    </View>
+
+    <Ionicons
+      name="chevron-forward"
+      size={20}
+      color="#7050b3"
+    />
+
+  </View>
+</TouchableOpacity>
               </View>
             </View>
+
+            {/* SAÚDE */}
+          <View style={styles.card}>
+  <Text style={styles.cardTitle}>
+    Saúde e Bem-estar
+  </Text>
+
+  <View style={styles.listContainer}>
+    
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/bemEstar/cansacoSono")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#ffc2e8" },
+          ]}
+        >
+          <Ionicons
+            name="moon-outline"
+            size={20}
+            color="#28174c"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Cansaço extremo e falta de sono
+          </Text>
+
+          <Text style={styles.tipText}>
+            Noites mal dormidas acumulam estresse,
+            irritação e desgaste físico.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/bemEstar/sobrecargaMental")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#ece3ff" },
+          ]}
+        >
+          <Ionicons
+            name="brain-outline"
+            size={20}
+            color="#7050b3"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Sobrecarga mental
+          </Text>
+
+          <Text style={styles.tipText}>
+            Consultas, vacinas, contas, rotina e tarefas
+            podem gerar grande desgaste emocional.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/bemEstar/problemasFinanceiros")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#b390d8" },
+          ]}
+        >
+          <Ionicons
+            name="cash-outline"
+            size={20}
+            color="#fff"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Problemas financeiros
+          </Text>
+
+          <Text style={styles.tipText}>
+            Fraldas, alimentação, roupas e medicamentos
+            aumentam os gastos da família.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/bemEstar/conflitosRelacionamento")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#7050b3" },
+          ]}
+        >
+          <Ionicons
+            name="people-outline"
+            size={20}
+            color="#fff"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Conflitos no relacionamento
+          </Text>
+
+          <Text style={styles.tipText}>
+            O cansaço e a divisão de tarefas podem
+            gerar discussões e desgaste no casal.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/bemEstar/faltaTempo")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#d7c2ff" },
+          ]}
+        >
+          <Ionicons
+            name="time-outline"
+            size={20}
+            color="#7050b3"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Falta de tempo para si mesmos
+          </Text>
+
+          <Text style={styles.tipText}>
+            Muitos pais deixam descanso, lazer e
+            autocuidado em segundo plano.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/bemEstar/pressaoSocial")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#ffc2e8" },
+          ]}
+        >
+          <Ionicons
+            name="chatbubbles-outline"
+            size={20}
+            color="#28174c"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Pressão social e julgamentos
+          </Text>
+
+          <Text style={styles.tipText}>
+            Familiares e internet frequentemente
+            opinam sobre a criação dos filhos.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/bemEstar/ansiedadeMedo")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#ece3ff" },
+          ]}
+        >
+          <Ionicons
+            name="alert-circle-outline"
+            size={20}
+            color="#7050b3"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Ansiedade e medo constante
+          </Text>
+
+          <Text style={styles.tipText}>
+            Preocupações com saúde, segurança e
+            desenvolvimento da criança são comuns.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/bemEstar/isolamentoSocial")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#b390d8" },
+          ]}
+        >
+          <Ionicons
+            name="people-circle-outline"
+            size={20}
+            color="#fff"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Isolamento social
+          </Text>
+
+          <Text style={styles.tipText}>
+            A falta de tempo e energia pode afastar
+            os pais da vida social.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/bemEstar/trabalhoFamilia")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#7050b3" },
+          ]}
+        >
+          <Ionicons
+            name="briefcase-outline"
+            size={20}
+            color="#fff"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Equilibrar trabalho e família
+          </Text>
+
+          <Text style={styles.tipText}>
+            Conciliar carreira, estudos e filhos
+            pode causar culpa e estresse.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+   <TouchableOpacity
+  style={styles.tipBox}
+  activeOpacity={0.8}
+  onPress={() =>
+    router.push("/dicasPage/bemEstar/mudancaRotina")
+  }
+>
+  <View style={styles.tipRow}>
+    
+    <View
+      style={[
+        styles.iconCircle,
+        {
+          backgroundColor: "#ede3ff",
+        },
+      ]}
+    >
+      <Ionicons
+        name="refresh-outline"
+        size={22}
+        color="#7050b3"
+      />
+    </View>
+
+    <View style={styles.textContainer}>
+      <Text
+        style={styles.tipTitle}
+        numberOfLines={1}
+      >
+        Mudança de identidade e rotina
+      </Text>
+
+      <Text
+        style={styles.tipText}
+        numberOfLines={1}
+      >
+        A chegada do filho transforma totalmente a rotina.
+      </Text>
+    </View>
+
+    <Ionicons
+      name="chevron-forward"
+      size={20}
+      color="#7050b3"
+    />
+    
+  </View>
+</TouchableOpacity>
+
+  </View>
+</View>
           </>
         )}
 
         {/* AUXÍLIOS */}
-        {aba === "auxilios" && (
+       {aba === "auxilios" && (
           <View style={styles.card}>
             <Text style={styles.cardTitle}>
               Auxílios disponíveis
@@ -639,169 +1065,6 @@ export default function DicasScreen() {
             </View>
           </View>
         )}
-
-        {/* SAÚDE */}
-        {aba === "saude" && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>
-              Dicas de Saúde na Gestação
-            </Text>
-
-            <View style={styles.listContainer}>
-              <TouchableOpacity
-                style={styles.tipBox}
-                onPress={() =>
-                  router.push("/dicasPage/dicasSaude/anemia")
-                }
-              >
-                <View style={styles.tipRow}>
-                  <View
-                    style={[
-                      styles.iconCircle,
-                      { backgroundColor: "#ffc2e8" },
-                    ]}
-                  >
-                    <Ionicons
-                      name="fitness-outline"
-                      size={20}
-                      color="#28174c"
-                    />
-                  </View>
-
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.tipTitle}>
-                      Anemia na Gestação
-                    </Text>
-
-                    <Text style={styles.tipText}>
-                      Saiba identificar sintomas e tratamentos.
-                    </Text>
-                  </View>
-
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color="#7050b3"
-                  />
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.tipBox}
-                onPress={() =>
-                  router.push("/dicasPage/pressaoAlta")
-                }
-              >
-                <View style={styles.tipRow}>
-                  <View
-                    style={[
-                      styles.iconCircle,
-                      { backgroundColor: "#ece3ff" },
-                    ]}
-                  >
-                    <Ionicons
-                      name="heart-outline"
-                      size={20}
-                      color="#7050b3"
-                    />
-                  </View>
-
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.tipTitle}>
-                      Pressão Alta
-                    </Text>
-
-                    <Text style={styles.tipText}>
-                      Entenda os riscos da hipertensão.
-                    </Text>
-                  </View>
-
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color="#7050b3"
-                  />
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.tipBox}
-                onPress={() =>
-                  router.push("/dicasPage/alimentacao")
-                }
-              >
-                <View style={styles.tipRow}>
-                  <View
-                    style={[
-                      styles.iconCircle,
-                      { backgroundColor: "#b390d8" },
-                    ]}
-                  >
-                    <Ionicons
-                      name="nutrition-outline"
-                      size={20}
-                      color="#fff"
-                    />
-                  </View>
-
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.tipTitle}>
-                      Alimentação Saudável
-                    </Text>
-
-                    <Text style={styles.tipText}>
-                      Veja alimentos importantes na gestação.
-                    </Text>
-                  </View>
-
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color="#7050b3"
-                  />
-                </View>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.tipBox}
-                onPress={() =>
-                  router.push("/dicasPage/sono")
-                }
-              >
-                <View style={styles.tipRow}>
-                  <View
-                    style={[
-                      styles.iconCircle,
-                      { backgroundColor: "#7050b3" },
-                    ]}
-                  >
-                    <Ionicons
-                      name="moon-outline"
-                      size={20}
-                      color="#fff"
-                    />
-                  </View>
-
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.tipTitle}>
-                      Sono e Descanso
-                    </Text>
-
-                    <Text style={styles.tipText}>
-                      Dicas para melhorar o sono.
-                    </Text>
-                  </View>
-
-                  <Ionicons
-                    name="chevron-forward"
-                    size={20}
-                    color="#7050b3"
-                  />
-                </View>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
       </ScrollView>
     </View>
   );
@@ -852,13 +1115,13 @@ const styles = StyleSheet.create({
   tabText: {
     color: "#fff",
     fontWeight: "600",
-    fontSize: 13,
+    fontSize: 12,
   },
 
   tabActiveText: {
     color: "#28174c",
     fontWeight: "bold",
-    fontSize: 13,
+    fontSize: 12,
   },
 
   card: {
@@ -973,4 +1236,31 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  textContainer: {
+  flex: 1,
+  justifyContent: "center",
+},
+
+tipBox: {
+  backgroundColor: "#fff",
+  borderRadius: 18,
+  paddingHorizontal: 16,
+  paddingVertical: 14,
+  borderLeftWidth: 5,
+  borderLeftColor: "#7050b3",
+  minHeight: 88,
+  justifyContent: "center",
+},
+
+tipTitle: {
+  fontSize: 14,
+  fontWeight: "bold",
+  color: "#28174c",
+  marginBottom: 4,
+},
+
+tipText: {
+  fontSize: 12,
+  color: "#555",
+},
 });
