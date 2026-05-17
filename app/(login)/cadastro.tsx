@@ -1,27 +1,28 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Alert,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Platform
 } from "react-native";
 
-import { LinearGradient } from "expo-linear-gradient";
-import DateTimePicker, { DateTimePickerEvent } from "@react-native-community/datetimepicker";
-import MaskInput from "react-native-mask-input";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from "expo-router";
 import { theme } from "@/src/constants/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import MaskInput from "react-native-mask-input";
 
-// 🔥 IMPORTS DO FIREBASE (Auth, Firestore para Gestante, Realtime DB para Pai)
-import { auth, firestore, db } from "@/src/services/firebase";
+import { auth, db, firestore } from "@/src/services/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
 import { ref, set } from "firebase/database";
+import { doc, setDoc } from "firebase/firestore";
 
 export default function Cadastro() {
   const router = useRouter();
@@ -32,14 +33,14 @@ export default function Cadastro() {
   const [cidade, setCidade] = useState("");
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
-  
+
   const [showSenha, setShowSenha] = useState(false);
   const [showConfirmSenha, setShowConfirmSenha] = useState(false);
-  
+
   const [data, setData] = useState<Date>(new Date());
   const [dataTexto, setDataTexto] = useState("");
   const [mostrarDate, setMostrarDate] = useState(false);
-  
+
   const [tipo, setTipo] = useState<"pai" | "gestante" | "">("");
 
   function handleData(text: string) {
@@ -71,13 +72,18 @@ export default function Cadastro() {
     }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        senha,
+      );
       const uid = userCredential.user.uid;
 
       // ---------------------------------------------------------
       // GERA O CÓDIGO DE COMPARTILHAMENTO
       // ---------------------------------------------------------
-      const prefixo = nome.trim().length >= 3
+      const prefixo =
+        nome.trim().length >= 3
           ? nome.trim().substring(0, 3).toUpperCase()
           : "USR";
       const codigoGerado = prefixo + Math.floor(1000 + Math.random() * 9000);
@@ -99,7 +105,7 @@ export default function Cadastro() {
       if (tipo === "gestante") {
         // Gestante vai para o FIRESTORE
         await setDoc(doc(firestore, "usuarios", uid), dadosUsuario);
-        Alert.alert("Sucesso", "Conta de gestante criada!");
+
         router.replace("/dum");
       } else {
         // Pai vai para o REALTIME DATABASE na estrutura solicitada (usuarios/[UID])
@@ -107,7 +113,6 @@ export default function Cadastro() {
         Alert.alert("Sucesso", "Conta de parceiro criada!");
         router.replace("/addFilho");
       }
-
     } catch (error: any) {
       if (error.code === "auth/email-already-in-use") {
         Alert.alert("Erro", "Este email já está em uso.");
@@ -123,10 +128,15 @@ export default function Cadastro() {
   }
 
   return (
-    <LinearGradient colors={[theme.colors.secondary, theme.colors.primary]} style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+    <LinearGradient
+      colors={[theme.colors.secondary, theme.colors.primary]}
+      style={{ flex: 1 }}
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.card}>
-          
           <Text style={styles.titulo}>Criar Conta</Text>
 
           <TextInput
@@ -152,7 +162,23 @@ export default function Cadastro() {
             placeholder="(00) 00000-0000"
             placeholderTextColor={theme.colors.subtitle}
             onChangeText={(masked) => setTelefone(masked)}
-            mask={["(", /\d/, /\d/, ")", " ", /\d/, /\d/, /\d/, /\d/, /\d/, "-", /\d/, /\d/, /\d/, /\d/]}
+            mask={[
+              "(",
+              /\d/,
+              /\d/,
+              ")",
+              " ",
+              /\d/,
+              /\d/,
+              /\d/,
+              /\d/,
+              /\d/,
+              "-",
+              /\d/,
+              /\d/,
+              /\d/,
+              /\d/,
+            ]}
           />
 
           <View style={styles.rowInput}>
@@ -164,8 +190,15 @@ export default function Cadastro() {
               onChangeText={handleData}
               keyboardType="numeric"
             />
-            <TouchableOpacity style={styles.iconButton} onPress={() => setMostrarDate(true)}>
-              <MaterialCommunityIcons name="calendar" size={24} color={theme.colors.cards} />
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setMostrarDate(true)}
+            >
+              <MaterialCommunityIcons
+                name="calendar"
+                size={24}
+                color={theme.colors.cards}
+              />
             </TouchableOpacity>
           </View>
 
@@ -173,7 +206,7 @@ export default function Cadastro() {
             <DateTimePicker
               value={data}
               mode="date"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              display={Platform.OS === "ios" ? "spinner" : "default"}
               onChange={(event: DateTimePickerEvent, date?: Date) => {
                 setMostrarDate(false);
                 if (date) {
@@ -204,8 +237,15 @@ export default function Cadastro() {
               value={senha}
               onChangeText={setSenha}
             />
-            <TouchableOpacity style={styles.iconButton} onPress={() => setShowSenha(!showSenha)}>
-              <MaterialCommunityIcons name={showSenha ? "eye-off" : "eye"} size={24} color={theme.colors.cards} />
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setShowSenha(!showSenha)}
+            >
+              <MaterialCommunityIcons
+                name={showSenha ? "eye-off" : "eye"}
+                size={24}
+                color={theme.colors.cards}
+              />
             </TouchableOpacity>
           </View>
 
@@ -218,33 +258,59 @@ export default function Cadastro() {
               value={confirmarSenha}
               onChangeText={setConfirmarSenha}
             />
-            <TouchableOpacity style={styles.iconButton} onPress={() => setShowConfirmSenha(!showConfirmSenha)}>
-              <MaterialCommunityIcons name={showConfirmSenha ? "eye-off" : "eye"} size={24} color={theme.colors.cards} />
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setShowConfirmSenha(!showConfirmSenha)}
+            >
+              <MaterialCommunityIcons
+                name={showConfirmSenha ? "eye-off" : "eye"}
+                size={24}
+                color={theme.colors.cards}
+              />
             </TouchableOpacity>
           </View>
 
           <View style={styles.opcaoContainer}>
             <TouchableOpacity
-              style={[styles.opcao, tipo === "pai" && { backgroundColor: theme.colors.cards }]}
+              style={[
+                styles.opcao,
+                tipo === "pai" && { backgroundColor: theme.colors.cards },
+              ]}
               onPress={() => setTipo("pai")}
             >
-              <Text style={[styles.textoOpcao, tipo === "pai" && { color: "#FFF" }]}>Já tenho filho</Text>
+              <Text
+                style={[styles.textoOpcao, tipo === "pai" && { color: "#FFF" }]}
+              >
+                Já tenho filho
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.opcao, tipo === "gestante" && { backgroundColor: theme.colors.cards }]}
+              style={[
+                styles.opcao,
+                tipo === "gestante" && { backgroundColor: theme.colors.cards },
+              ]}
               onPress={() => setTipo("gestante")}
             >
-              <Text style={[styles.textoOpcao, tipo === "gestante" && { color: "#FFF" }]}>Estou grávida</Text>
+              <Text
+                style={[
+                  styles.textoOpcao,
+                  tipo === "gestante" && { color: "#FFF" },
+                ]}
+              >
+                Estou grávida
+              </Text>
             </TouchableOpacity>
           </View>
 
           <TouchableOpacity onPress={salvar} activeOpacity={0.8}>
-            <LinearGradient colors={[theme.colors.cards, "#99acff"]} style={styles.botao}>
+            <LinearGradient
+              colors={[theme.colors.cards, "#99acff"]}
+              style={styles.botao}
+            >
               <Text style={styles.textoBotao}>CRIAR CONTA</Text>
             </LinearGradient>
           </TouchableOpacity>
-
         </View>
       </ScrollView>
     </LinearGradient>
@@ -288,13 +354,13 @@ const styles = StyleSheet.create({
   iconButton: {
     padding: 10,
     marginLeft: 5,
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
     borderRadius: 12,
     borderWidth: 1,
     borderColor: theme.colors.secondary,
     height: 55,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     width: 55,
   },
   opcaoContainer: { flexDirection: "row", gap: 10, marginTop: 25 },
@@ -307,7 +373,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FFF",
   },
-  textoOpcao: { color: theme.colors.title, fontWeight: "600", fontSize: theme.texts.text },
+  textoOpcao: {
+    color: theme.colors.title,
+    fontWeight: "600",
+    fontSize: theme.texts.text,
+  },
   botao: { marginTop: 30, padding: 18, borderRadius: 14, alignItems: "center" },
   textoBotao: { color: "#fff", fontWeight: "bold", fontSize: theme.texts.text },
 });

@@ -10,3 +10,10 @@
 [0512/113631.203:ERROR:file_io_win.cc(163)] CreateFile C:\Program Files (x86)\settings.dat: Acesso negado. (0x5)
 [0512/113634.042:ERROR:crashpad_client_win.cc(660)] crash server failed to launch, no dump captured
 [0512/113634.866:ERROR:crashpad_client_win.cc(115)] crash server failed to launch, self-terminating
+[0514/215617.109:ERROR:persistent_memory_allocator.cc(678)] Corruption detected in shared-memory segment.
+[0514/215617.125:ERROR:persistent_memory_allocator.cc(678)] Corruption detected in shared-memory segment.
+[0514/215617.125:ERROR:persistent_memory_allocator.cc(678)] Corruption detected in shared-memory segment.
+[0514/215617.125:ERROR:persistent_memory_allocator.cc(678)] Corruption detected in shared-memory segment.
+[0514/215617.125:ERROR:file_io_win.cc(163)] CreateFile C:\Program Files (x86)\settings.dat: Acesso negado. (0x5)
+[0514/215617.323:ERROR:registration_protocol_win.cc(84)] TransactNamedPipe: O pipe foi finalizado. (0x6D)
+[0514/215617.370:ERROR:file_io_win.cc(163)] CreateFile C:\Program Files (x86)\settings.dat: Acesso negado. (0x5)

@@ -10,21 +10,21 @@ const itens = [
     icon: "calendar-month",
     color: theme.colors.quaternary,
     iconColor: "#2196F3",
-    route: "/Con&exam",
+    route: "/(funcoes)/(planejamento)/Con&exam",
   },
   {
     title: "Checklist do Enxoval",
     icon: "shopping-outline",
     color: theme.colors.quaternary,
     iconColor: "#E91E63",
-    route: "/enxoval",
+    route: "/(funcoes)/(planejamento)/enxoval",
   },
   {
     title: "Plano de Parto",
     icon: "file-document-outline",
     color: theme.colors.quaternary,
     iconColor: "#9C27B0",
-    route: "/planoParto",
+    route: "/(funcoes)/(planejamento)/planoParto",
   },
 ];
 

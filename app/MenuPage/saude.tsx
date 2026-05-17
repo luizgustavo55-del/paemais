@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
-} from "react-native";
+import MeuMapa from "@/src/components/(mapa)/meuMapa";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
-// 🔥 Firebase
-import { ref, onValue, update } from "firebase/database";
-import { db, auth } from "@/src/services/firebase";
+import { auth, db } from "@/src/services/firebase";
+import { onValue, ref, update } from "firebase/database";
 
 export default function Saude() {
   const [aba, setAba] = useState("vacinas");
@@ -26,7 +26,6 @@ export default function Saude() {
   const router = useRouter();
   const userId = auth.currentUser?.uid;
 
-  // 📥 CARREGAR FILHOS
   useEffect(() => {
     if (!userId) return;
 
@@ -38,7 +37,7 @@ export default function Saude() {
       if (data) {
         const lista = Object.entries(data).map(([id, valor]) => ({
           id,
-          ...(valor as object), // ✅ CORREÇÃO DO ERRO
+          ...(valor as object),
         }));
 
         setFilhos(lista);
@@ -50,13 +49,12 @@ export default function Saude() {
     });
   }, []);
 
-  // 📥 CARREGAR VACINAS
   useEffect(() => {
     if (!filhoSelecionado) return;
 
     const vacinasRef = ref(
       db,
-      `usuarios/${userId}/filhos/${filhoSelecionado.id}/vacinas`
+      `usuarios/${userId}/filhos/${filhoSelecionado.id}/vacinas`,
     );
 
     onValue(vacinasRef, (snapshot) => {
@@ -91,17 +89,13 @@ export default function Saude() {
         };
 
         update(
-          ref(
-            db,
-            `usuarios/${userId}/filhos/${filhoSelecionado.id}/vacinas`
-          ),
-          inicial
+          ref(db, `usuarios/${userId}/filhos/${filhoSelecionado.id}/vacinas`),
+          inicial,
         );
       }
     });
   }, [filhoSelecionado]);
 
-  // ✏️ SALVAR DATA
   const salvarData = (index: number) => {
     if (!dataTemp || !filhoSelecionado) return;
 
@@ -118,34 +112,23 @@ export default function Saude() {
     });
 
     update(
-      ref(
-        db,
-        `usuarios/${userId}/filhos/${filhoSelecionado.id}/vacinas`
-      ),
-      atualizacao
+      ref(db, `usuarios/${userId}/filhos/${filhoSelecionado.id}/vacinas`),
+      atualizacao,
     );
   };
 
-  // ❌ CANCELAR
   const cancelar = () => {
     setEditando(null);
     setDataTemp("");
   };
 
-  // 📊 PROGRESSO
-  const vacinasTomadas = vacinas.filter(
-    (v) => v.data && v.data !== ""
-  ).length;
+  const vacinasTomadas = vacinas.filter((v) => v.data && v.data !== "").length;
 
   const progresso =
-    vacinas.length > 0
-      ? (vacinasTomadas / vacinas.length) * 100
-      : 0;
+    vacinas.length > 0 ? (vacinasTomadas / vacinas.length) * 100 : 0;
 
   return (
     <View style={styles.container}>
-      
-      {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.replace("/menu")}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
@@ -154,7 +137,6 @@ export default function Saude() {
         <Text style={styles.title}>Saúde</Text>
       </View>
 
-      {/* FILHOS */}
       <View style={styles.filhoBox}>
         {filhos.map((f) => (
           <TouchableOpacity
@@ -170,7 +152,6 @@ export default function Saude() {
         ))}
       </View>
 
-      {/* TABS */}
       <View style={styles.tabs}>
         <TouchableOpacity
           style={aba === "vacinas" ? styles.tabActive : styles.tab}
@@ -194,92 +175,89 @@ export default function Saude() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView>
-        {aba === "vacinas" && (
-          <>
-            <View style={styles.card}>
-              <Text style={styles.cardTitle}>Progresso</Text>
+      {aba === "locais" ? (
+        <View style={styles.mapa}>
+          <MeuMapa />
+        </View>
+      ) : (
+        <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+          {aba === "vacinas" && (
+            <>
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Progresso</Text>
 
-              <Text style={styles.progressText}>
-                {vacinasTomadas} de {vacinas.length}
-              </Text>
+                <Text style={styles.progressText}>
+                  {vacinasTomadas} de {vacinas.length}
+                </Text>
 
-              <View style={styles.slider}>
-                <View
-                  style={{
-                    height: 6,
-                    width: `${progresso}%`,
-                    backgroundColor: "#C642A6",
-                    borderRadius: 10,
-                  }}
-                />
-              </View>
-            </View>
-
-            <View style={styles.card}>
-              {vacinas.map((v, i) => (
-                <View key={i} style={styles.item}>
-                  <TouchableOpacity onPress={() => setEditando(i)}>
-                    <Ionicons
-                      name={v.data ? "checkmark-circle" : "ellipse-outline"}
-                      size={22}
-                      color={v.data ? "green" : "#999"}
-                    />
-                  </TouchableOpacity>
-
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.nomeVacina}>{v.nome}</Text>
-                    <Text style={styles.itemText}>
-                      {v.idade} • {v.data || "Pendente"}
-                    </Text>
-
-                    {editando === i && (
-                      <View style={styles.inputContainer}>
-                        <TextInput
-                          placeholder="dd/mm/aaaa"
-                          value={dataTemp}
-                          onChangeText={setDataTemp}
-                          style={styles.input}
-                        />
-
-                        <View style={styles.botoes}>
-                          <TouchableOpacity onPress={() => salvarData(i)}>
-                            <Text style={styles.salvar}>Salvar</Text>
-                          </TouchableOpacity>
-
-                          <TouchableOpacity onPress={cancelar}>
-                            <Text style={styles.cancelar}>Cancelar</Text>
-                          </TouchableOpacity>
-                        </View>
-                      </View>
-                    )}
-                  </View>
+                <View style={styles.slider}>
+                  <View
+                    style={{
+                      height: 6,
+                      width: `${progresso}%`,
+                      backgroundColor: "#C642A6",
+                      borderRadius: 10,
+                    }}
+                  />
                 </View>
-              ))}
+              </View>
+
+              <View style={styles.card}>
+                {vacinas.map((v, i) => (
+                  <View key={i} style={styles.item}>
+                    <TouchableOpacity onPress={() => setEditando(i)}>
+                      <Ionicons
+                        name={v.data ? "checkmark-circle" : "ellipse-outline"}
+                        size={22}
+                        color={v.data ? "green" : "#999"}
+                      />
+                    </TouchableOpacity>
+
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.nomeVacina}>{v.nome}</Text>
+                      <Text style={styles.itemText}>
+                        {v.idade} • {v.data || "Pendente"}
+                      </Text>
+
+                      {editando === i && (
+                        <View style={styles.inputContainer}>
+                          <TextInput
+                            placeholder="dd/mm/aaaa"
+                            value={dataTemp}
+                            onChangeText={setDataTemp}
+                            style={styles.input}
+                          />
+
+                          <View style={styles.botoes}>
+                            <TouchableOpacity onPress={() => salvarData(i)}>
+                              <Text style={styles.salvar}>Salvar</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={cancelar}>
+                              <Text style={styles.cancelar}>Cancelar</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
+
+          {aba === "historico" && (
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Histórico</Text>
+              <Text>
+                Aqui estarão os relatorios de consultas adicionados pelos
+                profissionais, com resultados de exames e os documentos
+                necessarios (atestados, exames como raio x, hemograma etc )
+              </Text>
             </View>
-          </>
-        )}
-
-        {aba === "locais" && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Locais de vacinação</Text>
-            <Text> UBS mais próxima</Text>
-
-            <Text> Postos de saúde e locais para vacinação</Text>
-            <Text> Consultorios particulares</Text>
-            <Text> Hospitais Proximos</Text>
-          </View>
-        )}
-
-        {aba === "historico" && (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Histórico</Text>
-            <Text> Aqui estarão os relatorios de consultas adicionados pelos profissionais, 
-              com resultados de exames e os documentos necessarios (atestados, exames como raio x, hemograma etc )
-            </Text>
-          </View>
-        )}
-      </ScrollView>
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -364,6 +342,15 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 20,
     elevation: 3,
+  },
+
+  mapa: {
+    flex: 1,
+    borderRadius: 16,
+    width: "100%",
+    marginBottom: 20,
+    elevation: 3,
+    overflow: "hidden",
   },
 
   cardTitle: {

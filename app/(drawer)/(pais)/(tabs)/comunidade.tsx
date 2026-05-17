@@ -1,4 +1,19 @@
+import { theme } from "@/src/constants/theme";
+import { auth, db, firestore } from "@/src/services/firebase";
 import { Ionicons } from "@expo/vector-icons";
+import { get, ref } from "firebase/database";
+import {
+  addDoc,
+  arrayRemove,
+  arrayUnion,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  updateDoc,
+} from "firebase/firestore";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -11,22 +26,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-import { theme } from "@/src/constants/theme";
-import { auth, firestore } from "@/src/services/firebase";
-import {
-  addDoc,
-  arrayRemove,
-  arrayUnion,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  orderBy,
-  query,
-  updateDoc,
-} from "firebase/firestore";
 
 export default function Comunidade() {
   const [aba, setAba] = useState("feed");
@@ -53,16 +52,17 @@ export default function Comunidade() {
   useEffect(() => {
     const inicializar = async () => {
       const user = auth.currentUser;
-      let tipoAtual = "Membro";
+      let tipoAtual = "pai";
 
       if (user) {
         setUserIdLogado(user.uid);
-        const userDoc = await getDoc(doc(firestore, "usuarios", user.uid));
+        const userRef = ref(db, `usuarios/${user.uid}`);
 
-        if (userDoc.exists()) {
-          const dados = userDoc.data();
-          setNomeLogado(dados.nome || "Membro");
-          tipoAtual = dados.tipo || "Membro";
+        const snapshot = await get(userRef);
+        if (snapshot.exists()) {
+          const dados = snapshot.val();
+          setNomeLogado(dados.nome || "Pais/Mães");
+          tipoAtual = dados.tipo || "pai";
           setTipoLogado(tipoAtual);
         }
       }

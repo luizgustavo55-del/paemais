@@ -30,16 +30,6 @@ export default function PaiTabs() {
       />
 
       <Tabs.Screen
-        name="mapa"
-        options={{
-          title: "Mapa",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="map-outline" size={size} color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
         name="comunidade"
         options={{
           title: "Comunidade",

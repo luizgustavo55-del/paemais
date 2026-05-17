@@ -68,7 +68,7 @@ export default function Login() {
           return;
         }
       } else {
-        const paiSnap = await getDatabase(ref(db, "usuarios_pais/" + uid));
+        const paiSnap = await getDatabase(ref(db, "usuarios/" + uid));
         if (paiSnap.exists()) {
           dadosUser = paiSnap.val();
           tipoIdentificado = "pai";

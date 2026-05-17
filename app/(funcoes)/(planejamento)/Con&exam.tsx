@@ -224,7 +224,7 @@ export default function ConsultasScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => router.push("/gestacao")}
+          onPress={() => router.back()}
           style={styles.headerLeft}
         >
           <MaterialCommunityIcons
