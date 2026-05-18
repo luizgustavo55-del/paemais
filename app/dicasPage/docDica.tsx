@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Image,
   Linking,
@@ -6,117 +7,243 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  StatusBar,
 } from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
 
 export default function OrganizacaoPapeis() {
   const router = useRouter();
 
   const [checklist, setChecklist] = useState([
-    { id: 1, text: "Separar todos os papéis", icon: "folder-outline", done: false },
-    { id: 2, text: "Descartar o que não é necessário", icon: "trash-outline", done: false },
-    { id: 3, text: "Criar categorias", icon: "albums-outline", done: false },
-    { id: 4, text: "Organizar em pastas", icon: "pricetags-outline", done: false },
-    { id: 5, text: "Guardar desenhos importantes", icon: "color-palette-outline", done: false },
-    { id: 6, text: "Digitalizar documentos", icon: "phone-portrait-outline", done: false },
-    { id: 7, text: "Definir rotina", icon: "repeat-outline", done: false },
+    {
+      id: 1,
+      text: "Separar todos os papéis",
+      icon: "folder-outline",
+      done: false,
+    },
+    {
+      id: 2,
+      text: "Descartar o que não é necessário",
+      icon: "trash-outline",
+      done: false,
+    },
+    {
+      id: 3,
+      text: "Criar categorias",
+      icon: "albums-outline",
+      done: false,
+    },
+    {
+      id: 4,
+      text: "Organizar em pastas",
+      icon: "pricetags-outline",
+      done: false,
+    },
+    {
+      id: 5,
+      text: "Guardar desenhos importantes",
+      icon: "color-palette-outline",
+      done: false,
+    },
+    {
+      id: 6,
+      text: "Digitalizar documentos",
+      icon: "phone-portrait-outline",
+      done: false,
+    },
+    {
+      id: 7,
+      text: "Definir rotina",
+      icon: "repeat-outline",
+      done: false,
+    },
   ]);
 
   function toggleItem(id: number) {
     setChecklist((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, done: !item.done } : item
+        item.id === id
+          ? { ...item, done: !item.done }
+          : item
       )
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* 🔝 HEADER */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.push("/(pais)/(tabs)/dicas" as any)}
-        >
-          <Ionicons name="arrow-back" size={24} color="#ba11f2" />
-        </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>Organização de Papéis</Text>
-      </View>
+      
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={styles.content}
       >
-        {/* 📌 RESUMO */}
-        <View style={styles.card}>
-          <View style={styles.row}>
-            <Ionicons name="document-text-outline" size={18} color="#ba11f2" />
-            <Text style={styles.subtitle}>Resumo</Text>
+      <StatusBar barStyle="light-content" />
+
+     
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() =>
+              router.push("/(pais)/(tabs)/dicas" as any)
+            }
+          >
+            <Ionicons
+              name="arrow-back"
+              size={18}
+              color="#fff"
+            />
+          </TouchableOpacity>
+
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>
+              Organização Familiar
+            </Text>
           </View>
-          <Text style={styles.text}>
-            Organizar documentos evita perda de informações importantes e reduz
-            o estresse. O segredo não é ter poucos papéis, mas sim ter um sistema
-            simples e eficiente.
+        </View>
+
+        <Text style={styles.title}>
+          Organização de Papéis
+        </Text>
+      </View>
+        {/* RESUMO */}
+        <View style={styles.card}>
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="document-text-outline"
+              size={22}
+              color="#ff5ea8"
+            />
+
+            <Text style={styles.cardTitle}>
+              Resumo
+            </Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            Organizar documentos evita perda de
+            informações importantes e reduz o
+            estresse. O segredo não é ter poucos
+            papéis, mas sim ter um sistema simples
+            e eficiente.
           </Text>
         </View>
 
-        {/* 🧠 IDEIA */}
+        {/* IDEIA PRINCIPAL */}
         <View style={styles.card}>
-          <View style={styles.row}>
-            <Ionicons name="bulb-outline" size={18} color="#ba11f2" />
-            <Text style={styles.subtitle}>Ideia principal</Text>
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="bulb-outline"
+              size={22}
+              color="#ffb300"
+            />
+
+            <Text style={styles.cardTitle}>
+              Ideia Principal
+            </Text>
           </View>
-          <Text style={styles.text}>
-            O problema não é a quantidade de papéis, mas a falta de organização.
-            Criar um sistema simples facilita o dia a dia.
+
+          <Text style={styles.cardText}>
+            O problema não é a quantidade de
+            papéis, mas a falta de organização.
+            Criar um sistema simples facilita o
+            dia a dia e evita acúmulos.
           </Text>
         </View>
 
-        {/* 📂 CATEGORIAS */}
+        {/* CATEGORIAS */}
         <View style={styles.card}>
-          <View style={styles.row}>
-            <Ionicons name="folder-open-outline" size={18} color="#ba11f2" />
-            <Text style={styles.subtitle}>Categorias</Text>
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="folder-open-outline"
+              size={22}
+              color="#00c48c"
+            />
+
+            <Text style={styles.cardTitle}>
+              Categorias
+            </Text>
           </View>
-          <Text style={styles.text}>
-            Crianças: saúde, escola, documentos{"\n"}
-            Geral: contas, garantias, manuais{"\n"}
-            Exames e receitas{"\n"}
-            Cada tipo deve ter seu lugar fixo
+
+          {[
+            "Saúde da criança",
+            "Escola e atividades",
+            "Documentos importantes",
+            "Contas e garantias",
+            "Exames e receitas",
+            "Cada tipo deve ter seu lugar fixo",
+          ].map((item, index) => (
+            <View key={index} style={styles.listItem}>
+              <View
+                style={[
+                  styles.bullet,
+                  { backgroundColor: "#00c48c" },
+                ]}
+              />
+
+              <Text style={styles.listText}>
+                {item}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {/* DESENHOS */}
+        <View style={styles.card}>
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="image-outline"
+              size={22}
+              color="#7050b3"
+            />
+
+            <Text style={styles.cardTitle}>
+              Desenhos e Lembranças
+            </Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            Guarde apenas os mais especiais.
+            Você pode organizar por ano ou tirar
+            fotos para economizar espaço físico.
           </Text>
         </View>
 
-        {/* 🎨 DESENHOS */}
+        {/* ROTINA */}
         <View style={styles.card}>
-          <View style={styles.row}>
-            <Ionicons name="image-outline" size={18} color="#ba11f2" />
-            <Text style={styles.subtitle}>Desenhos e lembranças</Text>
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="refresh-outline"
+              size={22}
+              color="#ff5ea8"
+            />
+
+            <Text style={styles.cardTitle}>
+              Rotina
+            </Text>
           </View>
-          <Text style={styles.text}>
-            Guarde apenas os mais especiais. Você pode organizar por ano ou até
-            tirar fotos para economizar espaço.
+
+          <Text style={styles.cardText}>
+            Tenha um local fixo para novos papéis
+            e revise tudo mensalmente para evitar
+            acúmulo e bagunça.
           </Text>
         </View>
 
-        {/* 🔁 ROTINA */}
+        {/* CHECKLIST */}
         <View style={styles.card}>
-          <View style={styles.row}>
-            <Ionicons name="refresh-outline" size={18} color="#ba11f2" />
-            <Text style={styles.subtitle}>Rotina</Text>
-          </View>
-          <Text style={styles.text}>
-            Tenha um local fixo para novos papéis e revise tudo mensalmente para
-            evitar acúmulo.
-          </Text>
-        </View>
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="checkmark-done-outline"
+              size={22}
+              color="#00c48c"
+            />
 
-        {/* ✅ CHECKLIST */}
-        <View style={styles.card}>
-          <View style={styles.row}>
-            <Ionicons name="checkmark-done-outline" size={18} color="#ba11f2" />
-            <Text style={styles.subtitle}>Checklist</Text>
+            <Text style={styles.cardTitle}>
+              Checklist
+            </Text>
           </View>
 
           {checklist.map((item) => (
@@ -126,21 +253,33 @@ export default function OrganizacaoPapeis() {
               onPress={() => toggleItem(item.id)}
             >
               <Ionicons
-                name={item.done ? "checkbox" : "square-outline"}
-                size={22}
-                color={item.done ? "#4CAF50" : "#999"}
+                name={
+                  item.done
+                    ? "checkbox"
+                    : "square-outline"
+                }
+                size={24}
+                color={
+                  item.done ? "#00c48c" : "#999"
+                }
               />
 
-              <Ionicons
-                name={item.icon as any}
-                size={18}
-                color="#ba11f2"
-              />
+              <View style={styles.checkIcon}>
+                <Ionicons
+                  name={item.icon as any}
+                  size={18}
+                  color="#7050b3"
+                />
+              </View>
 
               <Text
                 style={[
                   styles.checkText,
-                  item.done && { textDecorationLine: "line-through" },
+                  item.done && {
+                    textDecorationLine:
+                      "line-through",
+                    color: "#999",
+                  },
                 ]}
               >
                 {item.text}
@@ -149,12 +288,14 @@ export default function OrganizacaoPapeis() {
           ))}
         </View>
 
-        {/* 🎥 VÍDEO */}
+        {/* VÍDEO */}
         <View style={styles.card}>
           <TouchableOpacity
             style={styles.youtubeCard}
             onPress={() =>
-              Linking.openURL("https://www.youtube.com/watch?v=rkSrz-jpkZo")
+              Linking.openURL(
+                "https://www.youtube.com/watch?v=rkSrz-jpkZo"
+              )
             }
           >
             <View style={styles.thumbnailContainer}>
@@ -162,24 +303,37 @@ export default function OrganizacaoPapeis() {
                 source={require("../../assets/images/documentos.png")}
                 style={styles.thumbnail}
               />
+
               <View style={styles.playButton}>
-                <Ionicons name="play" size={16} color="#fff" />
+                <Ionicons
+                  name="play"
+                  size={18}
+                  color="#fff"
+                />
               </View>
             </View>
 
-            <View style={styles.info}>
-              <View style={styles.row}>
-                <Ionicons name="logo-youtube" size={18} color="red" />
-                <Text style={styles.subtitle}>Vídeo</Text>
+            <View style={styles.videoInfo}>
+              <View style={styles.cardTitleRow}>
+                <Ionicons
+                  name="logo-youtube"
+                  size={20}
+                  color="red"
+                />
+
+                <Text style={styles.videoTitle}>
+                  Vídeo
+                </Text>
               </View>
-              <Text style={styles.text}>
+
+              <Text style={styles.videoText}>
                 Como organizar documentos e papéis
               </Text>
             </View>
           </TouchableOpacity>
         </View>
 
-        {/* 🌐 LINK */}
+        {/* LINK */}
         <TouchableOpacity
           style={styles.card}
           onPress={() =>
@@ -188,12 +342,21 @@ export default function OrganizacaoPapeis() {
             )
           }
         >
-          <View style={styles.row}>
-            <Ionicons name="globe-outline" size={18} color="#ba11f2" />
-            <Text style={styles.subtitle}>Ver mais</Text>
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="globe-outline"
+              size={22}
+              color="#7050b3"
+            />
+
+            <Text style={styles.cardTitle}>
+              Ver Mais
+            </Text>
           </View>
-          <Text style={styles.text}>
-            Acesse o artigo completo sobre organização de papéis infantis
+
+          <Text style={styles.cardText}>
+            Acesse o artigo completo sobre
+            organização de papéis infantis.
           </Text>
         </TouchableOpacity>
       </ScrollView>
@@ -204,75 +367,170 @@ export default function OrganizacaoPapeis() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#b390d8,",
+    backgroundColor: "#cfb8ff",
   },
 
+  /* HEADER FIXO */
   header: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+
+    zIndex: 999,
+
+    backgroundColor: "#8a68d3",
+
+    paddingTop: 42,
+    paddingHorizontal: 22,
+    paddingBottom: 22,
+
+    elevation: 10,
+    shadowColor: "#28174c",
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+  },
+
+  headerTop: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-    backgroundColor: "#fff",
-    elevation: 5,
   },
 
-  headerTitle: {
-    fontSize: 18,
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "#ae89e9",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginRight: 12,
+  },
+
+  badge: {
+    backgroundColor: "#ae89e9",
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 18,
+  },
+
+  badgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+
+  title: {
+    color: "#fff",
+    fontSize: 24,
     fontWeight: "bold",
-    color: "#ba11f2",
+    marginTop: 16,
+    lineHeight: 32,
   },
 
-  scroll: {
+  /* CONTENT */
+  content: {
     padding: 20,
+    paddingTop: 170,
+    paddingBottom: 40,
   },
 
+  /* CARDS */
   card: {
-    backgroundColor: "#ece3ff",
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: "#ba11f2",
-    elevation: 3,
+    backgroundColor: "#eae1fd",
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 18,
+
+    shadowColor: "#28174c",
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    elevation: 4,
   },
 
-  subtitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#ba11f2",
-    marginLeft: 5,
-  },
-
-  text: {
-    fontSize: 14,
-    color: "#555",
-    lineHeight: 20,
-  },
-
-  row: {
+  cardTitleRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 6,
+    marginBottom: 16,
   },
 
+  cardTitle: {
+    fontSize: 21,
+    fontWeight: "700",
+    color: "#28174c",
+    marginLeft: 10,
+    flex: 1,
+  },
+
+  cardText: {
+    fontSize: 16,
+    color: "#4a4a4a",
+    lineHeight: 28,
+  },
+
+  /* LISTA */
+  listItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 14,
+  },
+
+  bullet: {
+    width: 8,
+    height: 8,
+    borderRadius: 10,
+    marginTop: 10,
+    marginRight: 12,
+  },
+
+  listText: {
+    flex: 1,
+    fontSize: 16,
+    color: "#4a4a4a",
+    lineHeight: 27,
+  },
+
+  /* CHECKLIST */
   checkItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
-    gap: 8,
+    marginBottom: 16,
+  },
+
+  checkIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#cfb8ff",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginHorizontal: 10,
   },
 
   checkText: {
-    fontSize: 14,
-    color: "#444",
+    flex: 1,
+    fontSize: 16,
+    color: "#333",
+    lineHeight: 24,
   },
 
+  /* VÍDEO */
   youtubeCard: {
     flexDirection: "row",
-    borderRadius: 10,
-    overflow: "hidden",
+    alignItems: "center",
   },
 
   thumbnailContainer: {
@@ -280,23 +538,38 @@ const styles = StyleSheet.create({
   },
 
   thumbnail: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
+    width: 105,
+    height: 105,
+    borderRadius: 18,
   },
 
   playButton: {
     position: "absolute",
-    top: "35%",
-    left: "35%",
-    backgroundColor: "rgba(0,0,0,0.6)",
-    padding: 6,
+    top: "38%",
+    left: "38%",
+
+    backgroundColor: "rgba(0,0,0,0.65)",
+    padding: 8,
     borderRadius: 50,
   },
 
-  info: {
+  videoInfo: {
     flex: 1,
-    padding: 10,
+    paddingLeft: 16,
     justifyContent: "center",
+  },
+
+  videoTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#28174c",
+    marginLeft: 8,
+  },
+
+  videoText: {
+    fontSize: 15,
+    color: "#666",
+    lineHeight: 24,
+    marginTop: 4,
   },
 });

@@ -1,4 +1,15 @@
-import { Image, Linking, View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import React from "react";
+import {
+  Image,
+  Linking,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar,
+} from "react-native";
+
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
@@ -7,175 +18,345 @@ export default function TelaExemplo() {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
 
-      {/* 🔝 HEADER */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.push("/(pais)/(tabs)/dicas" as any)}
-        >
-          <Ionicons name="arrow-back" size={24} color="#ba11f2" />
-        </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>
-          Marco Legal da Primeira Infância
-        </Text>
-      </View>
+      
+      
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
-      >
+        contentContainerStyle={styles.content}
+      > <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() =>
+                router.push("/(pais)/(tabs)/dicas" as any)
+              }
+            >
+              <Ionicons name="arrow-back" size={18} color="#fff" />
+            </TouchableOpacity>
 
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>
+                Primeira Infância
+              </Text>
+            </View>
+          </View>
+
+          <Text style={styles.title}>
+            Marco Legal da Primeira Infância
+          </Text>
+        </View>
+        {/* RESUMO */}
         <View style={styles.card}>
-           <Text style={styles.subtitle}> Resumo</Text>
-          <Text style={styles.text}>
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="document-text-outline"
+              size={22}
+              color="#ff5ea8"
+            />
 
-            O Marco Legal da Primeira Infância (Lei nº 13.257/2016) estabelece diretrizes para políticas públicas voltadas a crianças de até 6 anos.
-            Reconhece a importância dos primeiros mil dias para o desenvolvimento físico, emocional e cognitivo.
-            Destaca que essa fase é decisiva, mas também vulnerável a fatores como pobreza e violência.
-            A lei garante direitos fundamentais às crianças e orienta ações integradas entre diferentes áreas.
-            Inclui temas como saúde, educação, alimentação, convivência familiar e proteção contra violência.
-            Também valoriza o direito ao brincar como essencial para o desenvolvimento infantil.
-            Prevê a ampliação da licença-paternidade para fortalecer o vínculo familiar.
-            Garante direitos às gestantes, inclusive em situações de vulnerabilidade.
-            Incentiva políticas intersetoriais com participação de União, estados e municípios.
-            Define que o cuidado com a criança é responsabilidade de toda a sociedade e do Estado.
-            Determina a criação e manutenção de espaços seguros e adequados para crianças.
-            Estabelece a necessidade de monitoramento e avaliação das políticas públicas.
-            Prioriza a qualificação de profissionais que atuam com a primeira infância.
-            Orienta famílias sobre cuidados, alimentação e desenvolvimento infantil saudável.
-            Assim, promove o desenvolvimento integral da criança desde os primeiros anos de vida.
+            <Text style={styles.cardTitle}>
+              Resumo
+            </Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            O Marco Legal da Primeira Infância
+            (Lei nº 13.257/2016) estabelece
+            diretrizes para políticas públicas
+            voltadas a crianças de até 6 anos.
+            Reconhece a importância dos primeiros
+            mil dias para o desenvolvimento
+            físico, emocional e cognitivo da
+            criança.
           </Text>
         </View>
 
+        {/* A LEI */}
         <View style={styles.card}>
-           <Text style={styles.subtitle}> A lei</Text>
-          <Text style={styles.text}>
-           
-       O Marco Legal da Primeira Infância (Lei nº 13.257/2016) traz importantes avanços na proteção aos direitos das crianças brasileiras de até seis anos de idade, ao estabelecer princípios e diretrizes para a formulação e a implementação de políticas públicas voltadas a meninos e meninas nessa faixa etária. Trata-se do reconhecimento de que os primeiros mil dias (compreendendo a gestação e os dois primeiros anos de vida) configuram uma janela de oportunidade única para o desenvolvimento neurológico, cognitivo, psicomotor e emocional das crianças.
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="library-outline"
+              size={22}
+              color="#7050b3"
+            />
+
+            <Text style={styles.cardTitle}>
+              A Lei
+            </Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            A legislação fortalece os direitos
+            da criança na primeira infância e
+            incentiva políticas públicas
+            integradas entre saúde, educação,
+            assistência social e proteção
+            familiar.
           </Text>
         </View>
 
+        {/* O QUE É */}
         <View style={styles.card}>
-          <Text style={styles.subtitle}>O que é?</Text>
-          <Text style={styles.text}>
-            Estabelece princípios e diretrizes para políticas públicas voltadas à primeira infância.
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="help-circle-outline"
+              size={22}
+              color="#00c48c"
+            />
+
+            <Text style={styles.cardTitle}>
+              O que é?
+            </Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            O Marco Legal da Primeira Infância é
+            uma lei brasileira criada para
+            garantir mais proteção, cuidado e
+            desenvolvimento às crianças de até 6
+            anos de idade.
           </Text>
         </View>
 
+        {/* POR QUÊ */}
         <View style={styles.card}>
-          <Text style={styles.subtitle}>Por quê?</Text>
-          <Text style={styles.text}>
-            Os primeiros anos são fundamentais e exigem proteção contra vulnerabilidades.
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="bulb-outline"
+              size={22}
+              color="#ffb300"
+            />
+
+            <Text style={styles.cardTitle}>
+              Por quê?
+            </Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            Os primeiros anos de vida são
+            fundamentais para o desenvolvimento
+            cerebral, emocional e social da
+            criança.
           </Text>
         </View>
 
+        {/* ÁREAS */}
         <View style={styles.card}>
-          <Text style={styles.subtitle}>Como colocar em prática?</Text>
-          <Text style={styles.text}>
-            Define direitos, responsabilidades e integração entre políticas públicas.
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="grid-outline"
+              size={22}
+              color="#ff5ea8"
+            />
+
+            <Text style={styles.cardTitle}>
+              Áreas Prioritárias
+            </Text>
+          </View>
+
+          {[
+            "Saúde",
+            "Educação",
+            "Alimentação",
+            "Convivência familiar",
+            "Proteção contra violência",
+            "Direito ao brincar",
+          ].map((item, index) => (
+            <View
+              key={index}
+              style={styles.listItem}
+            >
+              <View style={styles.bullet} />
+
+              <Text style={styles.listText}>
+                {item}
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        {/* RESPONSABILIDADE */}
+        <View style={styles.card}>
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="people-outline"
+              size={22}
+              color="#7050b3"
+            />
+
+            <Text style={styles.cardTitle}>
+              Responsabilidade
+            </Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            União, estados, municípios,
+            profissionais e famílias devem atuar
+            juntos na proteção e desenvolvimento
+            da criança.
           </Text>
         </View>
 
+        {/* QUALIFICAÇÃO */}
         <View style={styles.card}>
-          <Text style={styles.subtitle}>Áreas prioritárias</Text>
-          <Text style={styles.text}>
-            Saúde, educação, alimentação, convivência, lazer e proteção.
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="school-outline"
+              size={22}
+              color="#00c48c"
+            />
+
+            <Text style={styles.cardTitle}>
+              Qualificação
+            </Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            Incentiva a formação especializada
+            de profissionais que trabalham
+            diretamente com a primeira infância.
           </Text>
         </View>
 
+        {/* GESTANTES */}
         <View style={styles.card}>
-          <Text style={styles.subtitle}>Responsabilidade</Text>
-          <Text style={styles.text}>
-            União, estados e municípios atuam juntos.
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="heart-outline"
+              size={22}
+              color="#ff5ea8"
+            />
+
+            <Text style={styles.cardTitle}>
+              Gestantes
+            </Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            Garante orientação sobre saúde,
+            alimentação, cuidados e
+            desenvolvimento saudável do bebê.
           </Text>
         </View>
 
+        {/* BRINCAR */}
         <View style={styles.card}>
-          <Text style={styles.subtitle}>Monitoramento</Text>
-          <Text style={styles.text}>
-            Avaliação contínua e coleta de dados.
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="happy-outline"
+              size={22}
+              color="#ffb300"
+            />
+
+            <Text style={styles.cardTitle}>
+              Direito ao Brincar
+            </Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            O brincar é reconhecido como
+            essencial para o desenvolvimento
+            emocional, cognitivo e social.
           </Text>
         </View>
 
+        {/* LICENÇA */}
         <View style={styles.card}>
-          <Text style={styles.subtitle}>Qualificação</Text>
-          <Text style={styles.text}>
-            Profissionais recebem formação especializada.
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="time-outline"
+              size={22}
+              color="#7050b3"
+            />
+
+            <Text style={styles.cardTitle}>
+              Licença-paternidade
+            </Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            A lei amplia a
+            licença-paternidade para fortalecer
+            os vínculos familiares desde os
+            primeiros dias de vida.
           </Text>
         </View>
 
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>Gestantes</Text>
-          <Text style={styles.text}>
-            Orientação completa sobre cuidados e desenvolvimento.
-          </Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>Brincar</Text>
-          <Text style={styles.text}>
-            Fundamental para o desenvolvimento infantil.
-          </Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>Licença-paternidade</Text>
-          <Text style={styles.text}>
-            Ampliada para fortalecer vínculos.
-          </Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>Acolhimento</Text>
-          <Text style={styles.text}>
-            Prioriza ambiente familiar para crianças.
-          </Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>Consumo e mídia</Text>
-          <Text style={styles.text}>
-            Uso da tecnologia deve ser mediado.
-          </Text>
-        </View>
+        {/* VÍDEO */}
         <View style={styles.card}>
           <TouchableOpacity
-  style={styles.youtubeCard}
-  onPress={() =>
-    Linking.openURL("https://youtu.be/bV6bQNMFhq4?si=3vg2bncM8bcmhD1x")
-  }
->
-  {/* 🎬 THUMBNAIL */}
-  <View style={styles.thumbnailContainer}>
- <Image
-  source={require("../../assets/images/marcoLegal.jpg")}
-  style={styles.thumbnail}
-/>
-    <View style={styles.playButton}>
-      <Text style={styles.playText}>▶</Text>
-    </View>
-  </View>
+            style={styles.youtubeCard}
+            onPress={() =>
+              Linking.openURL(
+                "https://youtu.be/bV6bQNMFhq4?si=3vg2bncM8bcmhD1x"
+              )
+            }
+          >
+            <View style={styles.thumbnailContainer}>
+              <Image
+                source={require("../../assets/images/marcoLegal.jpg")}
+                style={styles.thumbnail}
+              />
 
-  {/* 📝 INFO */}
-  <View style={styles.info}>
-    <Text style={styles.subtitle}>Vídeo explicativo</Text>
-    <Text style={styles.text}>
-      Marco Legal da Primeira Infância explicado
-    </Text> 
-  </View>
-</TouchableOpacity>
-</View>
-        <View>
+              <View style={styles.playButton}>
+                <Ionicons
+                  name="play"
+                  size={18}
+                  color="#fff"
+                />
+              </View>
+            </View>
+
+            <View style={styles.videoInfo}>
+              <View style={styles.cardTitleRow}>
+                <Ionicons
+                  name="logo-youtube"
+                  size={20}
+                  color="red"
+                />
+
+                <Text style={styles.videoTitle}>
+                  Vídeo explicativo
+                </Text>
+              </View>
+
+              <Text style={styles.videoText}>
+                Marco Legal da Primeira Infância
+                explicado de forma simples.
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {/* LINK */}
         <TouchableOpacity
-        style={styles.card}
-  onPress={() => Linking.openURL("https://www.gov.br/mdh/pt-br/navegue-por-temas/crianca-e-adolescente/acoes-e-programas-de-gestoes-anteriores/primeira-infancia")}>
-    <Text style={styles.subtitle}> Veja mais sobre na web</Text>
-  <Text style={styles.text}>Clique e acesse o site do Governo Brasileiro</Text>
-</TouchableOpacity>
+          style={styles.card}
+          onPress={() =>
+            Linking.openURL(
+              "https://www.gov.br/mdh/pt-br/navegue-por-temas/crianca-e-adolescente/acoes-e-programas-de-gestoes-anteriores/primeira-infancia"
+            )
+          }
+        >
+          <View style={styles.cardTitleRow}>
+            <Ionicons
+              name="globe-outline"
+              size={22}
+              color="#7050b3"
+            />
 
-</View>
+            <Text style={styles.cardTitle}>
+              Veja Mais
+            </Text>
+          </View>
 
+          <Text style={styles.cardText}>
+            Clique para acessar o site oficial
+            do Governo Brasileiro.
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -184,112 +365,184 @@ export default function TelaExemplo() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F6EDFB",
+    backgroundColor: "#cfb8ff",
   },
 
+  /* HEADER FIXO */
   header: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+
+    zIndex: 999,
+
+    backgroundColor: "#8a68d3",
+
+    paddingTop: 42,
+    paddingHorizontal: 22,
+    paddingBottom: 22,
+
+    elevation: 10,
+    shadowColor: "#28174c",
+    shadowOpacity: 0.22,
+    shadowRadius: 8,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+  },
+
+  headerTop: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-    backgroundColor: "#fff",
-
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
   },
 
-  headerTitle: {
-    fontSize: 18,
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "#ae89e9",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginRight: 12,
+  },
+
+  badge: {
+    backgroundColor: "#ae89e9",
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 18,
+  },
+
+  badgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+
+  title: {
+    color: "#fff",
+    fontSize: 24,
     fontWeight: "bold",
-    color: "#ba11f2",
+    marginTop: 16,
+    lineHeight: 32,
   },
 
-  scroll: {
+  /* CONTENT */
+  content: {
     padding: 20,
-    paddingBottom: 30,
+    paddingTop: 180,
+    paddingBottom: 40,
   },
 
+  /* CARDS */
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: "#ba11f2",
+    backgroundColor: "#eae1fd",
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 18,
 
-    elevation: 3,
-    shadowColor: "#000",
+    shadowColor: "#28174c",
     shadowOpacity: 0.08,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 10,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    elevation: 4,
   },
 
-  subtitle: {
+  cardTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+  cardTitle: {
+    fontSize: 21,
+    fontWeight: "700",
+    color: "#28174c",
+    marginLeft: 10,
+    flex: 1,
+  },
+
+  cardText: {
+    fontSize: 16,
+    color: "#4a4a4a",
+    lineHeight: 28,
+  },
+
+  /* LISTA */
+  listItem: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 14,
+  },
+
+  bullet: {
+    width: 8,
+    height: 8,
+    borderRadius: 10,
+    backgroundColor: "#ff5ea8",
+    marginTop: 10,
+    marginRight: 12,
+  },
+
+  listText: {
+    flex: 1,
+    fontSize: 16,
+    color: "#4a4a4a",
+    lineHeight: 27,
+  },
+
+  /* VÍDEO */
+  youtubeCard: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  thumbnailContainer: {
+    position: "relative",
+  },
+
+  thumbnail: {
+    width: 105,
+    height: 105,
+    borderRadius: 18,
+  },
+
+  playButton: {
+    position: "absolute",
+    top: "38%",
+    left: "38%",
+
+    backgroundColor: "rgba(0,0,0,0.65)",
+    padding: 8,
+    borderRadius: 50,
+  },
+
+  videoInfo: {
+    flex: 1,
+    paddingLeft: 16,
+    justifyContent: "center",
+  },
+
+  videoTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#28174c",
+    marginLeft: 8,
+  },
+
+  videoText: {
     fontSize: 15,
-    fontWeight: "bold",
-    color: "#ba11f2",
-    marginBottom: 6,
+    color: "#666",
+    lineHeight: 24,
+    marginTop: 4,
   },
-
-  text: {
-    fontSize: 14,
-    color: "#555",
-    lineHeight: 20,
-  },
-  botao: {
-  backgroundColor: "#ba11f2",
-  padding: 12,
-  borderRadius: 10,
-  marginTop: 10,
-},
-youtubeCard: {
-  backgroundColor: "#fff",
-  borderRadius: 10,
-  marginBottom: 8,
-  overflow: "hidden",
-
-  flexDirection: "row", // 🔥 deixa lado a lado
-
-  elevation: 3,
-  shadowColor: "#000",
-  shadowOpacity: 0.08,
-  shadowRadius: 5,
-  shadowOffset: { width: 0, height: 2 },
-},
-
-thumbnailContainer: {
-  position: "relative",
-},
-
-thumbnail: {
-  width: 80,   // 🔥 tamanho menor lateral
-  height: 80,
-  padding: 10,
-  borderRadius: 10,
-},
-
-playButton: {
-  position: "absolute",
-  top: "5%",
-  left: "5%",
-  backgroundColor: "rgba(0,0,0,0.6)",
-  padding: 6,
-  borderRadius: 50,
-},
-
-playText: {
-  color: "#fff",
-  fontSize: 14,
-},
-
-info: {
-  flex: 1, // 🔥 ocupa o resto do espaço
-  padding: 10,
-  justifyContent: "center",
-},
 });

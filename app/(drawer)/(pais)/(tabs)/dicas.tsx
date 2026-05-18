@@ -426,7 +426,7 @@ export default function DicasScreen() {
           ]}
         >
           <Ionicons
-            name="brain-outline"
+            name="medkit-outline" 
             size={20}
             color="#7050b3"
           />
@@ -980,518 +980,949 @@ export default function DicasScreen() {
         )}
 
         {/* BEBÊ */}
-       {aba === "bebe" && (
-  <View style={styles.card}>
-    <Text style={styles.cardTitle}>
-      Cuidados com o Bebê
-    </Text>
+      {aba === "bebe" && (
+  <>
+    <View style={styles.card}>
+      <Text style={styles.cardTitle}>
+        Cuidados com o Bebê
+      </Text>
 
-    <View style={styles.listContainer}>
-      {/* SONO */}
-      <TouchableOpacity
-        style={styles.tipBox}
-        onPress={() =>
-          router.push("/dicasPage/sonoBebe")
-        }
-      >
-        <View style={styles.tipRow}>
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: "#7050b3" },
-            ]}
-          >
-            <Ionicons
-              name="moon-outline"
-              size={20}
-              color="#fff"
-            />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>
-              Sono do bebê
-            </Text>
-
-            <Text
-              style={styles.tipText}
-              numberOfLines={1}
+      <View style={styles.listContainer}>
+        {/* SONO */}
+        <TouchableOpacity
+          style={styles.tipBox}
+          onPress={() =>
+            router.push("/dicasPage/saudeBebe/sonoBebe")
+          }
+        >
+          <View style={styles.tipRow}>
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: "#7050b3" },
+              ]}
             >
-              Dicas para melhorar o sono do bebê.
-            </Text>
-          </View>
+              <Ionicons
+                name="moon-outline"
+                size={20}
+                color="#fff"
+              />
+            </View>
 
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#7050b3"
-          />
-        </View>
-      </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tipTitle}>
+                Sono do bebê
+              </Text>
 
-      {/* AMAMENTAÇÃO */}
-      <TouchableOpacity
-        style={styles.tipBox}
-        onPress={() =>
-          router.push("/dicasPage/amamentacao")
-        }
-      >
-        <View style={styles.tipRow}>
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: "#ffc2e8" },
-            ]}
-          >
+              <Text
+                style={styles.tipText}
+                numberOfLines={1}
+              >
+                Dicas para melhorar o sono do bebê.
+              </Text>
+            </View>
+
             <Ionicons
-              name="water-outline"
-              size={20}
-              color="#28174c"
-            />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>
-              Amamentação
-            </Text>
-
-            <Text
-              style={styles.tipText}
-              numberOfLines={1}
-            >
-              Saiba mais sobre aleitamento materno.
-            </Text>
-          </View>
-
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#7050b3"
-          />
-        </View>
-      </TouchableOpacity>
-
-      {/* RESFRIADO */}
-      <TouchableOpacity
-        style={styles.tipBox}
-        onPress={() =>
-          router.push("/dicasPage/saudeBebe/resfriado")
-        }
-      >
-        <View style={styles.tipRow}>
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: "#d7c2ff" },
-            ]}
-          >
-            <Ionicons
-              name="thermometer-outline"
+              name="chevron-forward"
               size={20}
               color="#7050b3"
             />
           </View>
+        </TouchableOpacity>
 
-          <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>
-              Resfriado comum
-            </Text>
-
-            <Text
-              style={styles.tipText}
-              numberOfLines={1}
+        {/* AMAMENTAÇÃO */}
+        <TouchableOpacity
+          style={styles.tipBox}
+          onPress={() =>
+            router.push("/dicasPage/saudeBebe/amamentacao")
+          }
+        >
+          <View style={styles.tipRow}>
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: "#ffc2e8" },
+              ]}
             >
-              Coriza, tosse e febre baixa são comuns.
-            </Text>
-          </View>
+              <Ionicons
+                name="water-outline"
+                size={20}
+                color="#28174c"
+              />
+            </View>
 
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#7050b3"
-          />
-        </View>
-      </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tipTitle}>
+                Amamentação
+              </Text>
 
-      {/* GRIPE */}
-      <TouchableOpacity
-        style={styles.tipBox}
-        onPress={() =>
-          router.push("/dicasPage/saudeBebe/gripe")
-        }
-      >
-        <View style={styles.tipRow}>
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: "#7050b3" },
-            ]}
-          >
+              <Text
+                style={styles.tipText}
+                numberOfLines={2}
+              >
+                Saiba mais sobre aleitamento materno.
+              </Text>
+            </View>
+
             <Ionicons
-              name="medkit-outline"
-              size={20}
-              color="#fff"
-            />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>
-              Gripe
-            </Text>
-
-            <Text
-              style={styles.tipText}
-              numberOfLines={1}
-            >
-              Pode causar febre alta e muito cansaço.
-            </Text>
-          </View>
-
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#7050b3"
-          />
-        </View>
-      </TouchableOpacity>
-
-      {/* BRONQUIOLITE */}
-      <TouchableOpacity
-        style={styles.tipBox}
-        onPress={() =>
-          router.push("/dicasPage/saudeBebe/bronquiolite")
-        }
-      >
-        <View style={styles.tipRow}>
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: "#ffc2e8" },
-            ]}
-          >
-            <Ionicons
-              name="fitness-outline"
-              size={20}
-              color="#28174c"
-            />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>
-              Bronquiolite
-            </Text>
-
-            <Text
-              style={styles.tipText}
-              numberOfLines={1}
-            >
-              Pode causar chiado e dificuldade para respirar.
-            </Text>
-          </View>
-
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#7050b3"
-          />
-        </View>
-      </TouchableOpacity>
-
-      {/* OTITE */}
-      <TouchableOpacity
-        style={styles.tipBox}
-        onPress={() =>
-          router.push("/dicasPage/saudeBebe/otite")
-        }
-      >
-        <View style={styles.tipRow}>
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: "#ece3ff" },
-            ]}
-          >
-            <Ionicons
-              name="ear-outline"
+              name="chevron-forward"
               size={20}
               color="#7050b3"
             />
           </View>
+        </TouchableOpacity>
 
-          <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>
-              Otite
-            </Text>
-
-            <Text
-              style={styles.tipText}
-              numberOfLines={1}
+        {/* RESFRIADO */}
+        <TouchableOpacity
+          style={styles.tipBox}
+          onPress={() =>
+            router.push("/dicasPage/saudeBebe/resfriado")
+          }
+        >
+          <View style={styles.tipRow}>
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: "#d7c2ff" },
+              ]}
             >
-              Infecção no ouvido comum na infância.
-            </Text>
-          </View>
+              <Ionicons
+                name="thermometer-outline"
+                size={20}
+                color="#7050b3"
+              />
+            </View>
 
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#7050b3"
-          />
-        </View>
-      </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tipTitle}>
+                Resfriado comum
+              </Text>
 
-      {/* GASTROENTERITE */}
-      <TouchableOpacity
-        style={styles.tipBox}
-        onPress={() =>
-          router.push("/dicasPage/saudeBebe/gastroenterite")
-        }
-      >
-        <View style={styles.tipRow}>
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: "#b390d8" },
-            ]}
-          >
+              <Text
+                style={styles.tipText}
+                numberOfLines={2}
+              >
+                Coriza, tosse e febre baixa são comuns.
+              </Text>
+            </View>
+
             <Ionicons
-              name="medical-outline"
-              size={20}
-              color="#fff"
-            />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>
-              Gastroenterite
-            </Text>
-
-            <Text
-              style={styles.tipText}
-              numberOfLines={1}
-            >
-              Pode causar vômitos e desidratação.
-            </Text>
-          </View>
-
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#7050b3"
-          />
-        </View>
-      </TouchableOpacity>
-
-      {/* PNEUMONIA */}
-      <TouchableOpacity
-        style={styles.tipBox}
-        onPress={() =>
-          router.push("/dicasPage/saudeBebe/pneumonia")
-        }
-      >
-        <View style={styles.tipRow}>
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: "#7050b3" },
-            ]}
-          >
-            <Ionicons
-              name="heart-outline"
-              size={20}
-              color="#fff"
-            />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>
-              Pneumonia
-            </Text>
-
-            <Text
-              style={styles.tipText}
-              numberOfLines={1}
-            >
-              Infecção pulmonar que exige atenção.
-            </Text>
-          </View>
-
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#7050b3"
-          />
-        </View>
-      </TouchableOpacity>
-
-      {/* AMIGDALITE */}
-      <TouchableOpacity
-        style={styles.tipBox}
-        onPress={() =>
-          router.push("/dicasPage/saudeBebe/amigdalite")
-        }
-      >
-        <View style={styles.tipRow}>
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: "#ffc2e8" },
-            ]}
-          >
-            <Ionicons
-              name="medkit-outline"
-              size={20}
-              color="#28174c"
-            />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>
-              Amigdalite
-            </Text>
-
-            <Text
-              style={styles.tipText}
-              numberOfLines={1}
-            >
-              Dor de garganta e febre são comuns.
-            </Text>
-          </View>
-
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#7050b3"
-          />
-        </View>
-      </TouchableOpacity>
-
-      {/* CATAPORA */}
-      <TouchableOpacity
-        style={styles.tipBox}
-        onPress={() =>
-          router.push("/dicasPage/saudeBebe/catapora")
-        }
-      >
-        <View style={styles.tipRow}>
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: "#d7c2ff" },
-            ]}
-          >
-            <Ionicons
-              name="bug-outline"
+              name="chevron-forward"
               size={20}
               color="#7050b3"
             />
           </View>
+        </TouchableOpacity>
 
-          <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>
-              Catapora
-            </Text>
-
-            <Text
-              style={styles.tipText}
-              numberOfLines={1}
+        {/* GRIPE */}
+        <TouchableOpacity
+          style={styles.tipBox}
+          onPress={() =>
+            router.push("/dicasPage/saudeBebe/gripe")
+          }
+        >
+          <View style={styles.tipRow}>
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: "#7050b3" },
+              ]}
             >
-              Bolinhas vermelhas e coceira pelo corpo.
-            </Text>
-          </View>
+              <Ionicons
+                name="medkit-outline"
+                size={20}
+                color="#fff"
+              />
+            </View>
 
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#7050b3"
-          />
-        </View>
-      </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tipTitle}>
+                Gripe
+              </Text>
 
-      {/* CONJUNTIVITE */}
-      <TouchableOpacity
-        style={styles.tipBox}
-        onPress={() =>
-          router.push("/dicasPage/saudeBebe/conjuntivite")
-        }
-      >
-        <View style={styles.tipRow}>
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: "#ece3ff" },
-            ]}
-          >
+              <Text
+                style={styles.tipText}
+                numberOfLines={2}
+              >
+                Pode causar febre alta e muito cansaço.
+              </Text>
+            </View>
+
             <Ionicons
-              name="eye-outline"
+              name="chevron-forward"
               size={20}
               color="#7050b3"
             />
           </View>
+        </TouchableOpacity>
 
-          <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>
-              Conjuntivite
-            </Text>
-
-            <Text
-              style={styles.tipText}
-              numberOfLines={1}
+        {/* BRONQUIOLITE */}
+        <TouchableOpacity
+          style={styles.tipBox}
+          onPress={() =>
+            router.push("/dicasPage/saudeBebe/bronquiolite")
+          }
+        >
+          <View style={styles.tipRow}>
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: "#ffc2e8" },
+              ]}
             >
-              Vermelhidão e secreção nos olhos.
-            </Text>
-          </View>
+              <Ionicons
+                name="fitness-outline"
+                size={20}
+                color="#28174c"
+              />
+            </View>
 
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#7050b3"
-          />
-        </View>
-      </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tipTitle}>
+                Bronquiolite
+              </Text>
 
-      {/* DERMATITE */}
-      <TouchableOpacity
-        style={styles.tipBox}
-        onPress={() =>
-          router.push("/dicasPage/saudeBebe/dermatiteFralda")
-        }
-      >
-        <View style={styles.tipRow}>
-          <View
-            style={[
-              styles.iconCircle,
-              { backgroundColor: "#b390d8" },
-            ]}
-          >
+              <Text
+                style={styles.tipText}
+                numberOfLines={2}
+              >
+                Pode causar chiado e dificuldade para respirar.
+              </Text>
+            </View>
+
             <Ionicons
-              name="body-outline"
+              name="chevron-forward"
               size={20}
-              color="#fff"
+              color="#7050b3"
             />
           </View>
+        </TouchableOpacity>
 
-          <View style={{ flex: 1 }}>
-            <Text style={styles.tipTitle}>
-              Dermatite de fralda
-            </Text>
-
-            <Text
-              style={styles.tipText}
-              numberOfLines={1}
+        {/* OTITE */}
+        <TouchableOpacity
+          style={styles.tipBox}
+          onPress={() =>
+            router.push("/dicasPage/saudeBebe/otite")
+          }
+        >
+          <View style={styles.tipRow}>
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: "#ece3ff" },
+              ]}
             >
-              Irritação causada pelo uso da fralda.
-            </Text>
-          </View>
+              <Ionicons
+                name="ear-outline"
+                size={20}
+                color="#7050b3"
+              />
+            </View>
 
-          <Ionicons
-            name="chevron-forward"
-            size={20}
-            color="#7050b3"
-          />
-        </View>
-      </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tipTitle}>
+                Otite
+              </Text>
+
+              <Text
+                style={styles.tipText}
+                numberOfLines={2}
+              >
+                Infecção no ouvido comum na infância.
+              </Text>
+            </View>
+
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color="#7050b3"
+            />
+          </View>
+        </TouchableOpacity>
+
+        {/* GASTROENTERITE */}
+        <TouchableOpacity
+          style={styles.tipBox}
+          onPress={() =>
+            router.push("/dicasPage/saudeBebe/gastroenterite")
+          }
+        >
+          <View style={styles.tipRow}>
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: "#b390d8" },
+              ]}
+            >
+              <Ionicons
+                name="medical-outline"
+                size={20}
+                color="#fff"
+              />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tipTitle}>
+                Gastroenterite
+              </Text>
+
+              <Text
+                style={styles.tipText}
+                numberOfLines={2}
+              >
+                Pode causar vômitos e desidratação.
+              </Text>
+            </View>
+
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color="#7050b3"
+            />
+          </View>
+        </TouchableOpacity>
+
+        {/* PNEUMONIA */}
+        <TouchableOpacity
+          style={styles.tipBox}
+          onPress={() =>
+            router.push("/dicasPage/saudeBebe/pneumonia")
+          }
+        >
+          <View style={styles.tipRow}>
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: "#7050b3" },
+              ]}
+            >
+              <Ionicons
+                name="heart-outline"
+                size={20}
+                color="#fff"
+              />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tipTitle}>
+                Pneumonia
+              </Text>
+
+              <Text
+                style={styles.tipText}
+                numberOfLines={2}
+              >
+                Infecção pulmonar que exige atenção.
+              </Text>
+            </View>
+
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color="#7050b3"
+            />
+          </View>
+        </TouchableOpacity>
+
+        {/* AMIGDALITE */}
+        <TouchableOpacity
+          style={styles.tipBox}
+          onPress={() =>
+            router.push("/dicasPage/saudeBebe/amigdalite")
+          }
+        >
+          <View style={styles.tipRow}>
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: "#ffc2e8" },
+              ]}
+            >
+              <Ionicons
+                name="medkit-outline"
+                size={20}
+                color="#28174c"
+              />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tipTitle}>
+                Amigdalite
+              </Text>
+
+              <Text
+                style={styles.tipText}
+                numberOfLines={2}
+              >
+                Dor de garganta e febre são comuns.
+              </Text>
+            </View>
+
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color="#7050b3"
+            />
+          </View>
+        </TouchableOpacity>
+
+        {/* CATAPORA */}
+        <TouchableOpacity
+          style={styles.tipBox}
+          onPress={() =>
+            router.push("/dicasPage/saudeBebe/catapora")
+          }
+        >
+          <View style={styles.tipRow}>
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: "#d7c2ff" },
+              ]}
+            >
+              <Ionicons
+                name="bug-outline"
+                size={20}
+                color="#7050b3"
+              />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tipTitle}>
+                Catapora
+              </Text>
+
+              <Text
+                style={styles.tipText}
+                numberOfLines={2}
+              >
+                Bolinhas vermelhas e coceira pelo corpo.
+              </Text>
+            </View>
+
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color="#7050b3"
+            />
+          </View>
+        </TouchableOpacity>
+
+        {/* CONJUNTIVITE */}
+        <TouchableOpacity
+          style={styles.tipBox}
+          onPress={() =>
+            router.push("/dicasPage/saudeBebe/conjuntivite")
+          }
+        >
+          <View style={styles.tipRow}>
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: "#ece3ff" },
+              ]}
+            >
+              <Ionicons
+                name="eye-outline"
+                size={20}
+                color="#7050b3"
+              />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tipTitle}>
+                Conjuntivite
+              </Text>
+
+              <Text
+                style={styles.tipText}
+                numberOfLines={2}
+              >
+                Vermelhidão e secreção nos olhos.
+              </Text>
+            </View>
+
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color="#7050b3"
+            />
+          </View>
+        </TouchableOpacity>
+
+        {/* DERMATITE */}
+        <TouchableOpacity
+          style={styles.tipBox}
+          onPress={() =>
+            router.push("/dicasPage/saudeBebe/dermatiteFralda")
+          }
+        >
+          <View style={styles.tipRow}>
+            <View
+              style={[
+                styles.iconCircle,
+                { backgroundColor: "#b390d8" },
+              ]}
+            >
+              <Ionicons
+                name="body-outline"
+                size={20}
+                color="#fff"
+              />
+            </View>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.tipTitle}>
+                Dermatite de fralda
+              </Text>
+
+              <Text
+                style={styles.tipText}
+                numberOfLines={2}
+              >
+                Irritação causada pelo uso da fralda.
+              </Text>
+            </View>
+
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color="#7050b3"
+            />
+          </View>
+        </TouchableOpacity>
+      </View>
     </View>
+
+    {/* DESENVOLVIMENTO INFANTIL */}
+    <View style={styles.card}>
+  <Text style={styles.cardTitle}>
+    Desenvolvimento Infantil
+  </Text>
+
+  <View style={styles.listContainer}>
+    {/* AUTISMO */}
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/desenvolvimento/autismo")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#7050b3" },
+          ]}
+        >
+          <Ionicons
+            name="happy-outline"
+            size={20}
+            color="#fff"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Transtorno do Espectro Autista
+          </Text>
+
+          <Text
+            style={styles.tipText}
+            numberOfLines={2}
+          >
+            Alterações na fala, interação e comportamento.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    {/* PARALISIA CEREBRAL */}
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/desenvolvimento/paralisiaCerebral")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#ffc2e8" },
+          ]}
+        >
+          <Ionicons
+            name="walk-outline"
+            size={20}
+            color="#28174c"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Paralisia Cerebral
+          </Text>
+
+          <Text
+            style={styles.tipText}
+            numberOfLines={2}
+          >
+            Alterações motoras e dificuldade de coordenação.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    {/* EPILEPSIA */}
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/desenvolvimento/epilepsia")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#d7c2ff" },
+          ]}
+        >
+          <Ionicons
+            name="flash-outline"
+            size={20}
+            color="#7050b3"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Epilepsia
+          </Text>
+
+          <Text
+            style={styles.tipText}
+            numberOfLines={2}
+          >
+            Convulsões e episódios de ausência.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    {/* TDAH */}
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/desenvolvimento/tdah")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#ece3ff" },
+          ]}
+        >
+          <Ionicons
+            name="bulb-outline"
+            size={20}
+            color="#7050b3"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            TDAH
+          </Text>
+
+          <Text
+            style={styles.tipText}
+            numberOfLines={2}
+          >
+            Agitação, impulsividade e dificuldade de atenção.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    {/* ATRASO GLOBAL */}
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/desenvolvimento/atrasoGlobal")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#7050b3" },
+          ]}
+        >
+          <Ionicons
+            name="time-outline"
+            size={20}
+            color="#fff"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Atraso Global do Desenvolvimento
+          </Text>
+
+          <Text
+            style={styles.tipText}
+            numberOfLines={2}
+          >
+            Atrasos na fala, movimento e interação.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    {/* SÍNDROME DE DOWN */}
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/desenvolvimento/sindromeDown")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#ffc2e8" },
+          ]}
+        >
+          <Ionicons
+            name="people-outline"
+            size={20}
+            color="#28174c"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Síndrome de Down
+          </Text>
+
+          <Text
+            style={styles.tipText}
+            numberOfLines={2}
+          >
+            Desenvolvimento motor e cognitivo mais lento.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    {/* PERDA AUDITIVA */}
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/desenvolvimento/perdaAuditiva")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#d7c2ff" },
+          ]}
+        >
+          <Ionicons
+            name="ear-outline"
+            size={20}
+            color="#7050b3"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Perda Auditiva
+          </Text>
+
+          <Text
+            style={styles.tipText}
+            numberOfLines={2}
+          >
+            Pode causar atraso na fala e comunicação.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    {/* DEFICIÊNCIA VISUAL */}
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/desenvolvimento/deficienciaVisual")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#ece3ff" },
+          ]}
+        >
+          <Ionicons
+            name="eye-outline"
+            size={20}
+            color="#7050b3"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Deficiência Visual
+          </Text>
+
+          <Text
+            style={styles.tipText}
+            numberOfLines={2}
+          >
+            Dificuldade para enxergar objetos e rostos.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    {/* HIPOTIREOIDISMO */}
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/desenvolvimento/hipotireoidismo")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#b390d8" },
+          ]}
+        >
+          <Ionicons
+            name="medkit-outline"
+            size={20}
+            color="#fff"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Hipotireoidismo Congênito
+          </Text>
+
+          <Text
+            style={styles.tipText}
+            numberOfLines={2}
+          >
+            Pode atrasar crescimento e desenvolvimento.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
+
+    {/* DISTROFIA MUSCULAR */}
+    <TouchableOpacity
+      style={styles.tipBox}
+      onPress={() =>
+        router.push("/dicasPage/desenvolvimento/distrofiaMuscular")
+      }
+    >
+      <View style={styles.tipRow}>
+        <View
+          style={[
+            styles.iconCircle,
+            { backgroundColor: "#7050b3" },
+          ]}
+        >
+          <Ionicons
+            name="fitness-outline"
+            size={20}
+            color="#fff"
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tipTitle}>
+            Distrofia Muscular
+          </Text>
+
+          <Text
+            style={styles.tipText}
+            numberOfLines={2}
+          >
+            Fraqueza muscular e dificuldade para andar.
+          </Text>
+        </View>
+
+        <Ionicons
+          name="chevron-forward"
+          size={20}
+          color="#7050b3"
+        />
+      </View>
+    </TouchableOpacity>
   </View>
+</View>
+  </>
 )}
       </ScrollView>
     </View>
@@ -1630,26 +2061,31 @@ const styles = StyleSheet.create({
     gap: 14,
   },
 
+
   tipBox: {
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    padding: 16,
-    borderLeftWidth: 5,
-    borderLeftColor: "#7050b3",
-  },
+  backgroundColor: "#fff",
+  borderRadius: 18,
+  paddingHorizontal: 16,
+  paddingVertical: 14,
+  borderLeftWidth: 5,
+  borderLeftColor: "#7050b3",
+  minHeight: 88,
+  justifyContent: "center",
+},
 
-  tipTitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#28174c",
-    marginBottom: 4,
-  },
+tipTitle: {
+  fontSize: 14,
+  fontWeight: "bold",
+  color: "#28174c",
+  marginBottom: 4,
+},
 
-  tipText: {
-    fontSize: 13,
-    color: "#555",
-    lineHeight: 19,
-  },
+
+  
+tipText: {
+  fontSize: 12,
+  color: "#555",
+},
 
   tipRow: {
     flexDirection: "row",
@@ -1669,26 +2105,7 @@ const styles = StyleSheet.create({
   justifyContent: "center",
 },
 
-tipBox: {
-  backgroundColor: "#fff",
-  borderRadius: 18,
-  paddingHorizontal: 16,
-  paddingVertical: 14,
-  borderLeftWidth: 5,
-  borderLeftColor: "#7050b3",
-  minHeight: 88,
-  justifyContent: "center",
-},
 
-tipTitle: {
-  fontSize: 14,
-  fontWeight: "bold",
-  color: "#28174c",
-  marginBottom: 4,
-},
 
-tipText: {
-  fontSize: 12,
-  color: "#555",
-},
+
 });
