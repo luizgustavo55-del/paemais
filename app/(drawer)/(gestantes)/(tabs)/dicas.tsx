@@ -551,64 +551,98 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 20,
-    backgroundColor: "#7050b3",
+
+    backgroundColor: "#D46B9D",
   },
 
   title: {
     fontSize: 28,
-    fontWeight: "bold",
-    color: "#fff",
+    fontWeight: "700",
+
+    color: "#FFF1F7",
+
+    letterSpacing: 0.3,
   },
 
   subtitle: {
-    color: "#ece3ff",
+    color: "#F9DDEA",
+
     marginBottom: 18,
-    marginTop: 4,
+    marginTop: 5,
+
+    fontSize: 15,
+    fontWeight: "500",
+
+    letterSpacing: 0.2,
   },
 
   tabs: {
     flexDirection: "row",
-    backgroundColor: "#ffffff22",
+
+    backgroundColor: "#C86A9B",
+
     borderRadius: 16,
-    padding: 4,
+
+    padding: 5,
+
     marginBottom: 20,
   },
 
   tab: {
     flex: 1,
-    paddingVertical: 10,
+
+    paddingVertical: 11,
+
     alignItems: "center",
   },
 
   tabActive: {
     flex: 1,
-    paddingVertical: 10,
-    backgroundColor: "#fff",
+
+    paddingVertical: 11,
+
+    backgroundColor: "#FFF2F8",
+
     borderRadius: 12,
+
     alignItems: "center",
   },
 
   tabText: {
-    color: "#fff",
+    color: "#FFF",
+
     fontWeight: "600",
     fontSize: 13,
+
+    letterSpacing: 0.2,
   },
 
   tabActiveText: {
-    color: "#28174c",
-    fontWeight: "bold",
+    color: "#9A3E6D",
+
+    fontWeight: "700",
     fontSize: 13,
   },
 
   card: {
-    backgroundColor: "#b390d8",
-    borderRadius: 22,
+    backgroundColor: "#F8D3E4",
+
+    borderRadius: 24,
+
     padding: 18,
+
     marginBottom: 20,
-    shadowColor: "#28174cca",
-    shadowOpacity: 0.2,
+
+    shadowColor: "#7C3158",
+    shadowOpacity: 0.14,
     shadowRadius: 8,
-    elevation: 5,
+
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    elevation: 4,
   },
 
   cardHeader: {
@@ -617,60 +651,87 @@ const styles = StyleSheet.create({
 
   cardTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#28174c",
+    fontWeight: "700",
+
+    color: "#8E3564",
+
     marginBottom: 12,
+
+    letterSpacing: 0.2,
   },
 
   inputRow: {
     flexDirection: "row",
+
     gap: 8,
+
     marginBottom: 15,
   },
 
   input: {
     flex: 1,
-    backgroundColor: "#fff",
-    borderRadius: 12,
+
+    backgroundColor: "#FFF8FB",
+
+    borderRadius: 14,
+
     paddingHorizontal: 14,
-    color: "#000",
+
+    color: "#5E3750",
+
+    fontSize: 14,
   },
 
   plusBtn: {
-    backgroundColor: "#7050b3",
+    backgroundColor: "#C54C86",
+
     padding: 12,
+
     borderRadius: 12,
   },
 
   cancelBtn: {
-    backgroundColor: "#ff6b6b",
+    backgroundColor: "#D982AF",
+
     padding: 12,
+
     borderRadius: 12,
   },
 
   item: {
     flexDirection: "row",
     alignItems: "center",
+
     gap: 10,
+
     marginBottom: 14,
-    backgroundColor: "#ece3ff",
-    padding: 12,
-    borderRadius: 14,
+
+    backgroundColor: "#FFF0F6",
+
+    padding: 13,
+
+    borderRadius: 15,
   },
 
   itemText: {
-    color: "#28174c",
+    color: "#8A3D66",
+
     fontSize: 15,
+
+    fontWeight: "500",
   },
 
   itemDone: {
     textDecorationLine: "line-through",
+
     opacity: 0.6,
   },
 
   dataText: {
     fontSize: 11,
-    color: "#555",
+
+    color: "#92677E",
+
     marginTop: 2,
   },
 
@@ -679,37 +740,52 @@ const styles = StyleSheet.create({
   },
 
   tipBox: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FFF8FB",
+
     borderRadius: 18,
+
     padding: 16,
+
     borderLeftWidth: 5,
-    borderLeftColor: "#7050b3",
+
+    borderLeftColor: "#C54C86",
   },
 
   tipTitle: {
     fontSize: 15,
-    fontWeight: "bold",
-    color: "#28174c",
-    marginBottom: 3,
+    fontWeight: "700",
+
+    color: "#8E3564",
+
+    marginBottom: 4,
   },
 
   tipText: {
     fontSize: 13,
-    color: "#555",
-    lineHeight: 19,
+
+    color: "#6F4B5F",
+
+    lineHeight: 20,
+
+    fontWeight: "400",
   },
 
   tipRow: {
     flexDirection: "row",
     alignItems: "center",
+
     gap: 12,
   },
 
   iconCircle: {
     width: 45,
     height: 45,
+
     borderRadius: 22,
+
     justifyContent: "center",
     alignItems: "center",
+
+    backgroundColor: "#EDB5CF",
   },
 });

@@ -30,7 +30,7 @@ export default function TelaExemplo() {
             <TouchableOpacity
               style={styles.backButton}
               onPress={() =>
-                router.push("/(gestantes/(tabs)/dicas" as any)
+                router.push("/(drawer)/(gestantes)/(tabs)/dicas" as any)
               }
             >
               <Ionicons name="arrow-back" size={18} color="#fff" />

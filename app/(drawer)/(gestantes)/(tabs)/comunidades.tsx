@@ -502,213 +502,424 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 20,
-    backgroundColor: theme.colors.background,
+
+    backgroundColor: "#D46B9D",
   },
+
   titulo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.texts,
+    fontSize: 29,
+    fontWeight: "700",
+
+    color: "#FFF5FA",
+
+    letterSpacing: 0.3,
+
+    lineHeight: 36,
   },
+
   subtitulo: {
-    fontSize: theme.texts.text,
-    color: theme.colors.secondary,
-    marginBottom: 15,
+    fontSize: 15,
+
+    color: "#FCE5F0",
+
+    marginBottom: 18,
+    marginTop: 6,
+
+    lineHeight: 23,
+
+    fontWeight: "400",
+
+    letterSpacing: 0.2,
   },
+
   tabs: {
     flexDirection: "row",
-    backgroundColor: theme.colors.cards,
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 15,
+
+    backgroundColor: "#C973A0",
+
+    borderRadius: 18,
+
+    padding: 5,
+
+    marginBottom: 22,
   },
+
   tab: {
     flex: 1,
-    padding: 10,
+
+    paddingVertical: 11,
+
     alignItems: "center",
+
+    borderRadius: 14,
   },
+
   tabActive: {
     flex: 1,
-    padding: 10,
-    backgroundColor: theme.colors.texts,
-    borderRadius: 10,
+
+    paddingVertical: 11,
+
+    backgroundColor: "#FFF4F9",
+
+    borderRadius: 14,
+
     alignItems: "center",
+
+    shadowColor: "#7B3057",
+    shadowOpacity: 0.07,
+    shadowRadius: 5,
+
+    elevation: 2,
   },
+
   tabText: {
-    fontSize: theme.texts.text,
-    color: theme.colors.texts,
+    fontSize: 14,
+
+    color: "#FFF",
+
+    fontWeight: "500",
+
+    letterSpacing: 0.2,
   },
+
   tabTextActive: {
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
-    fontWeight: "bold",
+    fontSize: 14,
+
+    color: "#973B69",
+
+    fontWeight: "700",
+
+    letterSpacing: 0.2,
   },
+
   inputFake: {
-    backgroundColor: theme.colors.terceary,
-    padding: 14,
-    borderRadius: 16,
-    marginBottom: 15,
+    backgroundColor: "#FFF3F8",
+
+    padding: 15,
+
+    borderRadius: 20,
+
+    marginBottom: 16,
+
     elevation: 3,
+
+    shadowColor: "#7B3057",
+    shadowOpacity: 0.07,
+    shadowRadius: 6,
+
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
   },
+
   inputFakeContent: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+
+    gap: 12,
   },
+
   avatarFake: {
-    width: 35,
-    height: 35,
-    borderRadius: 20,
-    backgroundColor: theme.colors.cards,
+    width: 38,
+    height: 38,
+
+    borderRadius: 22,
+
+    backgroundColor: "#EDB5CF",
   },
+
   inputFakeText: {
-    color: theme.colors.subtitle,
-    fontSize: theme.texts.text,
+    color: "#7A5568",
+
+    fontSize: 15,
+
+    fontWeight: "400",
   },
+
   card: {
-    backgroundColor: theme.colors.terceary,
-    padding: 15,
-    borderRadius: 15,
-    marginBottom: 15,
+    backgroundColor: "#F9D9E8",
+
+    padding: 20,
+
+    borderRadius: 24,
+
+    marginBottom: 18,
+
+    shadowColor: "#7B3057",
+    shadowOpacity: 0.10,
+    shadowRadius: 8,
+
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    elevation: 4,
   },
+
   header: {
     flexDirection: "row",
+
     justifyContent: "space-between",
+
     alignItems: "center",
   },
+
   userRow: {
     flexDirection: "row",
+
     alignItems: "center",
-    gap: 10,
+
+    gap: 12,
   },
+
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: theme.colors.cards,
+    width: 42,
+    height: 42,
+
+    borderRadius: 24,
+
+    backgroundColor: "#EDB5CF",
   },
+
   nome: {
-    fontWeight: "bold",
-    color: theme.colors.title,
-    fontSize: theme.texts.subtitle,
+    fontWeight: "700",
+
+    color: "#8C3562",
+
+    fontSize: 17,
+
+    letterSpacing: 0.2,
   },
+
   tipo: {
-    fontSize: theme.texts.text,
-    color: theme.colors.subtitle,
+    fontSize: 13,
+
+    color: "#9B7185",
+
     textTransform: "capitalize",
+
+    marginTop: 2,
   },
+
   texto: {
-    marginVertical: 10,
-    color: theme.colors.title,
-    fontSize: theme.texts.text,
+    marginVertical: 14,
+
+    color: "#6D5060",
+
+    fontSize: 15,
+
+    lineHeight: 26,
+
+    fontWeight: "400",
   },
+
   textoComentarioRender: {
-    marginTop: 5,
-    color: theme.colors.title,
-    fontSize: theme.texts.text,
+    marginTop: 6,
+
+    color: "#6D5060",
+
+    fontSize: 14,
+
+    lineHeight: 23,
   },
+
   acoes: {
     flexDirection: "row",
-    gap: 15,
+
+    gap: 20,
+
+    marginTop: 6,
   },
+
   likes: {
-    marginTop: 5,
-    color: theme.colors.subtitle,
-    fontSize: theme.texts.text,
+    marginTop: 8,
+
+    color: "#9B7185",
+
+    fontSize: 13,
   },
+
   modal: {
     flex: 1,
+
     justifyContent: "center",
-    backgroundColor: "rgba(0,0,0,0.7)",
-    padding: 20,
+
+    backgroundColor: "rgba(0,0,0,0.45)",
+
+    padding: 22,
   },
+
   modalBox: {
-    backgroundColor: theme.colors.texts,
-    padding: 20,
-    borderRadius: 16,
+    backgroundColor: "#FFF8FC",
+
+    padding: 24,
+
+    borderRadius: 28,
   },
+
   modalTitulo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    marginBottom: 15,
-    color: theme.colors.title,
+    fontSize: 24,
+
+    fontWeight: "700",
+
+    marginBottom: 16,
+
+    color: "#8C3562",
+
+    letterSpacing: 0.2,
   },
+
   input: {
     borderWidth: 1,
-    borderColor: theme.colors.secondary,
-    padding: 15,
-    borderRadius: 10,
+
+    borderColor: "#EDB5CF",
+
+    padding: 16,
+
+    borderRadius: 16,
+
     height: 120,
-    backgroundColor: theme.colors.texts,
+
+    backgroundColor: "#FFFFFF",
+
     textAlignVertical: "top",
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
+
+    fontSize: 15,
+
+    color: "#5E3A4D",
+
+    lineHeight: 24,
   },
+
   labelVisibilidade: {
-    marginTop: 15,
-    marginBottom: 8,
-    fontSize: theme.texts.text,
+    marginTop: 16,
+    marginBottom: 10,
+
+    fontSize: 14,
+
     fontWeight: "600",
-    color: theme.colors.subtitle,
+
+    color: "#8C3562",
   },
+
   rowVisibilidade: {
     flexDirection: "row",
+
     gap: 10,
-    marginBottom: 10,
+
+    marginBottom: 12,
   },
+
   btnVisibilidade: {
     flex: 1,
-    padding: 10,
-    borderRadius: 8,
+
+    padding: 13,
+
+    borderRadius: 14,
+
     borderWidth: 1,
-    borderColor: theme.colors.secondary,
+
+    borderColor: "#EDB5CF",
+
     alignItems: "center",
+
+    backgroundColor: "#FFF8FC",
   },
+
   btnVisibilidadeAtivo: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.secondary,
+    borderColor: "#C54C86",
+
+    backgroundColor: "#FFE5F0",
   },
+
   txtVisibilidade: {
-    color: theme.colors.subtitle,
-    fontSize: theme.texts.text,
+    color: "#8F6779",
+
+    fontSize: 13,
+
+    fontWeight: "500",
   },
+
   txtVisibilidadeAtivo: {
-    color: theme.colors.primary,
-    fontWeight: "bold",
-    fontSize: theme.texts.text,
+    color: "#8C3562",
+
+    fontWeight: "700",
+
+    fontSize: 13,
   },
+
   botao: {
-    backgroundColor: theme.colors.primary,
-    padding: 15,
-    marginTop: 15,
-    borderRadius: 10,
+    backgroundColor: "#C54C86",
+
+    padding: 16,
+
+    marginTop: 16,
+
+    borderRadius: 16,
+
     alignItems: "center",
+
+    shadowColor: "#7B3057",
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+
+    elevation: 3,
   },
+
   textoBotaoBranco: {
-    color: theme.colors.texts,
-    fontWeight: "bold",
-    fontSize: theme.texts.text,
+    color: "#FFFFFF",
+
+    fontWeight: "700",
+
+    fontSize: 15,
+
+    letterSpacing: 0.2,
   },
+
   botaoCancelar: {
     marginTop: 15,
+
     padding: 10,
+
     alignItems: "center",
   },
+
   textoCancelar: {
-    color: theme.colors.primary,
-    fontWeight: "bold",
-    fontSize: theme.texts.text,
+    color: "#C54C86",
+
+    fontWeight: "600",
+
+    fontSize: 14,
   },
+
   textoBotaoFechar: {
     textAlign: "center",
-    marginTop: 15,
-    color: theme.colors.texts,
-    fontWeight: "bold",
-    fontSize: theme.texts.text,
+
+    marginTop: 16,
+
+    color: "#FFFFFF",
+
+    fontWeight: "700",
+
+    fontSize: 15,
   },
+
   textoVazio: {
-    color: theme.colors.texts,
+    color: "#FFF0F7",
+
     textAlign: "center",
-    marginVertical: 20,
-    fontSize: theme.texts.text,
+
+    marginVertical: 24,
+
+    fontSize: 15,
+
+    lineHeight: 24,
   },
 });
