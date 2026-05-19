@@ -1,5 +1,5 @@
 import { theme } from "@/src/constants/theme";
-import { Feather, Ionicons } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -140,82 +140,6 @@ export function Configuracoes() {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Seu Perfil Atual</Text>
-
-                <TouchableOpacity
-                  style={[
-                    styles.situacaoItem,
-                    situacao === "gestante" && styles.situacaoItemAtiva,
-                  ]}
-                  onPress={() => handleMudarPerfil("gestante")}
-                >
-                  <Ionicons
-                    name="heart"
-                    size={24}
-                    color={
-                      situacao === "gestante" ? "#fff" : theme.colors.cards
-                    }
-                  />
-                  <View style={styles.situacaoTextContainer}>
-                    <Text
-                      style={[
-                        styles.situacaoTextMain,
-                        situacao === "gestante" && { color: "#fff" },
-                      ]}
-                    >
-                      Estou Gestante
-                    </Text>
-                    <Text
-                      style={[
-                        styles.situacaoTextSub,
-                        situacao === "gestante" && { color: "#eee" },
-                      ]}
-                    >
-                      Acompanhe sua gravidez
-                    </Text>
-                  </View>
-                  {situacao === "gestante" && (
-                    <Feather name="check" size={20} color="#fff" />
-                  )}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.situacaoItem,
-                    situacao === "filhos" && styles.situacaoItemAtiva,
-                  ]}
-                  onPress={() => handleMudarPerfil("filhos")}
-                >
-                  <Ionicons
-                    name="people"
-                    size={24}
-                    color={situacao === "filhos" ? "#fff" : theme.colors.cards}
-                  />
-                  <View style={styles.situacaoTextContainer}>
-                    <Text
-                      style={[
-                        styles.situacaoTextMain,
-                        situacao === "filhos" && { color: "#fff" },
-                      ]}
-                    >
-                      Já tenho Filhos
-                    </Text>
-                    <Text
-                      style={[
-                        styles.situacaoTextSub,
-                        situacao === "filhos" && { color: "#eee" },
-                      ]}
-                    >
-                      Dicas para os pequenos
-                    </Text>
-                  </View>
-                  {situacao === "filhos" && (
-                    <Feather name="check" size={20} color="#fff" />
-                  )}
-                </TouchableOpacity>
-              </View>
-
               <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Preferências</Text>
                 <View style={styles.settingItemRow}>

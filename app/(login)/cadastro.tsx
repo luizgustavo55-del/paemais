@@ -24,8 +24,14 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, set } from "firebase/database";
 import { doc, setDoc } from "firebase/firestore";
 
+// 👇 Importação adicionada para usar o contexto
+import { useAuth } from "@/src/context/AuthContext";
+
 export default function Cadastro() {
   const router = useRouter();
+
+  // 👇 Extração do setUser adicionada
+  const { setUser } = useAuth();
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -106,11 +112,18 @@ export default function Cadastro() {
         // Gestante vai para o FIRESTORE
         await setDoc(doc(firestore, "usuarios", uid), dadosUsuario);
 
+        // 👇 Atualização manual do state antes de navegar
+        setUser({ uid, email, tipo: "gestante" });
+
         router.replace("/dum");
       } else {
         // Pai vai para o REALTIME DATABASE na estrutura solicitada (usuarios/[UID])
         await set(ref(db, "usuarios/" + uid), dadosUsuario);
         Alert.alert("Sucesso", "Conta de parceiro criada!");
+
+        // 👇 Atualização manual do state antes de navegar
+        setUser({ uid, email, tipo: "pai" });
+
         router.replace("/addFilho");
       }
     } catch (error: any) {

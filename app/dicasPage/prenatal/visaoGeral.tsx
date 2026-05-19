@@ -154,10 +154,9 @@ export default function TelaExemplo() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#cfb8ff",
+    backgroundColor: "#F4C7DD",
   },
 
-  /* HEADER FIXO */
   header: {
     position: "absolute",
     top: 0,
@@ -166,16 +165,18 @@ const styles = StyleSheet.create({
 
     zIndex: 999,
 
-    backgroundColor: "#8a68d3",
+    backgroundColor: "#cc5994",
 
     paddingTop: 42,
     paddingHorizontal: 22,
     paddingBottom: 22,
 
     elevation: 10,
-    shadowColor: "#28174c",
-    shadowOpacity: 0.22,
+
+    shadowColor: "#6E2C50",
+    shadowOpacity: 0.25,
     shadowRadius: 8,
+
     shadowOffset: {
       width: 0,
       height: 4,
@@ -190,8 +191,10 @@ const styles = StyleSheet.create({
   backButton: {
     width: 42,
     height: 42,
+
     borderRadius: 21,
-    backgroundColor: "#ae89e9",
+
+    backgroundColor: "#D97AA8",
 
     justifyContent: "center",
     alignItems: "center",
@@ -200,7 +203,7 @@ const styles = StyleSheet.create({
   },
 
   badge: {
-    backgroundColor: "#ae89e9",
+    backgroundColor: "#D97AA8",
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 18,
@@ -213,6 +216,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
 
+  boldText: {
+    fontWeight: "bold",
+    color: "#8B2F61",
+  },
+
   title: {
     color: "#fff",
     fontSize: 24,
@@ -221,23 +229,22 @@ const styles = StyleSheet.create({
     lineHeight: 32,
   },
 
-  /* CONTENT */
   content: {
     padding: 20,
-    paddingTop: 180,
+    paddingTop: 190,
     paddingBottom: 40,
   },
 
-  /* CARDS */
   card: {
-    backgroundColor: "#eae1fd",
+    backgroundColor: "#FCE1EC",
     borderRadius: 24,
     padding: 20,
     marginBottom: 18,
 
-    shadowColor: "#28174c",
-    shadowOpacity: 0.08,
+    shadowColor: "#7B3057",
+    shadowOpacity: 0.12,
     shadowRadius: 10,
+
     shadowOffset: {
       width: 0,
       height: 4,
@@ -255,18 +262,17 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 21,
     fontWeight: "700",
-    color: "#28174c",
+    color: "#8B2F61",
     marginLeft: 10,
     flex: 1,
   },
 
   cardText: {
     fontSize: 16,
-    color: "#4a4a4a",
+    color: "#694257",
     lineHeight: 28,
   },
 
-  /* LISTA */
   listItem: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -277,7 +283,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 10,
-    backgroundColor: "#ff5ea8",
+    backgroundColor: "#C54286",
     marginTop: 10,
     marginRight: 12,
   },
@@ -285,11 +291,10 @@ const styles = StyleSheet.create({
   listText: {
     flex: 1,
     fontSize: 16,
-    color: "#4a4a4a",
+    color: "#694257",
+
     lineHeight: 27,
   },
-
-  /* VÍDEO */
   youtubeCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -297,6 +302,8 @@ const styles = StyleSheet.create({
 
   thumbnailContainer: {
     position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   thumbnail: {
@@ -307,11 +314,8 @@ const styles = StyleSheet.create({
 
   playButton: {
     position: "absolute",
-    top: "38%",
-    left: "38%",
-
-    backgroundColor: "rgba(0,0,0,0.65)",
-    padding: 8,
+    backgroundColor: "rgba(139, 47, 97, 0.85)",
+    padding: 10,
     borderRadius: 50,
   },
 
@@ -324,13 +328,13 @@ const styles = StyleSheet.create({
   videoTitle: {
     fontSize: 17,
     fontWeight: "700",
-    color: "#28174c",
+    color: "#8B2F61",
     marginLeft: 8,
   },
 
   videoText: {
     fontSize: 15,
-    color: "#666",
+    color: "#694257",
     lineHeight: 24,
     marginTop: 4,
   },

@@ -1,14 +1,24 @@
 import { theme } from "@/src/constants/theme";
-import { auth, db, firestore } from "@/src/services/firebase"; // <-- db ADICIONADO AQUI
+import { useAuth } from "@/src/context/AuthContext";
+import { auth, db, firestore } from "@/src/services/firebase";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { get, ref } from "firebase/database"; // <-- IMPORTAÇÕES DO REALTIME DATABASE
+// 👇 Importações ajustadas para suportar ambos os bancos
+import {
+  equalTo,
+  get,
+  onValue,
+  orderByChild,
+  query as queryRTDB,
+  ref,
+  update as updateRTDB,
+} from "firebase/database";
 import {
   collection,
   doc,
   getDoc,
   getDocs,
   onSnapshot,
-  query,
+  query as queryFirestore,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -17,8 +27,10 @@ import {
   ActivityIndicator,
   Alert,
   Modal,
+  Platform,
   ScrollView,
   Share,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -26,94 +38,102 @@ import {
   View,
 } from "react-native";
 
+// Função utilitária para buscar um usuário, não importa em qual banco ele esteja
+async function buscarQualquerUsuario(uid: string) {
+  // 1. Tenta no Firestore (Gestante)
+  const snap = await getDoc(doc(firestore, "usuarios", uid));
+  if (snap.exists()) return snap.data();
+
+  // 2. Tenta no Realtime Database (Pai)
+  const rtdbSnap = await get(ref(db, `usuarios/${uid}`));
+  if (rtdbSnap.exists()) return rtdbSnap.val();
+
+  return null;
+}
+
 export default function Compartilhar() {
+  const { user } = useAuth();
+  const isPai = user?.tipo === "pai";
+
+  const corPrincipal = "#9333EA";
+  const corFundoCard = "#F3E8FF";
+
   const [nomeUser, setNomeUser] = useState("Carregando...");
   const [codigo, setCodigo] = useState("------");
   const [codigoInput, setCodigoInput] = useState("");
   const [carregandoVinculo, setCarregandoVinculo] = useState(false);
 
-  // Estados para Vínculo e Solicitação
-  const [dadosVinculado, setDadosVinculado] = useState<{
-    id: string;
-    nome: string;
-    email: string;
-    tipo: string;
-  } | null>(null);
+  const [dadosVinculado, setDadosVinculado] = useState<any>(null);
+  const [solicitacao, setSolicitacao] = useState<any>(null);
 
-  const [solicitacao, setSolicitacao] = useState<{
-    id: string;
-    nome: string;
-  } | null>(null);
-
-  // Novos Estados para os Detalhes Dinâmicos (DUM ou Filhos)
   const [detalhesGestacao, setDetalhesGestacao] = useState<any>(null);
   const [detalhesFilhos, setDetalhesFilhos] = useState<any[]>([]);
   const [carregandoDetalhes, setCarregandoDetalhes] = useState(false);
-
-  // Estado do Modal
   const [modalVisivel, setModalVisivel] = useState(false);
 
+  // 🔥 Efeito que escuta as mudanças do perfil (CÓDIGO RESOLVIDO AQUI)
   useEffect(() => {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
 
-    const unsub = onSnapshot(
-      doc(firestore, "usuarios", uid),
-      async (docSnap) => {
-        if (docSnap.exists()) {
-          const dados = docSnap.data();
-          setNomeUser(dados.nome || "Usuário");
-          setCodigo(dados.codigoCompartilhamento || "------");
+    // Função interna para processar os dados recebidos de qualquer banco
+    const processarDadosUsuario = async (dados: any) => {
+      setNomeUser(dados.nome || "Usuário");
+      setCodigo(dados.codigoCompartilhamento || "------");
 
-          // 1. Verifica solicitações recebidas
-          if (dados.solicitacaoRecebidaDe) {
-            const remetenteRef = doc(
-              firestore,
-              "usuarios",
-              dados.solicitacaoRecebidaDe,
-            );
-            const remetenteSnap = await getDoc(remetenteRef);
-            if (remetenteSnap.exists()) {
-              setSolicitacao({
-                id: dados.solicitacaoRecebidaDe,
-                nome: remetenteSnap.data().nome,
-              });
-            }
-          } else {
-            setSolicitacao(null);
-          }
-
-          // 2. Monta os dados básicos do vinculado
-          if (dados.perfilVinculado) {
-            const parceiroRef = doc(
-              firestore,
-              "usuarios",
-              dados.perfilVinculado,
-            );
-            const parceiroSnap = await getDoc(parceiroRef);
-            if (parceiroSnap.exists()) {
-              const parceiroDados = parceiroSnap.data();
-              setDadosVinculado({
-                id: dados.perfilVinculado,
-                nome: parceiroDados.nome || "Sem nome",
-                email: parceiroDados.email || "Sem email",
-                tipo:
-                  parceiroDados.tipo || parceiroDados.perfil || "Não definido",
-              });
-            }
-          } else {
-            setDadosVinculado(null);
-          }
+      // Verifica solicitações
+      if (dados.solicitacaoRecebidaDe) {
+        const remetenteDados = await buscarQualquerUsuario(
+          dados.solicitacaoRecebidaDe,
+        );
+        if (remetenteDados) {
+          setSolicitacao({
+            id: dados.solicitacaoRecebidaDe,
+            nome: remetenteDados.nome,
+          });
         }
-      },
-    );
+      } else {
+        setSolicitacao(null);
+      }
 
-    return () => unsub();
-  }, []);
+      // Verifica vínculo (Amigo)
+      if (dados.perfilVinculado) {
+        const parceiroDados = await buscarQualquerUsuario(
+          dados.perfilVinculado,
+        );
+        if (parceiroDados) {
+          setDadosVinculado({
+            id: dados.perfilVinculado,
+            nome: parceiroDados.nome || "Sem nome",
+            email: parceiroDados.email || "Sem email",
+            tipo: parceiroDados.tipo || parceiroDados.perfil || "Não definido",
+          });
+        }
+      } else {
+        setDadosVinculado(null);
+      }
+    };
 
-  // -------------------------------------------------------------
-  // FUNÇÃO: BUSCAR DETALHES EXTRAS QUANDO O MODAL ABRIR
-  // -------------------------------------------------------------
+    if (isPai) {
+      // PAI ESCUTA O REALTIME DATABASE
+      const userRef = ref(db, `usuarios/${uid}`);
+      const unsubscribe = onValue(userRef, (snapshot) => {
+        if (snapshot.exists()) {
+          processarDadosUsuario(snapshot.val());
+        }
+      });
+      return () => unsubscribe();
+    } else {
+      // GESTANTE ESCUTA O FIRESTORE
+      const unsub = onSnapshot(doc(firestore, "usuarios", uid), (docSnap) => {
+        if (docSnap.exists()) {
+          processarDadosUsuario(docSnap.data());
+        }
+      });
+      return () => unsub();
+    }
+  }, [isPai]);
+
   async function buscarDetalhesAmigo(amigoId: string, tipoAmigo: string) {
     setCarregandoDetalhes(true);
     setDetalhesGestacao(null);
@@ -121,27 +141,24 @@ export default function Compartilhar() {
 
     try {
       if (tipoAmigo === "gestante") {
-        // Busca DUM no FIRESTORE
         const gestacoesRef = collection(
           firestore,
           "usuarios",
           amigoId,
           "gestacoes",
         );
-        const q = query(gestacoesRef, where("status", "==", "ativa"));
+        const q = queryFirestore(gestacoesRef, where("status", "==", "ativa"));
         const snap = await getDocs(q);
 
         if (!snap.empty) {
           setDetalhesGestacao(snap.docs[0].data());
         }
       } else {
-        // Busca Filhos no REALTIME DATABASE
         const filhosRef = ref(db, `usuarios/${amigoId}/filhos`);
         const snap = await get(filhosRef);
 
         if (snap.exists()) {
           const dadosObj = snap.val();
-          // Converte o objeto do Realtime Database em um Array
           const listaFilhos = Object.keys(dadosObj).map((key) => ({
             id: key,
             ...dadosObj[key],
@@ -156,30 +173,49 @@ export default function Compartilhar() {
     }
   }
 
-  // -------------------------------------------------------------
-  // FUNÇÃO: ENVIAR SOLICITAÇÃO
-  // -------------------------------------------------------------
+  // 🔥 Busca o código da pessoa misturando os dois bancos
   async function enviarSolicitacao() {
     const uidAtual = auth.currentUser?.uid;
-    if (codigoInput.length < 4 || !uidAtual) return;
+    const codigoBusca = codigoInput.toUpperCase().trim();
+    if (codigoBusca.length < 4 || !uidAtual) return;
 
     setCarregandoVinculo(true);
 
     try {
-      const q = query(
-        collection(firestore, "usuarios"),
-        where("codigoCompartilhamento", "==", codigoInput.toUpperCase().trim()),
-      );
-      const querySnapshot = await getDocs(q);
+      let uidOutro = null;
+      let tipoOutro = "";
 
-      if (querySnapshot.empty) {
+      // 1. Procura no Firestore
+      const qFs = queryFirestore(
+        collection(firestore, "usuarios"),
+        where("codigoCompartilhamento", "==", codigoBusca),
+      );
+      const snapFs = await getDocs(qFs);
+
+      if (!snapFs.empty) {
+        uidOutro = snapFs.docs[0].id;
+        tipoOutro = "gestante";
+      } else {
+        // 2. Procura no Realtime Database
+        const qRtdb = queryRTDB(
+          ref(db, "usuarios"),
+          orderByChild("codigoCompartilhamento"),
+          equalTo(codigoBusca),
+        );
+        const snapRtdb = await get(qRtdb);
+
+        if (snapRtdb.exists()) {
+          const result = snapRtdb.val();
+          uidOutro = Object.keys(result)[0]; // Pega o ID encontrado
+          tipoOutro = "pai";
+        }
+      }
+
+      if (!uidOutro) {
         Alert.alert("Erro", "Código não encontrado.");
         setCarregandoVinculo(false);
         return;
       }
-
-      const outroUsuarioDoc = querySnapshot.docs[0];
-      const uidOutro = outroUsuarioDoc.id;
 
       if (uidOutro === uidAtual) {
         Alert.alert("Aviso", "Você não pode enviar solicitação para si mesmo.");
@@ -193,9 +229,16 @@ export default function Compartilhar() {
         return;
       }
 
-      await updateDoc(doc(firestore, "usuarios", uidOutro), {
-        solicitacaoRecebidaDe: uidAtual,
-      });
+      // Salva a solicitação no banco correto da outra pessoa
+      if (tipoOutro === "gestante") {
+        await updateDoc(doc(firestore, "usuarios", uidOutro), {
+          solicitacaoRecebidaDe: uidAtual,
+        });
+      } else {
+        await updateRTDB(ref(db, `usuarios/${uidOutro}`), {
+          solicitacaoRecebidaDe: uidAtual,
+        });
+      }
 
       setCodigoInput("");
       Alert.alert("Enviado!", `Solicitação enviada. Aguarde ele(a) aceitar.`);
@@ -206,22 +249,35 @@ export default function Compartilhar() {
     }
   }
 
-  // -------------------------------------------------------------
-  // FUNÇÕES: ACEITAR OU RECUSAR
-  // -------------------------------------------------------------
   async function aceitarSolicitacao() {
     const uidAtual = auth.currentUser?.uid;
     if (!uidAtual || !solicitacao) return;
 
     try {
-      await updateDoc(doc(firestore, "usuarios", uidAtual), {
-        perfilVinculado: solicitacao.id,
-        solicitacaoRecebidaDe: null,
-      });
+      // 1. Atualiza o SEU perfil
+      if (isPai) {
+        await updateRTDB(ref(db, `usuarios/${uidAtual}`), {
+          perfilVinculado: solicitacao.id,
+          solicitacaoRecebidaDe: null,
+        });
+      } else {
+        await updateDoc(doc(firestore, "usuarios", uidAtual), {
+          perfilVinculado: solicitacao.id,
+          solicitacaoRecebidaDe: null,
+        });
+      }
 
-      await updateDoc(doc(firestore, "usuarios", solicitacao.id), {
-        perfilVinculado: uidAtual,
-      });
+      // 2. Atualiza o perfil do AMIGO
+      const friendData = await buscarQualquerUsuario(solicitacao.id);
+      if (friendData?.tipo === "gestante") {
+        await updateDoc(doc(firestore, "usuarios", solicitacao.id), {
+          perfilVinculado: uidAtual,
+        });
+      } else {
+        await updateRTDB(ref(db, `usuarios/${solicitacao.id}`), {
+          perfilVinculado: uidAtual,
+        });
+      }
 
       Alert.alert(
         "Sucesso!",
@@ -237,9 +293,15 @@ export default function Compartilhar() {
     if (!uidAtual) return;
 
     try {
-      await updateDoc(doc(firestore, "usuarios", uidAtual), {
-        solicitacaoRecebidaDe: null,
-      });
+      if (isPai) {
+        await updateRTDB(ref(db, `usuarios/${uidAtual}`), {
+          solicitacaoRecebidaDe: null,
+        });
+      } else {
+        await updateDoc(doc(firestore, "usuarios", uidAtual), {
+          solicitacaoRecebidaDe: null,
+        });
+      }
     } catch (error) {
       Alert.alert("Erro", "Falha ao recusar.");
     }
@@ -271,15 +333,17 @@ export default function Compartilhar() {
         </View>
       )}
 
-      <View style={styles.card}>
+      <View style={[styles.card, { backgroundColor: corFundoCard }]}>
         <View style={styles.iconCircle}>
-          <Ionicons name="qr-code" size={30} color={theme.colors.primary} />
+          <Ionicons name="qr-code" size={30} color={corPrincipal} />
         </View>
         <Text style={styles.title}>Meu Código</Text>
         <View style={styles.codeRow}>
-          <Text style={styles.codeText}>{codigo}</Text>
+          <Text style={[styles.codeText, { color: corPrincipal }]}>
+            {codigo}
+          </Text>
           <TouchableOpacity
-            style={styles.copyBtn}
+            style={[styles.copyBtn, { backgroundColor: corPrincipal }]}
             onPress={() =>
               Share.share({
                 message: `Me adicione no app de nomes! Código: ${codigo}`,
@@ -296,13 +360,13 @@ export default function Compartilhar() {
         <View style={styles.inputRow}>
           <TextInput
             style={styles.input}
-            placeholder="Digite o código de Usuario"
+            placeholder="Digite o código do amigo"
             autoCapitalize="characters"
             value={codigoInput}
             onChangeText={setCodigoInput}
           />
           <TouchableOpacity
-            style={styles.btnVincular}
+            style={[styles.btnVincular, { backgroundColor: corPrincipal }]}
             onPress={enviarSolicitacao}
           >
             {carregandoVinculo ? (
@@ -317,11 +381,11 @@ export default function Compartilhar() {
       <Text style={styles.sectionLabel}>Amigos</Text>
 
       {dadosVinculado ? (
-        <View style={styles.personCardDestaque}>
+        <View
+          style={[styles.personCardDestaque, { borderColor: corPrincipal }]}
+        >
           <View style={styles.row}>
-            <View
-              style={[styles.avatar, { backgroundColor: theme.colors.primary }]}
-            >
+            <View style={[styles.avatar, { backgroundColor: corPrincipal }]}>
               <Ionicons name="heart" size={20} color="white" />
             </View>
             <View>
@@ -331,10 +395,9 @@ export default function Compartilhar() {
           </View>
 
           <TouchableOpacity
-            style={styles.btnVerPerfil}
+            style={[styles.btnVerPerfil, { backgroundColor: corPrincipal }]}
             onPress={() => {
               setModalVisivel(true);
-              // CHAMA A BUSCA NO MOMENTO QUE ABRE O MODAL!
               buscarDetalhesAmigo(dadosVinculado.id, dadosVinculado.tipo);
             }}
           >
@@ -347,7 +410,6 @@ export default function Compartilhar() {
         </View>
       )}
 
-      {/* MODAL DE PERFIL */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -368,12 +430,11 @@ export default function Compartilhar() {
                 style={styles.modalBody}
                 showsVerticalScrollIndicator={false}
               >
-                {/* DADOS BÁSICOS */}
                 <View style={styles.infoRow}>
                   <Ionicons
                     name="person-outline"
                     size={24}
-                    color={theme.colors.primary}
+                    color={corPrincipal}
                   />
                   <View style={styles.infoTextContainer}>
                     <Text style={styles.infoLabel}>Nome:</Text>
@@ -385,7 +446,7 @@ export default function Compartilhar() {
                   <Ionicons
                     name="mail-outline"
                     size={24}
-                    color={theme.colors.primary}
+                    color={corPrincipal}
                   />
                   <View style={styles.infoTextContainer}>
                     <Text style={styles.infoLabel}>Email:</Text>
@@ -397,7 +458,7 @@ export default function Compartilhar() {
                   <Ionicons
                     name="star-outline"
                     size={24}
-                    color={theme.colors.primary}
+                    color={corPrincipal}
                   />
                   <View style={styles.infoTextContainer}>
                     <Text style={styles.infoLabel}>Tipo de Conta:</Text>
@@ -414,27 +475,24 @@ export default function Compartilhar() {
 
                 <View style={styles.divisor} />
 
-                {/* DETALHES DINÂMICOS (DUM ou FILHOS) */}
                 {carregandoDetalhes ? (
                   <View style={{ padding: 20 }}>
-                    <ActivityIndicator
-                      size="large"
-                      color={theme.colors.primary}
-                    />
+                    <ActivityIndicator size="large" color={corPrincipal} />
                   </View>
                 ) : (
                   <>
-                    {/* SE FOR GESTANTE */}
                     {dadosVinculado.tipo === "gestante" && detalhesGestacao && (
                       <View style={styles.extraContainer}>
-                        <Text style={styles.extraTitle}>
+                        <Text
+                          style={[styles.extraTitle, { color: corPrincipal }]}
+                        >
                           Status da Gravidez 🤰
                         </Text>
                         <View style={styles.infoRow}>
                           <MaterialCommunityIcons
                             name="calendar-heart"
                             size={24}
-                            color={theme.colors.primary}
+                            color={corPrincipal}
                           />
                           <View style={styles.infoTextContainer}>
                             <Text style={styles.infoLabel}>DUM:</Text>
@@ -446,15 +504,22 @@ export default function Compartilhar() {
                       </View>
                     )}
 
-                    {/* SE FOR PAI/FILHOS */}
                     {dadosVinculado.tipo !== "gestante" &&
                       detalhesFilhos.length > 0 && (
                         <View style={styles.extraContainer}>
-                          <Text style={styles.extraTitle}>
+                          <Text
+                            style={[styles.extraTitle, { color: corPrincipal }]}
+                          >
                             Filhos Cadastrados 👶
                           </Text>
                           {detalhesFilhos.map((filho) => (
-                            <View key={filho.id} style={styles.filhoCard}>
+                            <View
+                              key={filho.id}
+                              style={[
+                                styles.filhoCard,
+                                { borderLeftColor: corPrincipal },
+                              ]}
+                            >
                               <View style={styles.filhoHeader}>
                                 <Text style={styles.filhoNome}>
                                   {filho.nome}
@@ -471,7 +536,6 @@ export default function Compartilhar() {
                         </View>
                       )}
 
-                    {/* SE NÃO TIVER DADOS AINDA */}
                     {dadosVinculado.tipo === "gestante" &&
                       !detalhesGestacao && (
                         <Text style={styles.textoVazioDetalhes}>
@@ -496,9 +560,18 @@ export default function Compartilhar() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#F8F9FA" },
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop:
+      Platform.OS === "android"
+        ? StatusBar.currentHeight
+          ? StatusBar.currentHeight + 10
+          : 40
+        : 16,
+    backgroundColor: "#F8F9FA",
+  },
   card: {
-    backgroundColor: theme.colors.terceary,
     padding: 20,
     borderRadius: 20,
     alignItems: "center",
@@ -529,11 +602,9 @@ const styles = StyleSheet.create({
   codeText: {
     fontSize: theme.texts.subtitle,
     fontWeight: "bold",
-    color: theme.colors.primary,
     letterSpacing: 2,
   },
   copyBtn: {
-    backgroundColor: theme.colors.primary,
     padding: 10,
     borderRadius: 10,
   },
@@ -555,7 +626,6 @@ const styles = StyleSheet.create({
     borderColor: "#DDD",
   },
   btnVincular: {
-    backgroundColor: theme.colors.primary,
     width: 50,
     height: 50,
     borderRadius: 12,
@@ -569,7 +639,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     flexDirection: "column",
     borderWidth: 2,
-    borderColor: theme.colors.primary,
     gap: 12,
   },
   row: { flexDirection: "row", gap: 12, alignItems: "center" },
@@ -583,7 +652,6 @@ const styles = StyleSheet.create({
   nomeText: { fontWeight: "bold", fontSize: theme.texts.subtitle },
   subText: { fontSize: theme.texts.text, color: "#666" },
   btnVerPerfil: {
-    backgroundColor: theme.colors.primary,
     padding: 10,
     borderRadius: 10,
     alignItems: "center",
@@ -672,13 +740,10 @@ const styles = StyleSheet.create({
     backgroundColor: "#EEE",
     marginVertical: 15,
   },
-  extraContainer: {
-    marginTop: 5,
-  },
+  extraContainer: { marginTop: 5 },
   extraTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: theme.colors.primary,
     marginBottom: 15,
   },
   filhoCard: {
@@ -687,7 +752,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 10,
     borderLeftWidth: 4,
-    borderLeftColor: theme.colors.primary,
   },
   filhoHeader: {
     flexDirection: "row",
@@ -700,9 +764,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
   },
-  filhoSexo: {
-    fontSize: 18,
-  },
+  filhoSexo: { fontSize: 18 },
   filhoData: {
     fontSize: 14,
     color: "#777",
