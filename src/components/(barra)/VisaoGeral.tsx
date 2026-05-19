@@ -1,7 +1,14 @@
 import { theme } from "@/src/constants/theme";
 import { auth, firestore } from "@/src/services/firebase";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -18,6 +25,7 @@ export default function VisaoGeral() {
   const [dpp, setDpp] = useState("...");
   const [diasRestantes, setDiasRestantes] = useState(280);
 
+  const [lembretes, setLembretes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,6 +39,7 @@ export default function VisaoGeral() {
           console.log("Usuário não logado");
           return;
         }
+
         const gestacoesRef = collection(
           firestore,
           "usuarios",
@@ -41,13 +50,10 @@ export default function VisaoGeral() {
         const gestacoesSnap = await getDocs(q);
 
         if (!gestacoesSnap.empty) {
-          // Pega os dados da primeira gravidez ativa encontrada
           const dadosGestacao = gestacoesSnap.docs[0].data();
 
           if (dadosGestacao?.dataUltimaMenstruacao) {
             const partes = dadosGestacao.dataUltimaMenstruacao.split("/");
-
-            // dd/mm/yyyy
             const dum = new Date(
               Number(partes[2]),
               Number(partes[1]) - 1,
@@ -80,8 +86,57 @@ export default function VisaoGeral() {
 
             setDiasRestantes(Math.max(0, 280 - diasValidos));
           }
-        } else {
-          console.log("Nenhuma gestação ativa encontrada para este usuário.");
+        }
+
+        const userRef = doc(firestore, "usuarios", uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          const dadosUsuario = userSnap.data();
+          const todosLembretes = dadosUsuario.lembretes || [];
+          const agora = new Date().getTime();
+
+          const lembretesProximos = todosLembretes
+            .filter((l: any) => !l.concluido)
+            .filter((l: any) => {
+              if (!l.data || !l.hora) return false;
+              const [dia, mes, ano] = l.data.split("/");
+              const [hora, minuto] = l.hora.split(":");
+              const dataLembrete = new Date(
+                Number(ano),
+                Number(mes) - 1,
+                Number(dia),
+                Number(hora),
+                Number(minuto),
+              ).getTime();
+              return dataLembrete > agora;
+            })
+            .sort((a: any, b: any) => {
+              const [diaA, mesA, anoA] = a.data.split("/");
+              const [horaA, minA] = a.hora.split(":");
+              const dataA = new Date(
+                Number(anoA),
+                Number(mesA) - 1,
+                Number(diaA),
+                Number(horaA),
+                Number(minA),
+              ).getTime();
+
+              const [diaB, mesB, anoB] = b.data.split("/");
+              const [horaB, minB] = b.hora.split(":");
+              const dataB = new Date(
+                Number(anoB),
+                Number(mesB) - 1,
+                Number(diaB),
+                Number(horaB),
+                Number(minB),
+              ).getTime();
+
+              return dataA - dataB;
+            })
+            .slice(0, 3);
+
+          setLembretes(lembretesProximos);
         }
       } catch (error) {
         console.log("Erro ao carregar Visão Geral:", error);
@@ -108,14 +163,12 @@ export default function VisaoGeral() {
       contentContainerStyle={[styles.container, { paddingBottom: 40 }]}
       showsVerticalScrollIndicator={false}
     >
-      {/* CARD PRINCIPAL */}
       <View style={styles.progressCard}>
         <Text style={styles.weekTitle}>Semana {semanas}</Text>
         <Text style={styles.weekSubtitle}>
           {semanas} semanas e {diasExtra} dias
         </Text>
 
-        {/* PROGRESSO */}
         <View style={styles.progressSection}>
           <View style={styles.progressTextRow}>
             <Text style={styles.progressLabel}>Progresso da gestação</Text>
@@ -129,7 +182,6 @@ export default function VisaoGeral() {
           </View>
         </View>
 
-        {/* DPP */}
         <View style={styles.dateSection}>
           <MaterialCommunityIcons
             name="calendar-month-outline"
@@ -142,7 +194,6 @@ export default function VisaoGeral() {
         </View>
       </View>
 
-      {/* DIAS RESTANTES */}
       <View style={styles.daysCard}>
         <View>
           <Text style={styles.daysLabel}>Dias restantes</Text>
@@ -151,6 +202,32 @@ export default function VisaoGeral() {
         <View style={styles.iconBox}>
           <MaterialCommunityIcons name="timer-sand" size={30} color="#D81B60" />
         </View>
+      </View>
+
+      <View style={styles.remindersCard}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Próximos Lembretes</Text>
+        </View>
+
+        {lembretes.length === 0 ? (
+          <Text style={styles.emptyRemindersText}>
+            Nenhum lembrete próximo.
+          </Text>
+        ) : (
+          <View style={styles.remindersList}>
+            {lembretes.map((lembrete, index) => (
+              <View key={index} style={styles.reminderItem}>
+                <View style={styles.reminderDot} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.reminderTitle}>{lembrete.titulo}</Text>
+                  <Text style={styles.reminderDate}>
+                    {lembrete.data} às {lembrete.hora}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -253,63 +330,58 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  babySizeCard: {
+  remindersCard: {
+    backgroundColor: "#FFF",
     borderRadius: 24,
     padding: 20,
-    backgroundColor: theme.colors.cards,
-  },
-  babySizeTitle: {
-    color: "#FFF",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 16,
-  },
-  babySizeInnerCard: {
-    backgroundColor: "rgba(255,255,255,0.18)",
-    borderRadius: 18,
-    padding: 24,
-    alignItems: "center",
-  },
-  babyEmoji: { fontSize: 56, marginBottom: 12 },
-  babySizeMeasure: {
-    color: "#FFF",
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 4,
-    textAlign: "center",
-  },
-  babySizeComparison: { color: "rgba(255,255,255,0.85)", fontSize: 14 },
-  devCard: {
-    backgroundColor: theme.colors.terceary,
-    borderRadius: 24,
-    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    elevation: 2,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 14,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: theme.texts.title,
     fontWeight: "bold",
     marginLeft: 8,
-    color: theme.colors.textPrimary,
+    color: "#333",
   },
-  devText: { fontSize: 16, lineHeight: 24, color: "#666" },
-  curiosityCard: {
-    backgroundColor: theme.colors.cards,
-    borderRadius: 24,
-    padding: 18,
-    marginBottom: 20,
+  emptyRemindersText: {
+    color: "#888",
+    fontStyle: "italic",
+    textAlign: "center",
+    marginTop: 8,
+    marginBottom: 8,
   },
-  curiosityList: { gap: 12 },
-  curiosityItemBox: {
+  remindersList: {
+    gap: 12,
+  },
+  reminderItem: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: "rgba(255,255,255,0.15)",
-    borderRadius: 14,
-    padding: 14,
+    alignItems: "center",
+    backgroundColor: "#F9F9F9",
+    padding: 12,
+    borderRadius: 12,
   },
-  curiosityBullet: { marginRight: 10, fontSize: 16 },
-  curiosityItem: { flex: 1, fontSize: 15, lineHeight: 22, color: "#FFF" },
+  reminderDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "yellow",
+    marginRight: 12,
+  },
+  reminderTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 2,
+  },
+  reminderDate: {
+    fontSize: 13,
+    color: "#777",
+  },
 });

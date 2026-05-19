@@ -35,9 +35,11 @@ export function Configuracoes() {
 
         if (userSnap.exists()) {
           const dados = userSnap.data();
-          if (dados.perfil) {
-            setSituacao(dados.perfil);
-          }
+          if (dados.perfil) setSituacao(dados.perfil);
+
+          // Carrega as preferências de som e tema (se existirem)
+          if (dados.modoEscuro !== undefined) setModoEscuro(dados.modoEscuro);
+          if (dados.sonsDoApp !== undefined) setSonsDoApp(dados.sonsDoApp);
         }
       } catch (error) {
         console.log("Erro ao carregar configurações:", error);
@@ -52,16 +54,30 @@ export function Configuracoes() {
   // Atualiza o perfil (Gestante/Filhos) no Firestore
   const handleMudarPerfil = async (novoPerfil: "gestante" | "filhos") => {
     setSituacao(novoPerfil);
+    await salvarPreferenciaNoFirebase({ perfil: novoPerfil });
+  };
+
+  // Atualiza o Modo Escuro no Firestore
+  const handleMudarModoEscuro = async (valor: boolean) => {
+    setModoEscuro(valor);
+    await salvarPreferenciaNoFirebase({ modoEscuro: valor });
+  };
+
+  // Atualiza os Sons do App no Firestore
+  const handleMudarSonsDoApp = async (valor: boolean) => {
+    setSonsDoApp(valor);
+    await salvarPreferenciaNoFirebase({ sonsDoApp: valor });
+  };
+
+  // Função genérica para salvar qualquer preferência sem apagar as outras
+  const salvarPreferenciaNoFirebase = async (dado: object) => {
     try {
       const user = auth.currentUser;
       if (!user) return;
-
       const userRef = doc(firestore, "usuarios", user.uid);
-
-      // Salva usando merge: true para não apagar outros campos do usuário
-      await setDoc(userRef, { perfil: novoPerfil }, { merge: true });
+      await setDoc(userRef, dado, { merge: true });
     } catch (error) {
-      console.error("Erro ao salvar o perfil", error);
+      console.error("Erro ao salvar a preferência no banco", error);
     }
   };
 
@@ -80,11 +96,8 @@ export function Configuracoes() {
               const user = auth.currentUser;
               if (!user) return;
 
-              // 1. Apagar o documento no Firestore
               const userRef = doc(firestore, "usuarios", user.uid);
               await deleteDoc(userRef);
-
-              // 2. Apagar a conta no Firebase Auth
               await deleteUser(user);
 
               Alert.alert("Sucesso", "A sua conta foi eliminada.");
@@ -214,7 +227,7 @@ export function Configuracoes() {
                   </View>
                   <Switch
                     value={modoEscuro}
-                    onValueChange={setModoEscuro}
+                    onValueChange={handleMudarModoEscuro}
                     trackColor={{ true: theme.colors.cards, false: "#ddd" }}
                   />
                 </View>
@@ -228,16 +241,13 @@ export function Configuracoes() {
                   </View>
                   <Switch
                     value={sonsDoApp}
-                    onValueChange={setSonsDoApp}
+                    onValueChange={handleMudarSonsDoApp}
                     trackColor={{ true: theme.colors.cards, false: "#ddd" }}
                   />
                 </View>
               </View>
 
               <View style={[styles.section, { borderBottomWidth: 0 }]}>
-                <Text style={[styles.sectionTitle, { color: "#ff4d4d" }]}>
-                  Zona de Perigo
-                </Text>
                 <TouchableOpacity
                   style={styles.settingLinkItem}
                   onPress={handleExcluirConta}
@@ -249,7 +259,7 @@ export function Configuracoes() {
                       { color: "#ff4d4d", marginLeft: 15 },
                     ]}
                   >
-                    Excluir minha conta
+                    Excluir conta
                   </Text>
                 </TouchableOpacity>
               </View>

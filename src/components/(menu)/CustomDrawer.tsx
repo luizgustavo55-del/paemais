@@ -1,3 +1,5 @@
+import { Configuracoes } from "@/src/components/(menu)/Configuracoes";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -181,7 +183,7 @@ export default function CustomDrawer() {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{userData?.nome?.[0] || "U"}</Text>
@@ -308,7 +310,7 @@ export default function CustomDrawer() {
                   />
                 )}
 
-                <TextInput 
+                <TextInput
                   style={styles.input}
                   value={editPeso}
                   onChangeText={setEditPeso}
@@ -319,14 +321,14 @@ export default function CustomDrawer() {
                   style={styles.input}
                   value={editAltura}
                   onChangeText={setEditAltura}
-                   placeholder="Altura"
+                  placeholder="Altura"
                   placeholderTextColor="gray"
                 />
                 <TextInput
                   style={styles.input}
                   value={editDescricao}
                   onChangeText={setEditDescricao}
-                   placeholder="Descrição"
+                  placeholder="Descrição"
                   placeholderTextColor="gray"
                 />
 
@@ -374,27 +376,46 @@ export default function CustomDrawer() {
         ))}
       </View>
 
-      <TouchableOpacity onPress={() => router.push("/MenuPage/perfil")}>
-        <Text style={styles.item}>Ver Perfil</Text>
-      </TouchableOpacity>
+      <View style={styles.menuGeral}>
+        {/* PERFIL */}
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push("/MenuPage/perfil")}
+        >
+          <Ionicons name="person-outline" size={22} color="#333" />
+          <Text style={styles.menuItemText}>Ver Perfil</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push("/configuracoes")}>
-        <Text style={styles.item}>nada</Text>
-      </TouchableOpacity>
+        {/* CONFIGURAÇÕES (Mantive seu componente) */}
+        <View>
+          <Configuracoes />
+        </View>
 
-      <TouchableOpacity
-        onPress={async () => {
-          try {
-            await signOut(auth); // 🔥 faz logout do Firebase
-            router.replace("/login"); // 🔁 redireciona
-          } catch (error) {
-            console.log("Erro ao sair:", error);
-          }
-        }}
-        style={styles.logout}
-      >
-        <Text style={styles.logoutText}>Sair</Text>
-      </TouchableOpacity>
+        {/* COMPARTILHAR (NOVO BOTÃO) */}
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => router.push("/Compartilhar")}
+        >
+          <Feather name="share-2" size={22} color="#333" />
+          <Text style={styles.menuItemText}>Amigos</Text>
+        </TouchableOpacity>
+
+        {/* LOGOUT */}
+        <TouchableOpacity
+          onPress={async () => {
+            try {
+              await signOut(auth);
+              router.replace("/login");
+            } catch (error) {
+              console.log("Erro ao sair:", error);
+            }
+          }}
+          style={[styles.menuItem, styles.logoutButton]}
+        >
+          <Feather name="log-out" size={22} color="#ff4d4d" />
+          <Text style={styles.logoutText}>Sair</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -424,8 +445,8 @@ const styles = StyleSheet.create({
 
   section: { marginTop: 20 },
 
-  title: { fontSize: 16, fontWeight: "bold" },
-  add: { color: "#28174cca", marginTop: 5, fontWeight: "bold" },
+  title: { fontSize: 16, fontWeight: "bold", color: "#f9d3ff" },
+  add: { color: "#f9d3ff", marginTop: 5, fontWeight: "bold" },
 
   inputBox: {
     marginTop: 10,
@@ -441,8 +462,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
-  childName: { fontWeight: "bold", fontSize: 15 },
-  info: { color: "#28174cca" },
+  childName: { fontWeight: "bold", fontSize: 15, color: "#f9d3ff" },
+  info: { color: "#d6b5e0" },
 
   input: {
     backgroundColor: "#fafafa",
@@ -472,17 +493,42 @@ const styles = StyleSheet.create({
   cancelText: { fontWeight: "bold", color: "#333" },
 
   deleteText: {
-    color: "red",
+    color: "#ff4d4d",
     marginTop: 8,
     fontWeight: "bold",
   },
 
-  item: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderColor: "#eee",
+  // ESTILOS DO MENU DE BAIXO
+  menuGeral: {
+    marginTop: 30,
+    borderTopWidth: 1,
+    borderColor: "#7b5ac4b7",
+    paddingTop: 15,
+    paddingBottom: 40,
   },
 
-  logout: { marginTop: 30 },
-  logoutText: { color: "red", fontWeight: "bold" },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+
+  menuItemText: {
+    fontSize: 22,
+    color: "#333",
+    marginLeft: 15,
+  },
+
+  logoutButton: {
+    marginTop: 15,
+  },
+
+  logoutText: {
+    color: "#ff4d4d",
+    fontWeight: "bold",
+    marginLeft: 15,
+    fontSize: 16,
+  },
 });

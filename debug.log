@@ -17,3 +17,10 @@
 [0514/215617.125:ERROR:file_io_win.cc(163)] CreateFile C:\Program Files (x86)\settings.dat: Acesso negado. (0x5)
 [0514/215617.323:ERROR:registration_protocol_win.cc(84)] TransactNamedPipe: O pipe foi finalizado. (0x6D)
 [0514/215617.370:ERROR:file_io_win.cc(163)] CreateFile C:\Program Files (x86)\settings.dat: Acesso negado. (0x5)
+[0518/225228.655:ERROR:persistent_memory_allocator.cc(678)] Corruption detected in shared-memory segment.
+[0518/225228.691:ERROR:persistent_memory_allocator.cc(678)] Corruption detected in shared-memory segment.
+[0518/225228.691:ERROR:persistent_memory_allocator.cc(678)] Corruption detected in shared-memory segment.
+[0518/225228.691:ERROR:persistent_memory_allocator.cc(678)] Corruption detected in shared-memory segment.
+[0518/225228.707:ERROR:file_io_win.cc(163)] CreateFile C:\Program Files (x86)\settings.dat: Acesso negado. (0x5)
+[0518/225229.181:ERROR:registration_protocol_win.cc(84)] TransactNamedPipe: O pipe foi finalizado. (0x6D)
+[0518/225229.213:ERROR:file_io_win.cc(163)] CreateFile C:\Program Files (x86)\settings.dat: Acesso negado. (0x5)
