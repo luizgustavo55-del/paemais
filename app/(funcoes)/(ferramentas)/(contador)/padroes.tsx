@@ -12,7 +12,6 @@ import {
   View,
 } from "react-native";
 
-// 🔥 Novos imports do Firebase
 import { auth, firestore } from "@/src/services/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -71,7 +70,6 @@ export default function Padroes() {
         dados = userSnap.data().historicoChutes || [];
       }
 
-      // Ordena do mais recente para o mais antigo
       dados = dados.sort((a, b) => Number(b.id) - Number(a.id));
       setHistorico(dados);
 
@@ -175,7 +173,7 @@ export default function Padroes() {
               color={theme.colors.title}
             />
           </TouchableOpacity>
-          <Text style={styles.titulo}>Análise Inteligente</Text>
+          <Text style={styles.titulo}>Padrões</Text>
         </View>
 
         <ScrollView
@@ -269,8 +267,6 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 20,
     backgroundColor: theme.colors.terceary,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.primary,
   },
   back: { position: "absolute", left: 20, zIndex: 10 },
   titulo: {

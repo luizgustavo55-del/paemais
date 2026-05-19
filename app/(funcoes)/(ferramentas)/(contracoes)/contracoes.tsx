@@ -11,7 +11,6 @@ import {
   View,
 } from "react-native";
 
-// 🔥 Novos imports do Firebase
 import { auth, firestore } from "@/src/services/firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
@@ -37,14 +36,7 @@ export default function CronometroContracoes() {
   const [alertaInteligente, setAlertaInteligente] =
     useState("Aguardando início");
 
-  useFocusEffect(
-    useCallback(() => {
-      carregarHistorico();
-    }, []),
-  );
-
-  // 🔥 Busca o histórico direto do Firestore
-  const carregarHistorico = async () => {
+  const carregarHistorico = useCallback(async () => {
     try {
       const user = auth.currentUser;
       if (!user) return;
@@ -59,15 +51,23 @@ export default function CronometroContracoes() {
 
         if (lista.length > 0) {
           analisarPadrao(lista);
+          // Correção: Recupera o timestamp do último registro salvo
+          setUltimoInicio(Number(lista[0].id));
         }
       }
     } catch (e) {
       console.log("Erro ao carregar histórico", e);
     }
-  };
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      carregarHistorico();
+    }, [carregarHistorico]),
+  );
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (ativo && inicioAtual) {
       interval = setInterval(() => {
         const segundosDecorridos = Math.floor(
@@ -76,7 +76,9 @@ export default function CronometroContracoes() {
         setTempo(segundosDecorridos);
       }, 1000);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval as unknown as number);
+    };
   }, [ativo, inicioAtual]);
 
   const mostrarAviso = (texto: string) => {
@@ -150,11 +152,9 @@ export default function CronometroContracoes() {
         if (!user) return;
 
         const userRef = doc(firestore, "usuarios", user.uid);
-        // 🔥 Atualiza a lista no Firestore
         await updateDoc(userRef, { historicoContracoes: novaLista });
-
         mostrarAviso("Contração salva no histórico!");
-      } catch (e) {
+      } catch {
         mostrarAviso("Erro ao guardar.");
       }
     }
@@ -168,11 +168,17 @@ export default function CronometroContracoes() {
     mostrarAviso("Contagem cancelada.");
   };
 
-  // 🔥 Apaga um item específico do Firestore
   const apagarItem = async (id: string) => {
     try {
       const novoHistorico = historico.filter((item) => item.id !== id);
       setHistorico(novoHistorico);
+
+      // Correção: Atualiza a referência da última contração após apagar
+      if (novoHistorico.length > 0) {
+        setUltimoInicio(Number(novoHistorico[0].id));
+      } else {
+        setUltimoInicio(null);
+      }
 
       const user = auth.currentUser;
       if (user) {
@@ -182,12 +188,11 @@ export default function CronometroContracoes() {
 
       analisarPadrao(novoHistorico);
       mostrarAviso("Registo apagado!");
-    } catch (error) {
+    } catch {
       mostrarAviso("Erro ao apagar.");
     }
   };
 
-  // 🔥 Limpa todo o histórico de contrações
   const apagarTodos = async () => {
     try {
       setHistorico([]);
@@ -201,7 +206,7 @@ export default function CronometroContracoes() {
       }
 
       mostrarAviso("Todo o histórico foi limpo!");
-    } catch (error) {
+    } catch {
       mostrarAviso("Erro ao limpar histórico.");
     }
   };
@@ -211,7 +216,7 @@ export default function CronometroContracoes() {
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.push("/gestacao" as any)}
-          style={[styles.back, { left: 20 }]}
+          style={styles.headerBtnLeft}
         >
           <MaterialCommunityIcons
             name="arrow-left"
@@ -219,17 +224,32 @@ export default function CronometroContracoes() {
             color={theme.colors.title}
           />
         </TouchableOpacity>
+
         <Text style={styles.titulo}>Contrações</Text>
-        <TouchableOpacity
-          onPress={() => setModalVisivel(true)}
-          style={[styles.back, { right: 20 }]}
-        >
-          <MaterialCommunityIcons
-            name="history"
-            size={28}
-            color={theme.colors.title}
-          />
-        </TouchableOpacity>
+
+        <View style={styles.headerBtnsRight}>
+          <TouchableOpacity
+            onPress={() => router.push("/padroes" as any)}
+            style={styles.iconBtn}
+          >
+            <MaterialCommunityIcons
+              name="information-outline"
+              size={28}
+              color={theme.colors.title}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => setModalVisivel(true)}
+            style={styles.iconBtn}
+          >
+            <MaterialCommunityIcons
+              name="history"
+              size={28}
+              color={theme.colors.title}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {mensagemAviso !== "" && (
@@ -251,6 +271,7 @@ export default function CronometroContracoes() {
           {alertaInteligente}
         </Text>
 
+        {/* Usando o maior tamanho permitido pelo tema (title) */}
         <Text style={styles.tempo}>{formatarTempo(tempo)}</Text>
 
         <TouchableOpacity
@@ -271,15 +292,7 @@ export default function CronometroContracoes() {
             onPress={cancelarContagem}
             style={{ marginTop: 20 }}
           >
-            <Text
-              style={{
-                color: theme.colors.title,
-                fontSize: 16,
-                textDecorationLine: "underline",
-              }}
-            >
-              Cancelar contagem atual
-            </Text>
+            <Text style={styles.textoCancelar}>Cancelar contagem atual</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -319,13 +332,7 @@ export default function CronometroContracoes() {
               keyExtractor={(item) => item.id}
               showsVerticalScrollIndicator={false}
               ListEmptyComponent={
-                <Text
-                  style={{
-                    textAlign: "center",
-                    marginTop: 20,
-                    color: theme.colors.title,
-                  }}
-                >
+                <Text style={styles.textoVazio}>
                   Nenhum histórico encontrado.
                 </Text>
               }
@@ -335,20 +342,13 @@ export default function CronometroContracoes() {
                     <Text style={styles.cardData}>
                       {item.data} - {item.hora}
                     </Text>
-                    <Text style={{ color: theme.colors.title }}>
+                    <Text style={styles.cardTexto}>
                       Duração:{" "}
                       <Text style={{ fontWeight: "bold" }}>
                         {item.duracaoFormatada}
                       </Text>
                     </Text>
-                    <Text
-                      style={{
-                        color: theme.colors.title,
-                        fontSize: 13,
-                        marginTop: 4,
-                        opacity: 0.8,
-                      }}
-                    >
+                    <Text style={styles.cardSubtexto}>
                       Intervalo desde a última:{" "}
                       {item.intervalo ? formatarTempo(item.intervalo) : "--"}
                     </Text>
@@ -381,15 +381,17 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
   },
-  back: { position: "absolute", top: 60 },
+  headerBtnLeft: { padding: 5 },
+  headerBtnsRight: { flexDirection: "row", alignItems: "center", gap: 10 },
+  iconBtn: { padding: 5 },
   titulo: {
     fontSize: theme.texts.title,
     fontWeight: "bold",
     color: theme.colors.title,
   },
-
   avisoContainer: {
     backgroundColor: theme.colors.primary,
     padding: 10,
@@ -401,8 +403,11 @@ const styles = StyleSheet.create({
     width: "90%",
     zIndex: 10,
   },
-  avisoTexto: { color: theme.colors.texts, fontWeight: "bold" },
-
+  avisoTexto: {
+    fontSize: theme.texts.text,
+    color: theme.colors.texts,
+    fontWeight: "bold",
+  },
   main: {
     flex: 1,
     alignItems: "center",
@@ -411,7 +416,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   status: {
-    fontSize: 16,
+    fontSize: theme.texts.text,
     color: theme.colors.title,
     textAlign: "center",
     marginBottom: 10,
@@ -419,12 +424,11 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   tempo: {
-    fontSize: 80,
+    fontSize: theme.texts.title,
     fontWeight: "bold",
     color: theme.colors.title,
     marginBottom: 20,
   },
-
   botaoChute: {
     width: 220,
     height: 220,
@@ -439,11 +443,15 @@ const styles = StyleSheet.create({
   },
   botaoTexto: {
     color: theme.colors.texts,
-    fontSize: 28,
+    fontSize: theme.texts.title,
     fontWeight: "bold",
     letterSpacing: 1,
   },
-
+  textoCancelar: {
+    color: theme.colors.title,
+    fontSize: theme.texts.text,
+    textDecorationLine: "underline",
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
@@ -462,14 +470,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
-  modalTitulo: { fontSize: 22, fontWeight: "bold", color: theme.colors.title },
+  modalTitulo: {
+    fontSize: theme.texts.title,
+    fontWeight: "bold",
+    color: theme.colors.title,
+  },
   modalAcoesTopo: { flexDirection: "row", alignItems: "center" },
   apagarTudoTexto: {
     color: theme.colors.textPrimary,
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: theme.texts.text,
   },
-
+  textoVazio: {
+    textAlign: "center",
+    marginTop: 20,
+    fontSize: theme.texts.text,
+    color: theme.colors.title,
+  },
   cardHistorico: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -484,8 +501,18 @@ const styles = StyleSheet.create({
   cardData: {
     fontWeight: "bold",
     marginBottom: 5,
-    fontSize: 16,
+    fontSize: theme.texts.subtitle,
     color: theme.colors.title,
+  },
+  cardTexto: {
+    fontSize: theme.texts.text,
+    color: theme.colors.title,
+  },
+  cardSubtexto: {
+    color: theme.colors.title,
+    fontSize: theme.texts.text,
+    marginTop: 4,
+    opacity: 0.8,
   },
   iconeLixeira: { padding: 10 },
 });

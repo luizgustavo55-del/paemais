@@ -186,7 +186,7 @@ export default function Inicio() {
 
           <View>
             <Text style={styles.title}>
-              {nome ? `Olá, ${nome.split(" ")[0]} 💜` : "Minha Gestação 💜"}
+              {nome ? `Olá, ${nome.split(" ")[0]} ` : "Minha Gestação"}
             </Text>
             <Text style={styles.subtitle}>Acompanhe sua gravidez</Text>
           </View>
