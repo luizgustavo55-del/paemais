@@ -226,90 +226,197 @@ export default function Nomes() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: "#f8fafc",
+
+    padding: 18,
+
+    backgroundColor: "#FFF7FB",
   },
+
   searchBar: {
     flexDirection: "row",
-    backgroundColor: "#FFF",
-    padding: 10,
-    borderRadius: 12,
+
+    backgroundColor: "#ffe5f2",
+
+    paddingVertical: 13,
+    paddingHorizontal: 14,
+
+    borderRadius: 18,
+
     alignItems: "center",
-    marginBottom: 15,
+
+    marginBottom: 18,
+
     borderWidth: 1,
-    borderColor: "#EEE",
+
+    borderColor: "#F5D3E3",
+
+    shadowColor: "#A64D78",
+
+    shadowOpacity: 0.04,
+
+    shadowRadius: 4,
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    elevation: 2,
   },
+
   input: {
     marginLeft: 10,
+
     flex: 1,
-    fontSize: theme.texts.text,
+
+    fontSize: 15,
+
+    color: "#8D3E67",
   },
+
   filterContainer: {
     flexDirection: "row",
+
     justifyContent: "space-between",
-    marginBottom: 15,
+
+    marginBottom: 18,
+
+    gap: 10,
   },
+
   filterBtnActive: {
     flex: 1,
-    paddingVertical: 12,
+
+    paddingVertical: 13,
+
     alignItems: "center",
-    borderRadius: 10,
-    marginHorizontal: 5,
+
+    borderRadius: 14,
+
+    marginHorizontal: 2,
+
+    backgroundColor: "#C85C90",
+
+    shadowColor: "#A64D78",
+
+    shadowOpacity: 0.08,
+
+    shadowRadius: 4,
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    elevation: 2,
   },
+
   filterBtn: {
     flex: 1,
-    paddingVertical: 12,
+
+    paddingVertical: 13,
+
     alignItems: "center",
-    borderRadius: 10,
-    backgroundColor: theme.colors.terceary,
-    marginHorizontal: 5,
+
+    borderRadius: 14,
+
+    backgroundColor: "#f397bd",
+
+    marginHorizontal: 2,
+
+    borderWidth: 1,
+
+    borderColor: "#F5D3E3",
   },
+
   filterTextActive: {
-    color: theme.colors.texts,
-    fontSize: theme.texts.subtitle,
-    fontWeight: "bold",
+    color: "#FFF",
+
+    fontSize: 15,
+
+    fontWeight: "700",
   },
+
   card: {
-    backgroundColor: theme.colors.cards,
-    padding: 16,
-    borderRadius: 15,
-    marginBottom: 15,
+    backgroundColor: "#f5a8cf",
+
+    padding: 18,
+
+    borderRadius: 22,
+
+    marginBottom: 16,
+
+    borderWidth: 1,
+
+    borderColor: "#F5D3E3",
+
+    shadowColor: "#A64D78",
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    shadowOpacity: 0.05,
+
+    shadowRadius: 5,
+
     elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
   },
+
   cardHeader: {
     flexDirection: "row",
+
     alignItems: "center",
-    marginBottom: 10,
+
+    marginBottom: 12,
+
     justifyContent: "space-between",
   },
+
   nameText: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: "#333",
+    fontSize: 21,
+
+    fontWeight: "700",
+
+    color: "#8D3E67",
   },
+
   genderTag: {
     alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
+
+    paddingHorizontal: 12,
+
+    paddingVertical: 5,
+
+    borderRadius: 12,
+
     marginTop: 8,
+
+    backgroundColor: "#f8a6ce",
   },
+
   genderTagText: {
-    fontSize: theme.texts.text,
-    fontWeight: "bold",
+    fontSize: 13,
+
+    fontWeight: "700",
+
+    color: "#91486F",
   },
+
   infoText: {
-    color: theme.colors.texts,
-    marginBottom: 4,
-    fontSize: theme.texts.text,
-    lineHeight: 20,
+    color: "#8E7180",
+
+    marginBottom: 6,
+
+    fontSize: 14,
+
+    lineHeight: 22,
   },
+
   bold: {
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: "700",
+
+    color: "#8D3E67",
   },
 });

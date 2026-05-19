@@ -385,129 +385,290 @@ export default function Lembretes() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.terceary },
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF7FB",
+  },
+
   header: {
-    height: 110,
-    paddingTop: 50,
+    height: 95,
+
+    paddingTop: 42,
+
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+
+    paddingHorizontal: 22,
+
+    backgroundColor: "#C85C90",
+
+    shadowColor: "#8E3D68",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    elevation: 4,
   },
-  iconBtn: { padding: 5 },
-  titulo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
-  },
-  listaContent: { padding: 20, paddingBottom: 40 },
-  textoVazio: {
-    fontSize: theme.texts.text,
-    color: theme.colors.subtitle,
-    textAlign: "center",
-    marginTop: 40,
-  },
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.colors.secondary,
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-  },
-  cardConcluido: {
-    opacity: 0.5,
-    backgroundColor: theme.colors.quaternary,
-    borderColor: "transparent",
-  },
-  checkboxArea: { paddingRight: 10 },
-  infoArea: { flex: 1, justifyContent: "center" },
-  cardTitulo: {
-    fontSize: theme.texts.subtitle,
-    fontWeight: "bold",
-    color: theme.colors.title,
-    marginBottom: 4,
-  },
-  textoRiscado: {
-    textDecorationLine: "line-through",
-    color: theme.colors.subtitle,
-  },
-  cardDataHora: { fontSize: theme.texts.text, color: theme.colors.subtitle },
-  deleteBtn: { padding: 5 },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: theme.colors.terceary,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 25,
-    paddingBottom: 40,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 25,
-  },
-  modalTitulo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
-  },
-  inputLabel: {
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
-    fontWeight: "bold",
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: theme.colors.secondary,
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-    borderRadius: 12,
-    padding: 12,
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
-    marginBottom: 20,
-  },
-  rowInputs: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    gap: 15,
-    marginBottom: 25,
-  },
-  seletorBotao: {
-    flex: 1,
-    flexDirection: "row",
+
+  iconBtn: {
+    width: 40,
+    height: 40,
+
+    borderRadius: 20,
+
+    backgroundColor: "rgba(255,255,255,0.20)",
+
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: theme.colors.secondary,
+  },
+
+  titulo: {
+    fontSize: 23,
+
+    fontWeight: "700",
+
+    color: "#FFF8FC",
+
+    letterSpacing: 0.2,
+  },
+
+  listaContent: {
+    padding: 22,
+    paddingBottom: 40,
+  },
+
+  textoVazio: {
+    fontSize: 15,
+
+    color: "#A2748B",
+
+    textAlign: "center",
+
+    marginTop: 45,
+
+    lineHeight: 22,
+  },
+
+  card: {
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    backgroundColor: "#FDEAF2",
+
+    borderRadius: 22,
+
+    padding: 18,
+
+    marginBottom: 14,
+
     borderWidth: 1,
-    borderColor: theme.colors.primary,
-    padding: 15,
-    borderRadius: 12,
+    borderColor: "#F5D3E3",
+
+    shadowColor: "#A64D78",
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    elevation: 2,
+  },
+
+  cardConcluido: {
+    opacity: 0.65,
+
+    backgroundColor: "#F7DDE9",
+
+    borderColor: "#EBC5D6",
+  },
+
+  checkboxArea: {
+    paddingRight: 12,
+  },
+
+  infoArea: {
+    flex: 1,
+
+    justifyContent: "center",
+  },
+
+  cardTitulo: {
+    fontSize: 16,
+
+    fontWeight: "700",
+
+    color: "#8D3E67",
+
+    marginBottom: 5,
+  },
+
+  textoRiscado: {
+    textDecorationLine: "line-through",
+
+    color: "#B18A9D",
+  },
+
+  cardDataHora: {
+    fontSize: 14,
+
+    color: "#9C7388",
+
+    lineHeight: 20,
+  },
+
+  deleteBtn: {
+    width: 38,
+    height: 38,
+
+    borderRadius: 19,
+
+    backgroundColor: "#FFF3F7",
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  modalOverlay: {
+    flex: 1,
+
+    backgroundColor: "rgba(0,0,0,0.40)",
+
+    justifyContent: "flex-end",
+  },
+
+  modalContent: {
+    backgroundColor: "#FFF9FC",
+
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+
+    paddingTop: 26,
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+  },
+
+  modalHeader: {
+    flexDirection: "row",
+
+    justifyContent: "space-between",
+
+    alignItems: "center",
+
+    marginBottom: 26,
+  },
+
+  modalTitulo: {
+    fontSize: 24,
+
+    fontWeight: "700",
+
+    color: "#91486F",
+  },
+
+  inputLabel: {
+    fontSize: 15,
+
+    color: "#91486F",
+
+    fontWeight: "700",
+
+    marginBottom: 10,
+  },
+
+  input: {
+    backgroundColor: "#FDEAF2",
+
+    borderWidth: 1,
+
+    borderColor: "#F5D3E3",
+
+    borderRadius: 16,
+
+    padding: 14,
+
+    fontSize: 15,
+
+    color: "#8D3E67",
+
+    marginBottom: 22,
+  },
+
+  rowInputs: {
+    flexDirection: "row",
+
+    justifyContent: "space-between",
+
+    gap: 14,
+
+    marginBottom: 28,
+  },
+
+  seletorBotao: {
+    flex: 1,
+
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    backgroundColor: "#FDEAF2",
+
+    borderWidth: 1,
+
+    borderColor: "#F5D3E3",
+
+    paddingVertical: 15,
+
+    borderRadius: 16,
+
     gap: 10,
   },
+
   seletorTexto: {
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
-    fontWeight: "bold",
+    fontSize: 14,
+
+    color: "#8D3E67",
+
+    fontWeight: "700",
   },
+
   botaoSalvar: {
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 15,
-    borderRadius: 30,
+    backgroundColor: "#C85C90",
+
+    paddingVertical: 16,
+
+    borderRadius: 28,
+
     alignItems: "center",
+
+    shadowColor: "#A64D78",
+    shadowOpacity: 0.10,
+    shadowRadius: 6,
+
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+
     elevation: 3,
   },
+
   botaoTexto: {
-    color: theme.colors.texts,
-    fontSize: theme.texts.text,
-    fontWeight: "bold",
+    color: "#FFF",
+
+    fontSize: 15,
+
+    fontWeight: "700",
+
+    letterSpacing: 0.2,
   },
 });

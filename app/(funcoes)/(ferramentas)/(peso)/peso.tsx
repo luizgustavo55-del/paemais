@@ -200,138 +200,294 @@ export default function Peso() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.terceary,
+    backgroundColor: "#FFF7FB",
   },
+
   header: {
-    height: 110,
-    paddingTop: 50,
+    height: 95,
+
+    paddingTop: 42,
+
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+
+    paddingHorizontal: 22,
+
+    backgroundColor: "#C85C90",
+
+   
+
+    shadowColor: "#8E3D68",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    elevation: 4,
   },
-  iconBtn: { padding: 5 },
+
+  iconBtn: {
+    width: 40,
+    height: 40,
+
+    borderRadius: 20,
+
+    backgroundColor: "rgba(255,255,255,0.20)",
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   titulo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
+    fontSize: 23,
+
+    fontWeight: "700",
+
+    color: "#FFF8FC",
+
+    letterSpacing: 0.2,
   },
+
   main: {
     flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 10,
+
+    paddingHorizontal: 22,
+    paddingTop: 22,
   },
+
   cardResumo: {
     flexDirection: "row",
-    backgroundColor: theme.colors.secondary,
-    borderRadius: 15,
-    padding: 20,
+
+    backgroundColor: "#FDEAF2",
+
+    borderRadius: 24,
+
+    paddingVertical: 22,
+    paddingHorizontal: 18,
+
     justifyContent: "space-between",
     alignItems: "center",
+
     marginBottom: 30,
+
+    borderWidth: 1,
+    borderColor: "#F5D3E3",
+
+    shadowColor: "#A64D78",
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    elevation: 2,
   },
+
   infoResumo: {
     alignItems: "center",
+
     flex: 1,
   },
+
   labelResumo: {
-    fontSize: theme.texts.text,
-    color: theme.colors.subtitle,
-    marginBottom: 5,
+    fontSize: 14,
+
+    color: "#9C7388",
+
+    marginBottom: 6,
+
+    fontWeight: "500",
   },
+
   valorResumo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
+    fontSize: 28,
+
+    fontWeight: "700",
+
+    color: "#91486F",
   },
+
   divisor: {
     width: 1,
-    height: "80%",
-    backgroundColor: theme.colors.primary,
-    opacity: 0.5,
+
+    height: "75%",
+
+    backgroundColor: "#E7BDD0",
   },
+
   inputContainer: {
     alignItems: "center",
-    marginBottom: 30,
+
+    marginBottom: 34,
   },
+
   inputLabel: {
-    fontSize: theme.texts.subtitle,
-    color: theme.colors.title,
-    marginBottom: 10,
+    fontSize: 17,
+
+    color: "#91486F",
+
+    marginBottom: 16,
+
+    fontWeight: "600",
   },
+
   inputRow: {
     flexDirection: "row",
+
     alignItems: "flex-end",
-    marginBottom: 20,
+
+    marginBottom: 26,
   },
+
   input: {
-    fontSize: 50,
-    fontWeight: "bold",
-    color: theme.colors.title,
+    fontSize: 52,
+
+    fontWeight: "700",
+
+    color: "#B2487D",
+
     borderBottomWidth: 2,
-    borderBottomColor: theme.colors.title,
-    minWidth: 90,
+
+    borderBottomColor: "#D48CAE",
+
+    minWidth: 95,
+
     textAlign: "center",
-    paddingBottom: 5,
+
+    paddingBottom: 6,
   },
+
   unidade: {
-    fontSize: 50,
-    paddingBottom: 5,
-    color: theme.colors.title,
-    fontWeight: "bold",
+    fontSize: 48,
+
+    paddingBottom: 6,
+
+    color: "#B2487D",
+
+    fontWeight: "700",
+
     borderBottomWidth: 2,
-    borderBottomColor: theme.colors.title,
-    minWidth: 40,
+
+    borderBottomColor: "#D48CAE",
+
+    minWidth: 45,
+
+    textAlign: "center",
   },
+
   botaoSalvar: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: "#C85C90",
+
     paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 30,
+    paddingHorizontal: 44,
+
+    borderRadius: 28,
+
+    shadowColor: "#A64D78",
+    shadowOpacity: 0.10,
+    shadowRadius: 6,
+
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+
     elevation: 3,
   },
+
   botaoTexto: {
-    color: theme.colors.texts,
-    fontSize: theme.texts.text,
-    fontWeight: "bold",
+    color: "#FFF",
+
+    fontSize: 15,
+
+    fontWeight: "700",
+
+    letterSpacing: 0.2,
   },
+
   historicoContainer: {
     flex: 1,
   },
+
   historicoTitulo: {
-    fontSize: theme.texts.subtitle,
-    fontWeight: "bold",
-    color: theme.colors.title,
-    marginBottom: 15,
+    fontSize: 18,
+
+    fontWeight: "700",
+
+    color: "#91486F",
+
+    marginBottom: 16,
   },
+
   textoVazio: {
-    fontSize: theme.texts.text,
-    color: theme.colors.subtitle,
+    fontSize: 15,
+
+    color: "#A2748B",
+
     textAlign: "center",
-    marginTop: 20,
+
+    marginTop: 28,
+
+    lineHeight: 22,
   },
+
   cardHistorico: {
     flexDirection: "row",
+
     justifyContent: "space-between",
+
     alignItems: "center",
-    backgroundColor: theme.colors.cards,
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 10,
+
+    backgroundColor: "#FDEAF2",
+
+    padding: 18,
+
+    borderRadius: 22,
+
+    marginBottom: 14,
+
+    borderWidth: 1,
+    borderColor: "#F5D3E3",
+
+    shadowColor: "#A64D78",
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    elevation: 2,
   },
+
   cardData: {
-    fontSize: theme.texts.text,
-    color: theme.colors.texts,
-    fontWeight: "bold",
+    fontSize: 15,
+
+    color: "#8D3E67",
+
+    fontWeight: "700",
   },
+
   cardDireita: {
     flexDirection: "row",
+
     alignItems: "center",
-    gap: 15,
+
+    gap: 14,
   },
+
   cardPeso: {
-    fontSize: theme.texts.text,
-    color: theme.colors.texts,
-    fontWeight: "bold",
+    fontSize: 16,
+
+    color: "#B2487D",
+
+    fontWeight: "700",
   },
 });

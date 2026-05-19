@@ -375,144 +375,327 @@ export default function CronometroContracoes() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.terceary },
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF7FB",
+  },
+
   header: {
-    height: 110,
-    paddingTop: 50,
+    height: 92,
+
+    paddingTop: 40,
+    paddingHorizontal: 18,
+
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+
+    backgroundColor: "#C85C90",
+
+    shadowColor: "#8E3D68",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    elevation: 4,
   },
-  headerBtnLeft: { padding: 5 },
-  headerBtnsRight: { flexDirection: "row", alignItems: "center", gap: 10 },
-  iconBtn: { padding: 5 },
-  titulo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
-  },
-  avisoContainer: {
-    backgroundColor: theme.colors.primary,
-    padding: 10,
-    marginHorizontal: 20,
-    borderRadius: 8,
-    alignItems: "center",
-    position: "absolute",
-    top: 110,
-    width: "90%",
-    zIndex: 10,
-  },
-  avisoTexto: {
-    fontSize: theme.texts.text,
-    color: theme.colors.texts,
-    fontWeight: "bold",
-  },
-  main: {
-    flex: 1,
+
+  headerBtnLeft: {
+    width: 40,
+    height: 40,
+
+    borderRadius: 20,
+
+    backgroundColor: "rgba(255,255,255,0.20)",
+
     alignItems: "center",
     justifyContent: "center",
+  },
+
+  headerBtnsRight: {
+    flexDirection: "row",
+    alignItems: "center",
+
     gap: 10,
-    paddingHorizontal: 20,
   },
+
+  iconBtn: {
+    width: 40,
+    height: 40,
+
+    borderRadius: 20,
+
+    backgroundColor: "rgba(255,255,255,0.20)",
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  titulo: {
+    fontSize: 23,
+
+    fontWeight: "700",
+
+    color: "#FFF8FC",
+
+    letterSpacing: 0.2,
+  },
+
+  avisoContainer: {
+    backgroundColor: "#A64D78",
+
+    paddingVertical: 11,
+    paddingHorizontal: 16,
+
+    marginHorizontal: 22,
+
+    borderRadius: 16,
+
+    alignItems: "center",
+
+    position: "absolute",
+
+    top: 100,
+
+    width: "86%",
+
+    zIndex: 10,
+
+    alignSelf: "center",
+
+    shadowColor: "#8E3D68",
+    shadowOpacity: 0.10,
+    shadowRadius: 6,
+
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+
+    elevation: 3,
+  },
+
+  avisoTexto: {
+    color: "#FFF",
+
+    fontWeight: "600",
+
+    fontSize: 14,
+  },
+
+  main: {
+    flex: 1,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    paddingHorizontal: 24,
+  },
+
   status: {
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
+    fontSize: 18,
+
+    color: "#91486F",
+
+    fontWeight: "600",
+
     textAlign: "center",
+
     marginBottom: 10,
-    paddingHorizontal: 20,
-    opacity: 0.7,
   },
+
   tempo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
+    fontSize: 64,
+
+    fontWeight: "700",
+
+    color: "#B2487D",
+
+    letterSpacing: 1,
+
     marginBottom: 20,
   },
+
   botaoChute: {
     width: 220,
     height: 220,
-    borderRadius: 110,
+
+    borderRadius: 120,
+
+    backgroundColor: "#C85C90",
+
     alignItems: "center",
     justifyContent: "center",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+
+    shadowColor: "#A64D78",
+
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+
+    shadowOpacity: 0.16,
+    shadowRadius: 12,
+
+    elevation: 8,
   },
+
   botaoTexto: {
-    color: theme.colors.texts,
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    letterSpacing: 1,
+    color: "#FFF",
+
+    fontSize: 22,
+
+    fontWeight: "700",
+
+    letterSpacing: 0.5,
   },
+
   textoCancelar: {
-    color: theme.colors.title,
-    fontSize: theme.texts.text,
+    color: "#91486F",
+
+    fontSize: 15,
+
+    fontWeight: "600",
+
+    marginTop: 18,
+
     textDecorationLine: "underline",
   },
+
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+
+    backgroundColor: "rgba(0,0,0,0.40)",
+
     justifyContent: "flex-end",
   },
+
   modalContent: {
-    backgroundColor: theme.colors.terceary,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    height: "80%",
-    padding: 25,
+    backgroundColor: "#FFF9FC",
+
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+
+    height: "84%",
+
+    paddingTop: 24,
+    paddingHorizontal: 22,
   },
+
   modalHeader: {
     flexDirection: "row",
+
     justifyContent: "space-between",
+
     alignItems: "center",
-    marginBottom: 20,
+
+    marginBottom: 22,
   },
+
   modalTitulo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
+    fontSize: 24,
+
+    fontWeight: "700",
+
+    color: "#91486F",
   },
-  modalAcoesTopo: { flexDirection: "row", alignItems: "center" },
+
+  modalAcoesTopo: {
+    flexDirection: "row",
+    alignItems: "center",
+
+    gap: 12,
+  },
+
   apagarTudoTexto: {
-    color: theme.colors.textPrimary,
-    fontWeight: "bold",
-    fontSize: theme.texts.text,
+    color: "#B2487D",
+
+    fontWeight: "700",
+
+    fontSize: 14,
   },
+
   textoVazio: {
     textAlign: "center",
-    marginTop: 20,
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
+
+    marginTop: 24,
+
+    fontSize: 15,
+
+    color: "#A2748B",
+
+    lineHeight: 24,
   },
+
   cardHistorico: {
     flexDirection: "row",
+
     justifyContent: "space-between",
+
     alignItems: "center",
-    padding: 15,
-    backgroundColor: theme.colors.secondary,
-    borderRadius: 15,
-    marginBottom: 10,
+
+    padding: 18,
+
+    backgroundColor: "#FDEAF2",
+
+    borderRadius: 22,
+
+    marginBottom: 14,
+
     borderWidth: 1,
-    borderColor: theme.colors.primary,
+    borderColor: "#F5D3E3",
+
+    shadowColor: "#A64D78",
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    elevation: 2,
   },
+
   cardData: {
-    fontWeight: "bold",
+    fontWeight: "700",
+
     marginBottom: 5,
-    fontSize: theme.texts.subtitle,
-    color: theme.colors.title,
+
+    fontSize: 15,
+
+    color: "#8D3E67",
   },
+
   cardTexto: {
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
+    fontSize: 14,
+
+    color: "#8E7180",
+
+    lineHeight: 22,
   },
+
   cardSubtexto: {
-    color: theme.colors.title,
-    fontSize: theme.texts.text,
+    color: "#A2748B",
+
+    fontSize: 13,
+
     marginTop: 4,
-    opacity: 0.8,
   },
-  iconeLixeira: { padding: 10 },
+
+  iconeLixeira: {
+    width: 38,
+    height: 38,
+
+    borderRadius: 19,
+
+    backgroundColor: "#FFF3F7",
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

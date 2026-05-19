@@ -306,120 +306,322 @@ export default function Contador() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF7FB",
+  },
+
   header: {
-    height: 110,
-    paddingTop: 50,
+    height: 92,
+
+    paddingTop: 40,
+
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-  },
-  back: { position: "absolute", top: 60 },
-  titulo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
-  },
-  avisoContainer: {
-    backgroundColor: "#333",
-    padding: 10,
-    marginHorizontal: 20,
-    borderRadius: 8,
-    alignItems: "center",
-    position: "absolute",
-    top: 110,
-    width: "90%",
-    zIndex: 10,
-    alignSelf: "center",
-  },
-  avisoTexto: { color: "#fff", fontWeight: "bold" },
-  main: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10 },
-  status: {
-    fontSize: theme.texts.subtitle,
-    color: theme.colors.subtitle,
-    fontWeight: "600",
+
+    backgroundColor: "#C85C90",
+
+   
+
+    shadowColor: "#8E3D68",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    elevation: 4,
   },
 
-  tempo: { fontSize: 70, fontWeight: "bold", color: theme.colors.title },
+  back: {
+    position: "absolute",
+
+    top: 44,
+
+    width: 40,
+    height: 40,
+
+    borderRadius: 20,
+
+    backgroundColor: "rgba(255,255,255,0.20)",
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  titulo: {
+    fontSize: 23,
+
+    fontWeight: "700",
+
+    color: "#FFF8FC",
+
+    letterSpacing: 0.2,
+  },
+
+  avisoContainer: {
+    backgroundColor: "#A64D78",
+
+    paddingVertical: 11,
+    paddingHorizontal: 16,
+
+    marginHorizontal: 22,
+
+    borderRadius: 16,
+
+    alignItems: "center",
+
+    position: "absolute",
+
+    top: 100,
+
+    width: "86%",
+
+    zIndex: 10,
+
+    alignSelf: "center",
+
+    shadowColor: "#8E3D68",
+    shadowOpacity: 0.10,
+    shadowRadius: 6,
+
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+
+    elevation: 3,
+  },
+
+  avisoTexto: {
+    color: "#FFF",
+
+    fontWeight: "600",
+
+    fontSize: 14,
+  },
+
+  main: {
+    flex: 1,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    paddingHorizontal: 24,
+  },
+
+  status: {
+    fontSize: 18,
+
+    color: "#91486F",
+
+    fontWeight: "600",
+
+    marginBottom: 10,
+  },
+
+  tempo: {
+    fontSize: 64,
+
+    fontWeight: "700",
+
+    color: "#B2487D",
+
+    letterSpacing: 1,
+
+    marginBottom: 2,
+  },
 
   progresso: {
-    fontSize: theme.texts.subtitle,
-    color: theme.colors.subtitle,
-    marginBottom: 20,
-    fontWeight: "600",
+    fontSize: 17,
+
+    color: "#A2748B",
+
+    marginBottom: 34,
+
+    fontWeight: "500",
   },
 
   botaoChute: {
     width: 220,
     height: 220,
-    borderRadius: 110,
-    backgroundColor: theme.colors.primary,
+
+    borderRadius: 120,
+
+    backgroundColor: "#C85C90",
+
     alignItems: "center",
     justifyContent: "center",
+
+    shadowColor: "#A64D78",
+
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+
+    shadowOpacity: 0.16,
+    shadowRadius: 12,
+
     elevation: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
   },
+
   botaoTexto: {
-    color: theme.colors.texts,
-    fontSize: theme.texts.subtitle,
-    fontWeight: "bold",
+    color: "#FFF",
+
+    fontSize: 22,
+
+    fontWeight: "700",
+
+    letterSpacing: 0.5,
   },
+
   footer: {
     flexDirection: "row",
-    gap: 12,
-    padding: 25,
-    paddingBottom: 40,
+
+    gap: 14,
+
+    paddingHorizontal: 22,
+    paddingTop: 8,
+    paddingBottom: 34,
+
     justifyContent: "center",
   },
+
   bot: {
-    height: 80,
-    width: 150,
-    borderRadius: 16,
+    flex: 1,
+
+    minHeight: 72,
+
+    borderRadius: 20,
+
     alignItems: "center",
     justifyContent: "center",
-    elevation: 2,
+
+    paddingHorizontal: 14,
+
+    shadowColor: "#8E3D68",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+
+    elevation: 3,
   },
+
   botText: {
-    color: theme.colors.texts,
-    fontWeight: "bold",
-    fontSize: theme.texts.subtitle,
+    color: "#FFF",
+
+    fontWeight: "700",
+
+    fontSize: 15,
+
+    textAlign: "center",
+
+    letterSpacing: 0.2,
   },
+
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+
+    backgroundColor: "rgba(0,0,0,0.40)",
+
     justifyContent: "flex-end",
   },
+
   modalContent: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    height: "85%",
-    padding: 25,
+    backgroundColor: "#FFF9FC",
+
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+
+    height: "84%",
+
+    paddingTop: 24,
+    paddingHorizontal: 22,
   },
+
   modalHeader: {
     flexDirection: "row",
+
     justifyContent: "space-between",
+
     alignItems: "center",
-    marginBottom: 20,
+
+    marginBottom: 22,
   },
-  modalTitulo: { fontSize: 22, fontWeight: "bold", color: theme.colors.title },
+
+  modalTitulo: {
+    fontSize: 24,
+
+    fontWeight: "700",
+
+    color: "#91486F",
+  },
+
   cardHistorico: {
     flexDirection: "row",
+
     justifyContent: "space-between",
+
     alignItems: "center",
+
     padding: 18,
-    backgroundColor: theme.colors.terceary,
-    borderRadius: 18,
-    marginBottom: 12,
+
+    backgroundColor: "#FDEAF2",
+
+    borderRadius: 22,
+
+    marginBottom: 14,
+
+    borderWidth: 1,
+    borderColor: "#F5D3E3",
+
+    shadowColor: "#A64D78",
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    elevation: 2,
   },
+
   cardData: {
-    fontWeight: "bold",
-    marginBottom: 4,
-    fontSize: 16,
-    color: theme.colors.title,
+    fontWeight: "700",
+
+    marginBottom: 5,
+
+    fontSize: 15,
+
+    color: "#8D3E67",
   },
-  iconeLixeira: { padding: 8 },
+
+  historicoTexto: {
+    color: "#8E7180",
+
+    fontSize: 14,
+
+    lineHeight: 22,
+  },
+
+  iconeLixeira: {
+    width: 38,
+    height: 38,
+
+    borderRadius: 19,
+
+    backgroundColor: "#FFF3F7",
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
 
   /* CARD PRINCIPAL */
   mainCard: {
-    backgroundColor: "#d65294",
+    backgroundColor: "#e0a0c0",
 
     borderRadius: 24,
 
@@ -348,7 +348,7 @@ const styles = StyleSheet.create({
     marginBottom: 18,
 
     borderWidth: 1,
-    borderColor: "#F8D7E7",
+    borderColor: "#e0a0c0",
 
     elevation: 4,
 
