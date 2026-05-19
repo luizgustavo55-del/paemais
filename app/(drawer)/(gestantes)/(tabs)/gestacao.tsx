@@ -167,168 +167,305 @@ export default function Inicio() {
   };
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={[theme.colors.primary, theme.colors.cards]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.topContainer}
-      >
-        <View style={styles.topHeader}>
-          <TouchableOpacity
-            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-            activeOpacity={0.7}
-          >
-            <View style={styles.iconBack}>
-              <Ionicons name="person" size={18} color="#FFF" />
-            </View>
-          </TouchableOpacity>
-
-          <View>
-            <Text style={styles.title}>
-              {nome ? `Olá, ${nome.split(" ")[0]} ` : "Minha Gestação"}
-            </Text>
-            <Text style={styles.subtitle}>Acompanhe sua gravidez</Text>
-          </View>
-        </View>
-
-        <View style={styles.mainCard}>
-          <View style={styles.mainCardIcon}>
-            <Ionicons
-              name="happy-outline"
-              size={28}
-              color={theme.colors.primary}
-            />
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.weekText}>
-              {semana} semanas • {dias} dias
-            </Text>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>📏 {tamanho}</Text>
-              <Text style={styles.infoLabel}>⚖️ {peso}</Text>
-            </View>
-            <Text style={styles.mainInfo}>
-              Comparável a(o): {fruta} {emoji}
-            </Text>
-          </View>
-        </View>
-
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.menuContainer}
+  <View style={styles.container}>
+    <View style={styles.topContainer}>
+      <View style={styles.topHeader}>
+        <TouchableOpacity
+          onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+          activeOpacity={0.7}
         >
-          {ferra.map((item) => {
-            const ativo = escolha === item.id;
-            return (
-              <TouchableOpacity
-                key={item.id}
-                activeOpacity={0.85}
-                style={[styles.menuButton, ativo && styles.menuButtonActive]}
-                onPress={() => setEscolha(item.id)}
-              >
-                <Ionicons
-                  name={item.icon as any}
-                  size={17}
-                  color={ativo ? "#FFF" : theme.colors.primary}
-                />
-                <Text style={[styles.menuText, ativo && styles.menuTextActive]}>
-                  {item.title}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </LinearGradient>
+          <View style={styles.iconBack}>
+            <Ionicons name="person" size={18} color="#FFF" />
+          </View>
+        </TouchableOpacity>
 
-      <View style={styles.content}>{render()}</View>
+        <View>
+          <Text style={styles.title}>
+            {nome ? `Olá, ${nome.split(" ")[0]} ` : "Minha Gestação"}
+          </Text>
+
+          <Text style={styles.subtitle}>
+            Acompanhe sua gravidez
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.mainCard}>
+        <View style={styles.mainCardIcon}>
+          <Ionicons
+            name="happy-outline"
+            size={28}
+            color={theme.colors.primary}
+          />
+        </View>
+
+        <View style={{ flex: 1 }}>
+          <Text style={styles.weekText}>
+            {semana} semanas • {dias} dias
+          </Text>
+
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>
+              📏 {tamanho}
+            </Text>
+
+            <Text style={styles.infoLabel}>
+              ⚖️ {peso}
+            </Text>
+          </View>
+
+          <Text style={styles.mainInfo}>
+            Comparável a(o): {fruta} {emoji}
+          </Text>
+        </View>
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.menuContainer}
+      >
+        {ferra.map((item) => {
+          const ativo = escolha === item.id;
+
+          return (
+            <TouchableOpacity
+              key={item.id}
+              activeOpacity={0.85}
+              style={[
+                styles.menuButton,
+                ativo && styles.menuButtonActive,
+              ]}
+              onPress={() => setEscolha(item.id)}
+            >
+              <Ionicons
+                name={item.icon as any}
+                size={17}
+                color={ativo ? "#FFF" : "#8B2F61"}
+              />
+
+              <Text
+                style={[
+                  styles.menuText,
+                  ativo && styles.menuTextActive,
+                ]}
+              >
+                {item.title}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
     </View>
-  );
+
+    <View style={styles.content}>
+      {render()}
+    </View>
+  </View>
+);
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F8FAFC" },
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF5FA",
+  },
+
+  /* TOPO */
   topContainer: {
-    paddingTop: 48,
-    paddingBottom: 18,
-    paddingHorizontal: 16,
-    borderBottomLeftRadius: 26,
-    borderBottomRightRadius: 26,
-    elevation: 5,
+    paddingTop: 42,
+    paddingBottom: 20,
+    paddingHorizontal: 18,
+
+    backgroundColor: "#C54286",
+
+
+    elevation: 6,
+
+    shadowColor: "#8B2F61",
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
   },
-  topHeader: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
-  iconBack: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  title: { color: "#FFF", fontSize: theme.texts.title, fontWeight: "700" },
-  subtitle: {
-    color: "rgba(255,255,255,0.85)",
-    marginTop: 2,
-    fontSize: theme.texts.subtitle,
-  },
-  mainCard: {
-    backgroundColor: "rgba(255,255,255,0.16)",
-    borderRadius: 22,
-    padding: 15,
+
+  topHeader: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 18,
+
+    marginBottom: 15,
   },
-  mainCardIcon: {
-    width: 58,
-    height: 58,
-    borderRadius: 29,
-    backgroundColor: "rgba(255,255,255,0.25)",
+
+  iconBack: {
+    width: 44,
+    height: 44,
+
+    borderRadius: 22,
+
+    backgroundColor: "rgba(255,255,255,0.16)",
+
     justifyContent: "center",
     alignItems: "center",
+
     marginRight: 14,
   },
-  weekText: {
-    color: "#FFF",
-    fontSize: theme.texts.text,
+
+  title: {
+    color: "#FFFFFF",
+
+    fontSize: 26,
+
     fontWeight: "700",
+
+    letterSpacing: 0.3,
+  },
+
+  subtitle: {
+    color: "#FCE1EC",
+
+    marginTop: 3,
+
+    fontSize: 14,
+
+    fontWeight: "500",
+  },
+
+  /* CARD PRINCIPAL */
+  mainCard: {
+    backgroundColor: "#e0a0c0",
+
+    borderRadius: 24,
+
+    padding: 18,
+
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    marginBottom: 18,
+
+    borderWidth: 1,
+    borderColor: "#e0a0c0",
+
+    elevation: 4,
+
+    shadowColor: "#A13D71",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+  },
+
+  mainCardIcon: {
+    width: 62,
+    height: 62,
+
+    borderRadius: 31,
+
+    backgroundColor: "#FFD9EC",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginRight: 15,
+  },
+
+  weekText: {
+    color: "#8B2F61",
+
+    fontSize: 18,
+
+    fontWeight: "700",
+
     marginBottom: 10,
   },
+
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
+
     gap: 10,
-    marginBottom: 6,
+
+    marginBottom: 8,
   },
+
   infoLabel: {
-    color: "#FFF",
-    fontSize: theme.texts.text,
-    backgroundColor: "rgba(255,255,255,0.14)",
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 10,
+    color: "#8B2F61",
+
+    fontSize: 13,
+
+    fontWeight: "600",
+
+    backgroundColor: "#FFF5FA",
+
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+
+    borderRadius: 12,
   },
-  mainInfo: { color: "rgba(255,255,255,0.95)", fontSize: theme.texts.text },
-  menuContainer: { paddingBottom: 4, paddingRight: 20 },
+
+  mainInfo: {
+    color: "#7A4A63",
+
+    fontSize: 14,
+
+    lineHeight: 22,
+  },
+
+  /* MENU */
+  menuContainer: {
+    paddingBottom: 4,
+    paddingRight: 20,
+  },
+
   menuButton: {
     flexDirection: "row",
     alignItems: "center",
+
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: "#FFF",
-    borderRadius: 14,
+    paddingVertical: 11,
+
+    backgroundColor: "#FFF0F8",
+
+    borderRadius: 16,
+
     marginRight: 10,
+
+    borderWidth: 1,
+    borderColor: "#F4C7DD",
   },
-  menuButtonActive: { backgroundColor: "#7C3AED" },
+
+  menuButtonActive: {
+    backgroundColor: "#8B2F61",
+
+    borderColor: "#8B2F61",
+  },
+
   menuText: {
     marginLeft: 7,
-    color: theme.colors.primary,
-    fontSize: 12,
+
+    color: "#8B2F61",
+
+    fontSize: 13,
+
     fontWeight: "600",
   },
-  menuTextActive: { color: "#FFF" },
-  content: { flex: 1, paddingHorizontal: 14, paddingTop: 14 },
+
+  menuTextActive: {
+    color: "#FFFFFF",
+  },
+
+  /* CONTEÚDO */
+  content: {
+    flex: 1,
+
+    paddingHorizontal: 14,
+    paddingTop: 16,
+  },
 });

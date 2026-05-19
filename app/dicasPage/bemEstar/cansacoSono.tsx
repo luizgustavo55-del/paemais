@@ -38,13 +38,13 @@ export default function TelaExemplo() {
 
             <View style={styles.badge}>
               <Text style={styles.badgeText}>
-                aqui seu texto (badge)
+                Rotina e bemm estar
               </Text>
             </View>
           </View>
 
           <Text style={styles.title}>
-            aqui seu texto (título principal)
+          Cansaço e Sono
           </Text>
         </View>
 

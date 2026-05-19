@@ -514,155 +514,429 @@ export default function ConsultasScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF7FB",
+  },
+
   header: {
     flexDirection: "row",
+
     alignItems: "center",
+
     justifyContent: "space-between",
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-    backgroundColor: theme.colors.background,
+
+    paddingTop: 46,
+
+    paddingHorizontal: 22,
+
+    paddingBottom: 18,
+
+    backgroundColor: "#C85C90",
+
+  
+
+    shadowColor: "#c2548f",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    elevation: 4,
   },
-  headerLeft: { width: 40, alignItems: "flex-start" },
-  headerRight: { width: 40, alignItems: "flex-end" },
-  tituloHeader: { fontSize: 20, fontWeight: "bold", color: theme.colors.texts },
-  content: { flex: 1, padding: 20 },
+
+  headerLeft: {
+    width: 42,
+
+    height: 42,
+
+    borderRadius: 21,
+
+    backgroundColor: "#f773b3",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+  },
+
+  headerRight: {
+    width: 42,
+
+    height: 42,
+
+    borderRadius: 21,
+
+    backgroundColor: "#c85c90",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+  },
+
+  tituloHeader: {
+    fontSize: 23,
+
+    fontWeight: "700",
+
+    color: "#FFF8FC",
+
+    letterSpacing: 0.2,
+  },
+
+  content: {
+    flex: 1,
+
+    padding: 22,
+  },
 
   button: {
     flexDirection: "row",
-    padding: 16,
-    borderRadius: 12,
+
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+
+    borderRadius: 18,
+
     alignItems: "center",
+
     justifyContent: "center",
-    marginBottom: 20,
-    backgroundColor: theme.colors.cards,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+
+    marginBottom: 24,
+
+    backgroundColor: "#C85C90",
+
+    shadowColor: "#A64D78",
+
+    shadowOpacity: 0.10,
+
+    shadowRadius: 5,
+
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+
+    elevation: 3,
   },
-  buttonText: { color: "#FFF", fontWeight: "bold", fontSize: 16 },
+
+  buttonText: {
+    color: "#FFF",
+
+    fontWeight: "700",
+
+    fontSize: 16,
+
+    letterSpacing: 0.3,
+  },
 
   emptyCard: {
-    backgroundColor: theme.colors.terceary,
-    borderRadius: 16,
-    padding: 40,
+    backgroundColor: "#FFF9FC",
+
+    borderRadius: 24,
+
+    paddingVertical: 42,
+    paddingHorizontal: 26,
+
     alignItems: "center",
-    marginTop: 20,
+
+    marginTop: 24,
+
+    shadowColor: "#A64D78",
+
+    shadowOpacity: 0.05,
+
+    shadowRadius: 6,
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    elevation: 2,
   },
+
   emptyText: {
-    marginTop: 15,
-    color: theme.colors.subtitle,
-    fontSize: 16,
+    marginTop: 16,
+
+    color: "#B18A9D",
+
+    fontSize: 15,
+
     textAlign: "center",
+
+    lineHeight: 22,
   },
 
   card: {
     flexDirection: "row",
+
     alignItems: "center",
-    backgroundColor: theme.colors.terceary,
-    padding: 15,
-    marginBottom: 12,
-    borderRadius: 16,
+
+    backgroundColor: "#FFF9FC",
+
+    padding: 16,
+
+    marginBottom: 14,
+
+    borderRadius: 22,
+
+    borderWidth: 1,
+
+    borderColor: "#F5D3E3",
+
+    shadowColor: "#A64D78",
+
+    shadowOpacity: 0.04,
+
+    shadowRadius: 4,
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    elevation: 2,
   },
+
   iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 52,
+    height: 52,
+
+    borderRadius: 26,
+
     alignItems: "center",
+
     justifyContent: "center",
-    marginRight: 15,
+
+    marginRight: 16,
+
+    backgroundColor: "#FDEAF2",
   },
-  cardInfo: { flex: 1, paddingRight: 10 },
+
+  cardInfo: {
+    flex: 1,
+
+    paddingRight: 10,
+  },
+
   cardTipo: {
-    fontSize: 10,
-    fontWeight: "bold",
-    color: theme.colors.subtitle,
+    fontSize: 11,
+
+    fontWeight: "700",
+
+    color: "#B18A9D",
+
     letterSpacing: 1,
-    marginBottom: 2,
+
+    marginBottom: 4,
   },
+
   cardTitulo: {
-    fontWeight: "bold",
-    color: theme.colors.title,
+    fontWeight: "700",
+
+    color: "#8D3E67",
+
     fontSize: 17,
+
     marginBottom: 6,
   },
-  rowInfo: { flexDirection: "row", alignItems: "center", marginTop: 2 },
-  cardData: { color: theme.colors.subtitle, fontSize: 13 },
-  lixeira: { padding: 5, justifyContent: "center", alignItems: "center" },
+
+  rowInfo: {
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    marginTop: 3,
+  },
+
+  cardData: {
+    color: "#A2748B",
+
+    fontSize: 13,
+  },
+
+  lixeira: {
+    width: 38,
+    height: 38,
+
+    borderRadius: 19,
+
+    backgroundColor: "#FFF3F7",
+
+    justifyContent: "center",
+
+    alignItems: "center",
+  },
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+
+    backgroundColor: "rgba(0,0,0,0.40)",
+
     justifyContent: "flex-end",
   },
+
   modalContent: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 25,
+    backgroundColor: "#FFF9FC",
+
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+
+    paddingTop: 24,
+    paddingHorizontal: 24,
+
     height: "90%",
   },
+
   modalHeader: {
     flexDirection: "row",
+
     justifyContent: "space-between",
+
     alignItems: "center",
-    marginBottom: 20,
+
+    marginBottom: 24,
   },
-  modalTitulo: { fontSize: 22, fontWeight: "bold", color: theme.colors.title },
+
+  modalTitulo: {
+    fontSize: 24,
+
+    fontWeight: "700",
+
+    color: "#91486F",
+  },
 
   tipoContainer: {
     flexDirection: "row",
-    backgroundColor: theme.colors.terceary,
-    borderRadius: 12,
-    padding: 4,
-    marginBottom: 20,
+
+    backgroundColor: "#FDEAF2",
+
+    borderRadius: 16,
+
+    padding: 5,
+
+    marginBottom: 24,
   },
+
   tipoBotao: {
     flex: 1,
-    paddingVertical: 12,
+
+    paddingVertical: 13,
+
     alignItems: "center",
-    borderRadius: 10,
+
+    borderRadius: 12,
   },
-  tipoAtivoConsulta: { backgroundColor: theme.colors.cards },
-  tipoAtivoExame: { backgroundColor: theme.colors.primary },
-  tipoTexto: { fontWeight: "bold", color: theme.colors.subtitle },
+
+  tipoAtivoConsulta: {
+    backgroundColor: "#C85C90",
+  },
+
+  tipoAtivoExame: {
+    backgroundColor: "#A64D78",
+  },
+
+  tipoTexto: {
+    fontWeight: "700",
+
+    color: "#B18A9D",
+
+    fontSize: 14,
+  },
 
   label: {
     fontWeight: "600",
-    color: theme.colors.title,
-    marginBottom: 5,
-    marginTop: 10,
+
+    color: "#91486F",
+
+    marginBottom: 8,
+
+    marginTop: 12,
+
     fontSize: 14,
   },
+
   input: {
-    backgroundColor: theme.colors.terceary,
-    borderRadius: 12,
+    backgroundColor: "#FDEAF2",
+
+    borderRadius: 16,
+
     padding: 15,
-    fontSize: 16,
-    color: theme.colors.title,
+
+    fontSize: 15,
+
+    color: "#8D3E67",
+
+    borderWidth: 1,
+
+    borderColor: "#F5D3E3",
   },
 
   inputPicker: {
     flexDirection: "row",
+
     justifyContent: "space-between",
+
     alignItems: "center",
-    backgroundColor: theme.colors.terceary,
-    borderRadius: 12,
+
+    backgroundColor: "#FDEAF2",
+
+    borderRadius: 16,
+
     padding: 15,
+
+    borderWidth: 1,
+
+    borderColor: "#F5D3E3",
   },
-  rowInputs: { flexDirection: "row", justifyContent: "space-between" },
+
+  rowInputs: {
+    flexDirection: "row",
+
+    justifyContent: "space-between",
+
+    gap: 14,
+  },
 
   saveButton: {
-    backgroundColor: theme.colors.primary,
-    marginTop: 20,
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: "#C85C90",
+
+    marginTop: 26,
+
+    paddingVertical: 16,
+
+    borderRadius: 20,
+
     alignItems: "center",
+
     justifyContent: "center",
-    marginBottom: 40,
+
+    marginBottom: 42,
+
+    shadowColor: "#A64D78",
+
+    shadowOpacity: 0.10,
+
+    shadowRadius: 5,
+
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+
+    elevation: 3,
   },
-  saveButtonText: { color: "#FFF", fontWeight: "bold", fontSize: 18 },
+
+  saveButtonText: {
+    color: "#FFF",
+
+    fontWeight: "700",
+
+    fontSize: 17,
+
+    letterSpacing: 0.3,
+  },
 });

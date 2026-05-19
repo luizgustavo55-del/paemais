@@ -318,135 +318,294 @@ export default function EnxovalScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.colors.background },
+  container: {
+    flex: 1,
+    backgroundColor: "#FFF7FB",
+  },
 
   header: {
     flexDirection: "row",
+
     alignItems: "center",
+
     justifyContent: "space-between",
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-    backgroundColor: theme.colors.background,
+
+    paddingTop: 46,
+
+    paddingHorizontal: 22,
+
+    paddingBottom: 18,
+
+    backgroundColor: "#C85C90",
+
+   
+
+    shadowColor: "#8E3D68",
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+
+    elevation: 4,
   },
-  headerLeft: { width: 40, alignItems: "flex-start" },
-  headerRight: { width: 40, alignItems: "flex-end" },
+
+  headerLeft: {
+    width: 42,
+
+    height: 42,
+
+    borderRadius: 21,
+
+    backgroundColor: "#df5f9d",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+  },
+
+  headerRight: {
+    width: 42,
+
+    height: 42,
+
+    borderRadius: 21,
+
+    backgroundColor: "#c85c90",
+
+    alignItems: "center",
+
+    justifyContent: "center",
+  },
+
   tituloHeader: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.texts,
+    fontSize: 23,
+
+    fontWeight: "700",
+
+    color: "#FFF8FC",
+
+    letterSpacing: 0.2,
   },
 
   content: {
     flex: 1,
-    padding: 20,
-    backgroundColor: theme.colors.terceary,
-    margin: 15,
-    borderRadius: 20,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
+
+    padding: 22,
+
+    backgroundColor: "#FFF9FC",
+
+    margin: 18,
+
+    borderRadius: 28,
+
+    shadowColor: "#A64D78",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+
+    elevation: 3,
   },
 
   tituloSecao: {
-    fontSize: theme.texts.subtitle,
-    fontWeight: "bold",
-    color: theme.colors.title,
-    marginBottom: 15,
+    fontSize: 18,
+
+    fontWeight: "700",
+
+    color: "#793459",
+
+    marginBottom: 18,
   },
 
   inputContainer: {
     flexDirection: "row",
+
     alignItems: "center",
-    marginBottom: 20,
+
+    marginBottom: 22,
   },
+
   input: {
     flex: 1,
-    backgroundColor: "#FFF",
+
+    backgroundColor: "#FDEAF2",
+
     borderWidth: 1,
-    borderColor: theme.colors.secondary,
-    borderRadius: 12,
+
+    borderColor: "#F5D3E3",
+
+    borderRadius: 16,
+
     padding: 15,
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
+
+    fontSize: 15,
+
+    color: "#8D3E67",
   },
+
   addButton: {
-    borderRadius: 12,
-    width: 50,
-    height: 50,
+    borderRadius: 16,
+
+    width: 52,
+    height: 52,
+
     alignItems: "center",
+
     justifyContent: "center",
-    marginLeft: 10,
-    backgroundColor: theme.colors.cards,
+
+    marginLeft: 12,
+
+    backgroundColor: "#C85C90",
+
+    shadowColor: "#A64D78",
+    shadowOpacity: 0.10,
+    shadowRadius: 5,
+
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+
+    elevation: 3,
   },
 
   itemCard: {
     flexDirection: "row",
+
     alignItems: "center",
+
     justifyContent: "space-between",
-    backgroundColor: "#FFF",
+
+    backgroundColor: "#FDEAF2",
+
     borderWidth: 1,
-    borderColor: theme.colors.secondary,
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 10,
+
+    borderColor: "#F5D3E3",
+
+    borderRadius: 18,
+
+    padding: 16,
+
+    marginBottom: 14,
+
+    shadowColor: "#A64D78",
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    elevation: 2,
   },
+
   itemCardMarcado: {
-    backgroundColor: theme.colors.secondary,
-    borderColor: theme.colors.primary,
+    backgroundColor: "#F7DDE9",
+
+    borderColor: "#E7BDD0",
+
+    opacity: 0.8,
   },
-  itemLeft: { flexDirection: "row", alignItems: "center", flex: 1 },
+
+  itemLeft: {
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    flex: 1,
+  },
 
   checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
+    width: 26,
+    height: 26,
+
+    borderRadius: 8,
+
     borderWidth: 2,
-    borderColor: theme.colors.cards,
+
+    borderColor: "#C85C90",
+
     alignItems: "center",
+
     justifyContent: "center",
-    marginRight: 15,
+
+    marginRight: 14,
+
+    backgroundColor: "#FFF6FA",
   },
 
-  itemTexto: { fontSize: theme.texts.text, color: theme.colors.title, flex: 1 },
+  itemTexto: {
+    fontSize: 15,
+
+    color: "#8D3E67",
+
+    flex: 1,
+
+    fontWeight: "500",
+  },
+
   itemTextoMarcado: {
-    color: theme.colors.subtitle,
+    color: "#B18A9D",
+
     textDecorationLine: "line-through",
   },
 
   progressContainer: {
-    marginTop: 10,
-    paddingTop: 15,
+    marginTop: 18,
+
+    paddingTop: 18,
+
     borderTopWidth: 1,
-    borderTopColor: theme.colors.secondary,
+
+    borderTopColor: "#F0D4E1",
   },
+
   progressTextRow: {
     flexDirection: "row",
+
     justifyContent: "space-between",
-    marginBottom: 10,
+
+    marginBottom: 12,
   },
+
   progressLabel: {
-    fontSize: theme.texts.text,
+    fontSize: 15,
+
     fontWeight: "600",
-    color: theme.colors.title,
+
+    color: "#91486F",
   },
+
   progressValue: {
-    fontSize: theme.texts.text,
-    fontWeight: "bold",
-    color: theme.colors.cards,
+    fontSize: 15,
+
+    fontWeight: "700",
+
+    color: "#C85C90",
   },
 
   progressBarBackground: {
-    height: 12,
-    backgroundColor: "#FFF",
-    borderRadius: 10,
+    height: 13,
+
+    backgroundColor: "#F3DCE7",
+
+    borderRadius: 12,
+
     overflow: "hidden",
   },
+
   progressBarFill: {
     height: "100%",
-    borderRadius: 10,
-    backgroundColor: theme.colors.cards,
+
+    borderRadius: 12,
+
+    backgroundColor: "#C85C90",
   },
 });

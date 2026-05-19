@@ -502,213 +502,251 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 20,
-    backgroundColor: theme.colors.background,
+    backgroundColor: "#7050b3",
   },
+
   titulo: {
-    fontSize: theme.texts.title,
+    fontSize: 28,
     fontWeight: "bold",
-    color: theme.colors.texts,
+    color: "#fff",
   },
+
   subtitulo: {
-    fontSize: theme.texts.text,
-    color: theme.colors.secondary,
-    marginBottom: 15,
+    color: "#ece3ff",
+    marginBottom: 18,
+    marginTop: 4,
   },
+
   tabs: {
     flexDirection: "row",
-    backgroundColor: theme.colors.cards,
-    borderRadius: 12,
+    backgroundColor: "#ffffff22",
+    borderRadius: 16,
     padding: 4,
-    marginBottom: 15,
+    marginBottom: 20,
   },
+
   tab: {
     flex: 1,
-    padding: 10,
+    paddingVertical: 10,
     alignItems: "center",
   },
+
   tabActive: {
     flex: 1,
-    padding: 10,
-    backgroundColor: theme.colors.texts,
-    borderRadius: 10,
+    paddingVertical: 10,
+    backgroundColor: "#fff",
+    borderRadius: 12,
     alignItems: "center",
   },
+
   tabText: {
-    fontSize: theme.texts.text,
-    color: theme.colors.texts,
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 12,
   },
+
   tabTextActive: {
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
+    color: "#28174c",
     fontWeight: "bold",
+    fontSize: 12,
   },
+
   inputFake: {
-    backgroundColor: theme.colors.terceary,
+    backgroundColor: "#fff",
     padding: 14,
     borderRadius: 16,
     marginBottom: 15,
     elevation: 3,
   },
+
   inputFakeContent: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
   },
+
   avatarFake: {
     width: 35,
     height: 35,
     borderRadius: 20,
-    backgroundColor: theme.colors.cards,
+    backgroundColor: "#ece3ff",
   },
+
   inputFakeText: {
-    color: theme.colors.subtitle,
-    fontSize: theme.texts.text,
+    color: "#777",
+    fontSize: 13,
   },
+
   card: {
-    backgroundColor: theme.colors.terceary,
+    backgroundColor: "#ece3ff",
     padding: 15,
     borderRadius: 15,
     marginBottom: 15,
   },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
+
   userRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
   },
+
   avatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: theme.colors.cards,
+    backgroundColor: "#fff",
   },
+
   nome: {
     fontWeight: "bold",
-    color: theme.colors.title,
-    fontSize: theme.texts.subtitle,
+    color: "#28174c",
+    fontSize: 16,
   },
+
   tipo: {
-    fontSize: theme.texts.text,
-    color: theme.colors.subtitle,
+    fontSize: 12,
+    color: "#555",
     textTransform: "capitalize",
   },
+
   texto: {
     marginVertical: 10,
-    color: theme.colors.title,
-    fontSize: theme.texts.text,
+    color: "#28174c",
+    fontSize: 14,
   },
+
   textoComentarioRender: {
     marginTop: 5,
-    color: theme.colors.title,
-    fontSize: theme.texts.text,
+    color: "#28174c",
+    fontSize: 13,
   },
+
   acoes: {
     flexDirection: "row",
     gap: 15,
   },
+
   likes: {
     marginTop: 5,
-    color: theme.colors.subtitle,
-    fontSize: theme.texts.text,
+    color: "#777",
+    fontSize: 12,
   },
+
   modal: {
     flex: 1,
     justifyContent: "center",
     backgroundColor: "rgba(0,0,0,0.7)",
     padding: 20,
   },
+
   modalBox: {
-    backgroundColor: theme.colors.texts,
+    backgroundColor: "#fff",
     padding: 20,
     borderRadius: 16,
   },
+
   modalTitulo: {
-    fontSize: theme.texts.title,
+    fontSize: 18,
     fontWeight: "bold",
     marginBottom: 15,
-    color: theme.colors.title,
+    color: "#28174c",
   },
+
   input: {
     borderWidth: 1,
-    borderColor: theme.colors.secondary,
+    borderColor: "#ece3ff",
     padding: 15,
     borderRadius: 10,
     height: 120,
-    backgroundColor: theme.colors.texts,
+    backgroundColor: "#fff",
     textAlignVertical: "top",
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
+    fontSize: 14,
+    color: "#28174c",
   },
+
   labelVisibilidade: {
     marginTop: 15,
     marginBottom: 8,
-    fontSize: theme.texts.text,
+    fontSize: 13,
     fontWeight: "600",
-    color: theme.colors.subtitle,
+    color: "#555",
   },
+
   rowVisibilidade: {
     flexDirection: "row",
     gap: 10,
     marginBottom: 10,
   },
+
   btnVisibilidade: {
     flex: 1,
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: theme.colors.secondary,
+    borderColor: "#ece3ff",
     alignItems: "center",
   },
+
   btnVisibilidadeAtivo: {
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.secondary,
+    borderColor: "#7050b3",
+    backgroundColor: "#ece3ff",
   },
+
   txtVisibilidade: {
-    color: theme.colors.subtitle,
-    fontSize: theme.texts.text,
+    color: "#555",
+    fontSize: 12,
   },
+
   txtVisibilidadeAtivo: {
-    color: theme.colors.primary,
+    color: "#7050b3",
     fontWeight: "bold",
-    fontSize: theme.texts.text,
+    fontSize: 12,
   },
+
   botao: {
-    backgroundColor: theme.colors.primary,
+    backgroundColor: "#7050b3",
     padding: 15,
     marginTop: 15,
     borderRadius: 10,
     alignItems: "center",
   },
+
   textoBotaoBranco: {
-    color: theme.colors.texts,
+    color: "#fff",
     fontWeight: "bold",
-    fontSize: theme.texts.text,
+    fontSize: 14,
   },
+
   botaoCancelar: {
     marginTop: 15,
     padding: 10,
     alignItems: "center",
   },
+
   textoCancelar: {
-    color: theme.colors.primary,
+    color: "#7050b3",
     fontWeight: "bold",
-    fontSize: theme.texts.text,
+    fontSize: 14,
   },
+
   textoBotaoFechar: {
     textAlign: "center",
     marginTop: 15,
-    color: theme.colors.texts,
+    color: "#fff",
     fontWeight: "bold",
-    fontSize: theme.texts.text,
+    fontSize: 14,
   },
+
   textoVazio: {
-    color: theme.colors.texts,
+    color: "#fff",
     textAlign: "center",
     marginVertical: 20,
-    fontSize: theme.texts.text,
+    fontSize: 14,
   },
 });
