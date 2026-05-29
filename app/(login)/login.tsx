@@ -1,5 +1,8 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { Link, useRouter } from "expo-router";
+import { useAuth } from "@/src/context/AuthContext";
+import { auth, firestore } from "@/src/services/firebase";
+import { useRouter } from "expo-router";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { useState } from "react";
 import {
   Alert,
@@ -9,13 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-import { auth, db, firestore } from "@/src/services/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { get as getDatabase, ref } from "firebase/database";
-import { doc, getDoc as getFirestore } from "firebase/firestore";
-
-import { useAuth } from "@/src/context/AuthContext";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -29,7 +25,7 @@ export default function Login() {
 
   async function entrar() {
     if (!formularioValido) {
-      Alert.alert("Erro", "Preencha todos os campos");
+      Alert.alert("Aviso", "Preencha todos os campos");
       return;
     }
 
@@ -44,39 +40,22 @@ export default function Login() {
       );
       const uid = userCredential.user.uid;
 
-      type UsuarioTipo = "pai" | "gestante";
-      let dadosUser = null;
-      let tipoIdentificado: UsuarioTipo | null = null;
+      const userSnap = await getDoc(doc(firestore, "usuarios", uid));
 
-      // 🔥 1. PROCURA NO FIRESTORE (Coleção "usuarios")
-      const userSnap = await getFirestore(
-        doc(firestore, "usuarios", uid), // <--- CORRIGIDO AQUI!
-      );
-
-      if (userSnap.exists()) {
-        dadosUser = userSnap.data();
-        // Pega o tipo exato que foi salvo no cadastro (ex: "gestante", "pai")
-        const tipo = dadosUser.tipo as string | undefined;
-        if (tipo === "gestante" || tipo === "pai") {
-          tipoIdentificado = tipo;
-        } else {
-          Alert.alert(
-            "Aviso",
-            `Redirecionamento não configurado para o tipo: ${tipo}`,
-          );
-          setLoading(false);
-          return;
-        }
-      } else {
-        const paiSnap = await getDatabase(ref(db, "usuarios/" + uid));
-        if (paiSnap.exists()) {
-          dadosUser = paiSnap.val();
-          tipoIdentificado = "pai";
-        }
+      if (!userSnap.exists()) {
+        Alert.alert("Erro", "Perfil não encontrado no banco de dados.");
+        setLoading(false);
+        return;
       }
 
-      if (!tipoIdentificado || !dadosUser) {
-        Alert.alert("Erro", "Perfil não encontrado em nenhum banco de dados.");
+      const dadosUser = userSnap.data();
+      const tipoIdentificado = dadosUser.tipo as "pai" | "gestante" | undefined;
+
+      if (tipoIdentificado !== "gestante" && tipoIdentificado !== "pai") {
+        Alert.alert(
+          "Aviso",
+          `Redirecionamento não configurado para o tipo: ${tipoIdentificado || "Desconhecido"}`,
+        );
         setLoading(false);
         return;
       }
@@ -87,17 +66,10 @@ export default function Login() {
         tipo: tipoIdentificado,
       });
 
-      // 🔀 REDIRECIONAMENTO COM BASE NO TIPO
       if (tipoIdentificado === "pai") {
-        router.replace("/(pais)/(tabs)/menu" as any);
+        router.replace("/menu");
       } else if (tipoIdentificado === "gestante") {
-        router.replace("/(drawer)/(gestantes)/(tabs)/gestacao" as any);
-      } else {
-        // Se no futuro tiver outro perfil, você pode adicionar o redirecionamento dele aqui!
-        Alert.alert(
-          "Aviso",
-          `Redirecionamento não configurado para o tipo: ${tipoIdentificado}`,
-        );
+        router.replace("/gestacao");
       }
     } catch (error: any) {
       if (
@@ -138,39 +110,36 @@ export default function Login() {
           onChangeText={setSenha}
         />
 
-        <Link href="/recuperacao">
+        <TouchableOpacity onPress={() => router.push("/recuperacao")}>
           <Text style={styles.esqueceu}>Esqueceu a senha?</Text>
-        </Link>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.footer}>
         <TouchableOpacity
-          style={styles.fullWidth}
+          style={[
+            styles.botao,
+            styles.fullWidth,
+            (!formularioValido || loading) && styles.botaoDesativado,
+          ]}
           onPress={entrar}
           disabled={!formularioValido || loading}
         >
-          <LinearGradient
-            colors={["#28174cca", "#7050d8"]}
-            style={[
-              styles.botao,
-              (!formularioValido || loading) && styles.botaoDesativado,
-            ]}
-          >
-            <Text style={styles.textoBotao}>
-              {loading ? "Entrando..." : "Entrar"}
-            </Text>
-          </LinearGradient>
+          <Text style={styles.textoBotao}>
+            {loading ? "Entrando..." : "Entrar"}
+          </Text>
         </TouchableOpacity>
 
-        <Link href="/cadastro">
+        <TouchableOpacity onPress={() => router.push("/cadastro")}>
           <Text style={styles.link}>Criar conta</Text>
-        </Link>
+        </TouchableOpacity>
 
-        <Link href="/questionario" asChild>
-          <TouchableOpacity style={styles.botaoColaborador}>
-            <Text style={styles.textoColaborador}>Seja colaborador</Text>
-          </TouchableOpacity>
-        </Link>
+        <TouchableOpacity
+          style={styles.botaoColaborador}
+          onPress={() => router.push("/questionario")}
+        >
+          <Text style={styles.textoColaborador}>Seja colaborador</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -205,7 +174,12 @@ const styles = StyleSheet.create({
   esqueceu: { textAlign: "right", color: "#7b2cff", fontWeight: "bold" },
   footer: { alignItems: "center", gap: 15, marginBottom: 40 },
   fullWidth: { width: "100%" },
-  botao: { paddingVertical: 16, borderRadius: 12, alignItems: "center" },
+  botao: {
+    paddingVertical: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    backgroundColor: "#7050d8",
+  },
   botaoDesativado: { opacity: 0.5 },
   textoBotao: { color: "#fff", fontSize: 18, fontWeight: "bold" },
   link: { color: "#7b2cff", fontWeight: "bold" },

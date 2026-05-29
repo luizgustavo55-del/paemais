@@ -1,6 +1,7 @@
+import { auth, firestore } from "@/src/services/firebase";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import { addDoc, collection } from "firebase/firestore";
 import { useState } from "react";
 import {
   Alert,
@@ -10,10 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-// 🔥 FIREBASE
-import { auth, firestore } from "@/src/services/firebase";
-import { addDoc, collection } from "firebase/firestore"; // Mudamos para addDoc e collection
 
 export default function Dum() {
   const router = useRouter();
@@ -32,7 +29,7 @@ export default function Dum() {
 
   async function salvarDUM() {
     if (!dataTexto) {
-      Alert.alert("Erro", "Selecione uma data");
+      Alert.alert("Aviso", "Selecione uma data");
       return;
     }
 
@@ -48,8 +45,6 @@ export default function Dum() {
         return;
       }
 
-      // 🔥 SALVAR NA SUBCOLEÇÃO DE GESTAÇÕES
-      // Caminho: usuarios/{uid}/gestacoes
       const gestacoesRef = collection(
         firestore,
         "usuarios",
@@ -57,14 +52,13 @@ export default function Dum() {
         "gestacoes",
       );
 
-      // addDoc cria um ID automático para essa gravidez específica
       await addDoc(gestacoesRef, {
         dataUltimaMenstruacao: dataTexto,
-        status: "ativa", // Salva como ativa para ser a que vai aparecer na tela inicial
+        status: "ativa",
         criadoEm: new Date().toISOString(),
       });
 
-      Alert.alert("Sucesso", "Conta de gestante criada!");
+      Alert.alert("Sucesso", "Conta criada!");
       router.replace("/gestacao");
     } catch (error) {
       Alert.alert("Erro", "Erro ao salvar dados");
@@ -112,13 +106,11 @@ export default function Dum() {
         <TouchableOpacity
           onPress={salvarDUM}
           disabled={!dataTexto || loading}
-          style={{ width: "100%", opacity: !dataTexto || loading ? 0.5 : 1 }}
+          style={[styles.botao, { opacity: !dataTexto || loading ? 0.5 : 1 }]}
         >
-          <LinearGradient colors={["#ff5fa2", "#a75dff"]} style={styles.botao}>
-            <Text style={styles.botaoTexto}>
-              {loading ? "Salvando..." : "Começar Acompanhamento"}
-            </Text>
-          </LinearGradient>
+          <Text style={styles.botaoTexto}>
+            {loading ? "Salvando..." : "Começar Acompanhamento"}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -149,6 +141,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 20,
   },
-  botao: { width: "100%", padding: 15, borderRadius: 12, alignItems: "center" },
+  botao: {
+    width: "100%",
+    padding: 15,
+    borderRadius: 12,
+    alignItems: "center",
+    backgroundColor: "#a75dff",
+  },
   botaoTexto: { color: "#fff", fontWeight: "bold" },
 });

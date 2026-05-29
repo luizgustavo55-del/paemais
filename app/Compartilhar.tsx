@@ -1,24 +1,14 @@
 import { theme } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/AuthContext";
-import { auth, db, firestore } from "@/src/services/firebase";
+import { auth, firestore } from "@/src/services/firebase";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-// 👇 Importações ajustadas para suportar ambos os bancos
-import {
-  equalTo,
-  get,
-  onValue,
-  orderByChild,
-  query as queryRTDB,
-  ref,
-  update as updateRTDB,
-} from "firebase/database";
 import {
   collection,
   doc,
   getDoc,
   getDocs,
   onSnapshot,
-  query as queryFirestore,
+  query,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -38,23 +28,14 @@ import {
   View,
 } from "react-native";
 
-// Função utilitária para buscar um usuário, não importa em qual banco ele esteja
-async function buscarQualquerUsuario(uid: string) {
-  // 1. Tenta no Firestore (Gestante)
+async function buscarUsuario(uid: string) {
   const snap = await getDoc(doc(firestore, "usuarios", uid));
   if (snap.exists()) return snap.data();
-
-  // 2. Tenta no Realtime Database (Pai)
-  const rtdbSnap = await get(ref(db, `usuarios/${uid}`));
-  if (rtdbSnap.exists()) return rtdbSnap.val();
-
   return null;
 }
 
 export default function Compartilhar() {
   const { user } = useAuth();
-  const isPai = user?.tipo === "pai";
-
   const corPrincipal = "#9333EA";
   const corFundoCard = "#F3E8FF";
 
@@ -71,68 +52,52 @@ export default function Compartilhar() {
   const [carregandoDetalhes, setCarregandoDetalhes] = useState(false);
   const [modalVisivel, setModalVisivel] = useState(false);
 
-  // 🔥 Efeito que escuta as mudanças do perfil (CÓDIGO RESOLVIDO AQUI)
   useEffect(() => {
     const uid = auth.currentUser?.uid;
     if (!uid) return;
 
-    // Função interna para processar os dados recebidos de qualquer banco
-    const processarDadosUsuario = async (dados: any) => {
-      setNomeUser(dados.nome || "Usuário");
-      setCodigo(dados.codigoCompartilhamento || "------");
-
-      // Verifica solicitações
-      if (dados.solicitacaoRecebidaDe) {
-        const remetenteDados = await buscarQualquerUsuario(
-          dados.solicitacaoRecebidaDe,
-        );
-        if (remetenteDados) {
-          setSolicitacao({
-            id: dados.solicitacaoRecebidaDe,
-            nome: remetenteDados.nome,
-          });
-        }
-      } else {
-        setSolicitacao(null);
-      }
-
-      // Verifica vínculo (Amigo)
-      if (dados.perfilVinculado) {
-        const parceiroDados = await buscarQualquerUsuario(
-          dados.perfilVinculado,
-        );
-        if (parceiroDados) {
-          setDadosVinculado({
-            id: dados.perfilVinculado,
-            nome: parceiroDados.nome || "Sem nome",
-            email: parceiroDados.email || "Sem email",
-            tipo: parceiroDados.tipo || parceiroDados.perfil || "Não definido",
-          });
-        }
-      } else {
-        setDadosVinculado(null);
-      }
-    };
-
-    if (isPai) {
-      // PAI ESCUTA O REALTIME DATABASE
-      const userRef = ref(db, `usuarios/${uid}`);
-      const unsubscribe = onValue(userRef, (snapshot) => {
-        if (snapshot.exists()) {
-          processarDadosUsuario(snapshot.val());
-        }
-      });
-      return () => unsubscribe();
-    } else {
-      // GESTANTE ESCUTA O FIRESTORE
-      const unsub = onSnapshot(doc(firestore, "usuarios", uid), (docSnap) => {
+    const unsub = onSnapshot(
+      doc(firestore, "usuarios", uid),
+      async (docSnap) => {
         if (docSnap.exists()) {
-          processarDadosUsuario(docSnap.data());
+          const dados = docSnap.data();
+          setNomeUser(dados.nome || "Usuário");
+          setCodigo(dados.codigoCompartilhamento || "------");
+
+          if (dados.solicitacaoRecebidaDe) {
+            const remetenteDados = await buscarUsuario(
+              dados.solicitacaoRecebidaDe,
+            );
+            if (remetenteDados) {
+              setSolicitacao({
+                id: dados.solicitacaoRecebidaDe,
+                nome: remetenteDados.nome,
+              });
+            }
+          } else {
+            setSolicitacao(null);
+          }
+
+          if (dados.perfilVinculado) {
+            const parceiroDados = await buscarUsuario(dados.perfilVinculado);
+            if (parceiroDados) {
+              setDadosVinculado({
+                id: dados.perfilVinculado,
+                nome: parceiroDados.nome || "Sem nome",
+                email: parceiroDados.email || "Sem email",
+                tipo:
+                  parceiroDados.tipo || parceiroDados.perfil || "Não definido",
+              });
+            }
+          } else {
+            setDadosVinculado(null);
+          }
         }
-      });
-      return () => unsub();
-    }
-  }, [isPai]);
+      },
+    );
+
+    return () => unsub();
+  }, []);
 
   async function buscarDetalhesAmigo(amigoId: string, tipoAmigo: string) {
     setCarregandoDetalhes(true);
@@ -147,21 +112,20 @@ export default function Compartilhar() {
           amigoId,
           "gestacoes",
         );
-        const q = queryFirestore(gestacoesRef, where("status", "==", "ativa"));
+        const q = query(gestacoesRef, where("status", "==", "ativa"));
         const snap = await getDocs(q);
 
         if (!snap.empty) {
           setDetalhesGestacao(snap.docs[0].data());
         }
       } else {
-        const filhosRef = ref(db, `usuarios/${amigoId}/filhos`);
-        const snap = await get(filhosRef);
+        const filhosRef = collection(firestore, "usuarios", amigoId, "filhos");
+        const snap = await getDocs(filhosRef);
 
-        if (snap.exists()) {
-          const dadosObj = snap.val();
-          const listaFilhos = Object.keys(dadosObj).map((key) => ({
-            id: key,
-            ...dadosObj[key],
+        if (!snap.empty) {
+          const listaFilhos = snap.docs.map((docItem) => ({
+            id: docItem.id,
+            ...docItem.data(),
           }));
           setDetalhesFilhos(listaFilhos);
         }
@@ -173,7 +137,6 @@ export default function Compartilhar() {
     }
   }
 
-  // 🔥 Busca o código da pessoa misturando os dois bancos
   async function enviarSolicitacao() {
     const uidAtual = auth.currentUser?.uid;
     const codigoBusca = codigoInput.toUpperCase().trim();
@@ -182,40 +145,19 @@ export default function Compartilhar() {
     setCarregandoVinculo(true);
 
     try {
-      let uidOutro = null;
-      let tipoOutro = "";
-
-      // 1. Procura no Firestore
-      const qFs = queryFirestore(
+      const qFs = query(
         collection(firestore, "usuarios"),
         where("codigoCompartilhamento", "==", codigoBusca),
       );
       const snapFs = await getDocs(qFs);
 
-      if (!snapFs.empty) {
-        uidOutro = snapFs.docs[0].id;
-        tipoOutro = "gestante";
-      } else {
-        // 2. Procura no Realtime Database
-        const qRtdb = queryRTDB(
-          ref(db, "usuarios"),
-          orderByChild("codigoCompartilhamento"),
-          equalTo(codigoBusca),
-        );
-        const snapRtdb = await get(qRtdb);
-
-        if (snapRtdb.exists()) {
-          const result = snapRtdb.val();
-          uidOutro = Object.keys(result)[0]; // Pega o ID encontrado
-          tipoOutro = "pai";
-        }
-      }
-
-      if (!uidOutro) {
+      if (snapFs.empty) {
         Alert.alert("Erro", "Código não encontrado.");
         setCarregandoVinculo(false);
         return;
       }
+
+      const uidOutro = snapFs.docs[0].id;
 
       if (uidOutro === uidAtual) {
         Alert.alert("Aviso", "Você não pode enviar solicitação para si mesmo.");
@@ -229,16 +171,9 @@ export default function Compartilhar() {
         return;
       }
 
-      // Salva a solicitação no banco correto da outra pessoa
-      if (tipoOutro === "gestante") {
-        await updateDoc(doc(firestore, "usuarios", uidOutro), {
-          solicitacaoRecebidaDe: uidAtual,
-        });
-      } else {
-        await updateRTDB(ref(db, `usuarios/${uidOutro}`), {
-          solicitacaoRecebidaDe: uidAtual,
-        });
-      }
+      await updateDoc(doc(firestore, "usuarios", uidOutro), {
+        solicitacaoRecebidaDe: uidAtual,
+      });
 
       setCodigoInput("");
       Alert.alert("Enviado!", `Solicitação enviada. Aguarde ele(a) aceitar.`);
@@ -254,30 +189,14 @@ export default function Compartilhar() {
     if (!uidAtual || !solicitacao) return;
 
     try {
-      // 1. Atualiza o SEU perfil
-      if (isPai) {
-        await updateRTDB(ref(db, `usuarios/${uidAtual}`), {
-          perfilVinculado: solicitacao.id,
-          solicitacaoRecebidaDe: null,
-        });
-      } else {
-        await updateDoc(doc(firestore, "usuarios", uidAtual), {
-          perfilVinculado: solicitacao.id,
-          solicitacaoRecebidaDe: null,
-        });
-      }
+      await updateDoc(doc(firestore, "usuarios", uidAtual), {
+        perfilVinculado: solicitacao.id,
+        solicitacaoRecebidaDe: null,
+      });
 
-      // 2. Atualiza o perfil do AMIGO
-      const friendData = await buscarQualquerUsuario(solicitacao.id);
-      if (friendData?.tipo === "gestante") {
-        await updateDoc(doc(firestore, "usuarios", solicitacao.id), {
-          perfilVinculado: uidAtual,
-        });
-      } else {
-        await updateRTDB(ref(db, `usuarios/${solicitacao.id}`), {
-          perfilVinculado: uidAtual,
-        });
-      }
+      await updateDoc(doc(firestore, "usuarios", solicitacao.id), {
+        perfilVinculado: uidAtual,
+      });
 
       Alert.alert(
         "Sucesso!",
@@ -293,15 +212,9 @@ export default function Compartilhar() {
     if (!uidAtual) return;
 
     try {
-      if (isPai) {
-        await updateRTDB(ref(db, `usuarios/${uidAtual}`), {
-          solicitacaoRecebidaDe: null,
-        });
-      } else {
-        await updateDoc(doc(firestore, "usuarios", uidAtual), {
-          solicitacaoRecebidaDe: null,
-        });
-      }
+      await updateDoc(doc(firestore, "usuarios", uidAtual), {
+        solicitacaoRecebidaDe: null,
+      });
     } catch (error) {
       Alert.alert("Erro", "Falha ao recusar.");
     }

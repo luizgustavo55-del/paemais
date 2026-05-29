@@ -13,12 +13,17 @@ import {
   View,
 } from "react-native";
 
-// 🔥 Firebase
-import { auth, db } from "@/src/services/firebase";
+import { auth, firestore } from "@/src/services/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { onValue, push, ref, remove, update } from "firebase/database";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
 
-// 📅 DatePicker
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function CustomDrawer() {
@@ -57,25 +62,30 @@ export default function CustomDrawer() {
   useEffect(() => {
     if (!user?.uid) return;
 
-    const refUser = ref(db, "usuarios/" + user.uid);
-
-    onValue(refUser, (snapshot) => {
-      const data = snapshot.val();
-
-      if (data) {
-        setUserData(data);
-
-        if (data.filhos) {
-          const lista = Object.keys(data.filhos).map((id) => ({
-            id,
-            ...data.filhos[id],
-          }));
-          setFilhos(lista);
-        } else {
-          setFilhos([]);
+    const unsubUser = onSnapshot(
+      doc(firestore, "usuarios", user.uid),
+      (docSnap) => {
+        if (docSnap.exists()) {
+          setUserData(docSnap.data());
         }
-      }
-    });
+      },
+    );
+
+    const unsubFilhos = onSnapshot(
+      collection(firestore, "usuarios", user.uid, "filhos"),
+      (snap) => {
+        const lista = snap.docs.map((docItem) => ({
+          id: docItem.id,
+          ...docItem.data(),
+        }));
+        setFilhos(lista);
+      },
+    );
+
+    return () => {
+      unsubUser();
+      unsubFilhos();
+    };
   }, [user]);
 
   function formatarData(date: Date) {
@@ -108,17 +118,20 @@ export default function CustomDrawer() {
   }
 
   async function adicionarFilho() {
-    if (!user || !novoNome) return;
+    if (!user?.uid || !novoNome) return;
 
-    await push(ref(db, `usuarios/${user.uid}/filhos`), {
-      nome: novoNome,
-      dataNascimento: dataTexto,
-      descricao,
-      peso: novoPeso,
-      altura: novaAltura,
-    });
-
-    limparFormulario();
+    try {
+      await addDoc(collection(firestore, "usuarios", user.uid, "filhos"), {
+        nome: novoNome,
+        dataNascimento: dataTexto,
+        descricao,
+        peso: novoPeso,
+        altura: novaAltura,
+      });
+      limparFormulario();
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   function limparFormulario() {
@@ -138,12 +151,15 @@ export default function CustomDrawer() {
         text: "Excluir",
         style: "destructive",
         onPress: async () => {
-          if (!user) return;
+          if (!user?.uid) return;
 
-          await remove(ref(db, `usuarios/${user.uid}/filhos/${id}`));
-
-          if (editandoFilhoId === id) {
-            setEditandoFilhoId(null);
+          try {
+            await deleteDoc(doc(firestore, "usuarios", user.uid, "filhos", id));
+            if (editandoFilhoId === id) {
+              setEditandoFilhoId(null);
+            }
+          } catch (error) {
+            console.log(error);
           }
         },
       },
@@ -169,17 +185,20 @@ export default function CustomDrawer() {
   }
 
   async function salvarEdicaoFilho(id: string) {
-    if (!user) return;
+    if (!user?.uid) return;
 
-    await update(ref(db, `usuarios/${user.uid}/filhos/${id}`), {
-      nome: editNome,
-      dataNascimento: editDataTexto,
-      descricao: editDescricao,
-      peso: editPeso,
-      altura: editAltura,
-    });
-
-    setEditandoFilhoId(null);
+    try {
+      await updateDoc(doc(firestore, "usuarios", user.uid, "filhos", id), {
+        nome: editNome,
+        dataNascimento: editDataTexto,
+        descricao: editDescricao,
+        peso: editPeso,
+        altura: editAltura,
+      });
+      setEditandoFilhoId(null);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
@@ -264,7 +283,6 @@ export default function CustomDrawer() {
               <Text style={styles.saveText}>Salvar</Text>
             </TouchableOpacity>
 
-            {/* CANCELAR */}
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={limparFormulario}
@@ -377,7 +395,6 @@ export default function CustomDrawer() {
       </View>
 
       <View style={styles.menuGeral}>
-        {/* PERFIL */}
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push("/MenuPage/perfil")}
@@ -386,12 +403,10 @@ export default function CustomDrawer() {
           <Text style={styles.menuItemText}>Ver Perfil</Text>
         </TouchableOpacity>
 
-        {/* CONFIGURAÇÕES (Mantive seu componente) */}
         <View>
           <Configuracoes />
         </View>
 
-        {/* COMPARTILHAR (NOVO BOTÃO) */}
         <TouchableOpacity
           style={styles.menuItem}
           onPress={() => router.push("/Compartilhar")}
@@ -400,7 +415,6 @@ export default function CustomDrawer() {
           <Text style={styles.menuItemText}>Amigos</Text>
         </TouchableOpacity>
 
-        {/* LOGOUT */}
         <TouchableOpacity
           onPress={async () => {
             try {
@@ -498,7 +512,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 
-  // ESTILOS DO MENU DE BAIXO
   menuGeral: {
     marginTop: 30,
     borderTopWidth: 1,

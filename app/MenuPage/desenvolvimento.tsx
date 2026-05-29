@@ -1,23 +1,29 @@
-import { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  ScrollView,
-  Alert,
-  Dimensions
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { LineChart } from "react-native-chart-kit";
 import MaskInput from "react-native-mask-input";
 
-// 🔥 Firebase
-import { ref, push, onValue, remove, update } from "firebase/database";
-import { db, auth } from "@/src/services/firebase";
+import { auth, firestore } from "@/src/services/firebase";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -27,111 +33,159 @@ export default function Desenvolvimento() {
   const [mostrarForm, setMostrarForm] = useState(false);
   const [abaAtiva, setAbaAtiva] = useState("marcos");
 
-  // 
   const [filhos, setFilhos] = useState<any[]>([]);
   const [filhoSelecionado, setFilhoSelecionado] = useState<any>(null);
   const [abrirPicker, setAbrirPicker] = useState(false);
 
-  // 
   const [peso, setPeso] = useState("");
   const [altura, setAltura] = useState("");
   const [dataCrescimento, setDataCrescimento] = useState("");
   const [historico, setHistorico] = useState<any[]>([]);
 
-  // 🧩 MARCOS
   const [marcos, setMarcos] = useState<any[]>([]);
   const [titulo, setTitulo] = useState("");
   const [dataMarco, setDataMarco] = useState("");
   const [editandoMarcoId, setEditandoMarcoId] = useState<string | null>(null);
 
+  const [textoDiario, setTextoDiario] = useState("");
+  const [dataDiario, setDataDiario] = useState("");
+  const [diario, setDiario] = useState<any[]>([]);
+
   const user = auth.currentUser;
 
-  // 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.uid) return;
 
-    const refFilhos = ref(db, `usuarios/${user.uid}/filhos`);
+    const unsubFilhos = onSnapshot(
+      collection(firestore, "usuarios", user.uid, "filhos"),
+      (snapshot) => {
+        const lista = snapshot.docs.map((docItem) => ({
+          id: docItem.id,
+          ...docItem.data(),
+        }));
 
-    onValue(refFilhos, (snapshot) => {
-      const dados = snapshot.val() || {};
+        setFilhos(lista);
 
-      const lista = Object.keys(dados).map((key) => ({
-        id: key,
-        ...dados[key]
-      }));
-
-      setFilhos(lista);
-
-      if (lista.length === 1) {
-        setFilhoSelecionado(lista[0]);
-      }
-    });
-  }, []);
-
-  
-  useEffect(() => {
-    if (!user || !filhoSelecionado) return;
-
-    const refCrescimento = ref(
-      db,
-      `usuarios/${user.uid}/filhos/${filhoSelecionado.id}/crescimento`
+        if (lista.length === 1) {
+          setFilhoSelecionado(lista[0]);
+        }
+      },
     );
 
-    onValue(refCrescimento, (snapshot) => {
-      const dados = snapshot.val() || {};
+    return () => unsubFilhos();
+  }, [user]);
 
-      const lista = Object.keys(dados).map((key) => ({
-        id: key,
-        ...dados[key]
-      }));
-
-      setHistorico(lista);
-    });
-  }, [filhoSelecionado]);
-
-  // 🔥 marcos
   useEffect(() => {
-    if (!user || !filhoSelecionado) return;
+    if (!user?.uid || !filhoSelecionado?.id) return;
 
-    const refMarcos = ref(
-      db,
-      `usuarios/${user.uid}/filhos/${filhoSelecionado.id}/marcos`
+    const unsubCrescimento = onSnapshot(
+      collection(
+        firestore,
+        "usuarios",
+        user.uid,
+        "filhos",
+        filhoSelecionado.id,
+        "crescimento",
+      ),
+      (snapshot) => {
+        const lista = snapshot.docs.map((docItem) => ({
+          id: docItem.id,
+          ...docItem.data(),
+        }));
+        setHistorico(lista);
+      },
     );
 
-    onValue(refMarcos, (snapshot) => {
-      const dados = snapshot.val() || {};
+    return () => unsubCrescimento();
+  }, [user, filhoSelecionado]);
 
-      const lista = Object.keys(dados).map((key) => ({
-        id: key,
-        ...dados[key]
-      }));
+  useEffect(() => {
+    if (!user?.uid || !filhoSelecionado?.id) return;
 
-      setMarcos(lista.reverse());
-    });
-  }, [filhoSelecionado]);
+    const unsubMarcos = onSnapshot(
+      collection(
+        firestore,
+        "usuarios",
+        user.uid,
+        "filhos",
+        filhoSelecionado.id,
+        "marcos",
+      ),
+      (snapshot) => {
+        const lista = snapshot.docs.map((docItem) => ({
+          id: docItem.id,
+          ...docItem.data(),
+        }));
+        setMarcos(lista.reverse());
+      },
+    );
 
-  // ===== MARCOS =====
-  const salvarMarco = () => {
-    if (!titulo || !dataMarco || !filhoSelecionado || !user) {
+    return () => unsubMarcos();
+  }, [user, filhoSelecionado]);
+
+  useEffect(() => {
+    if (!user?.uid || !filhoSelecionado?.id) return;
+
+    const unsubDiario = onSnapshot(
+      collection(
+        firestore,
+        "usuarios",
+        user.uid,
+        "filhos",
+        filhoSelecionado.id,
+        "diario",
+      ),
+      (snapshot) => {
+        const lista = snapshot.docs.map((docItem) => ({
+          id: docItem.id,
+          ...docItem.data(),
+        }));
+        setDiario(lista.reverse());
+      },
+    );
+
+    return () => unsubDiario();
+  }, [user, filhoSelecionado]);
+
+  const salvarMarco = async () => {
+    if (!titulo || !dataMarco || !filhoSelecionado?.id || !user?.uid) {
       Alert.alert("Preencha tudo");
       return;
     }
 
-    const base = `usuarios/${user.uid}/filhos/${filhoSelecionado.id}/marcos`;
-
-    if (editandoMarcoId) {
-      update(ref(db, `${base}/${editandoMarcoId}`), {
-        titulo,
-        data: dataMarco
-      });
-    } else {
-      push(ref(db, base), {
-        titulo,
-        data: dataMarco
-      });
+    try {
+      if (editandoMarcoId) {
+        const docRef = doc(
+          firestore,
+          "usuarios",
+          user.uid,
+          "filhos",
+          filhoSelecionado.id,
+          "marcos",
+          editandoMarcoId,
+        );
+        await updateDoc(docRef, {
+          titulo,
+          data: dataMarco,
+        });
+      } else {
+        const collRef = collection(
+          firestore,
+          "usuarios",
+          user.uid,
+          "filhos",
+          filhoSelecionado.id,
+          "marcos",
+        );
+        await addDoc(collRef, {
+          titulo,
+          data: dataMarco,
+        });
+      }
+      cancelarMarco();
+    } catch (error) {
+      console.log(error);
     }
-
-    cancelarMarco();
   };
 
   const editarMarco = (item: any) => {
@@ -141,15 +195,24 @@ export default function Desenvolvimento() {
     setMostrarForm(true);
   };
 
-  const deletarMarco = (id: string) => {
-    if (!user || !filhoSelecionado) return;
+  const deletarMarco = async (id: string) => {
+    if (!user?.uid || !filhoSelecionado?.id) return;
 
-    remove(
-      ref(
-        db,
-        `usuarios/${user.uid}/filhos/${filhoSelecionado.id}/marcos/${id}`
-      )
-    );
+    try {
+      await deleteDoc(
+        doc(
+          firestore,
+          "usuarios",
+          user.uid,
+          "filhos",
+          filhoSelecionado.id,
+          "marcos",
+          id,
+        ),
+      );
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const cancelarMarco = () => {
@@ -159,119 +222,126 @@ export default function Desenvolvimento() {
     setMostrarForm(false);
   };
 
-  // ===== CRESCIMENTO =====
-  const salvarCrescimento = () => {
-    if (!peso || !altura || !dataCrescimento || !filhoSelecionado || !user) {
+  const salvarCrescimento = async () => {
+    if (
+      !peso ||
+      !altura ||
+      !dataCrescimento ||
+      !filhoSelecionado?.id ||
+      !user?.uid
+    ) {
       Alert.alert("Preencha tudo");
       return;
     }
 
-    push(
-      ref(
-        db,
-        `usuarios/${user.uid}/filhos/${filhoSelecionado.id}/crescimento`
-      ),
-      {
-        peso: parseFloat(peso),
-        altura: parseFloat(altura),
-        data: dataCrescimento
-      }
-    );
+    try {
+      await addDoc(
+        collection(
+          firestore,
+          "usuarios",
+          user.uid,
+          "filhos",
+          filhoSelecionado.id,
+          "crescimento",
+        ),
+        {
+          peso: parseFloat(peso),
+          altura: parseFloat(altura),
+          data: dataCrescimento,
+        },
+      );
 
-    setPeso("");
-    setAltura("");
-    setDataCrescimento("");
+      setPeso("");
+      setAltura("");
+      setDataCrescimento("");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const deletarCrescimento = (id: string) => {
-    if (!user || !filhoSelecionado) return;
+  const deletarCrescimento = async (id: string) => {
+    if (!user?.uid || !filhoSelecionado?.id) return;
 
-    remove(
-      ref(
-        db,
-        `usuarios/${user.uid}/filhos/${filhoSelecionado.id}/crescimento/${id}`
-      )
-    );
+    try {
+      await deleteDoc(
+        doc(
+          firestore,
+          "usuarios",
+          user.uid,
+          "filhos",
+          filhoSelecionado.id,
+          "crescimento",
+          id,
+        ),
+      );
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const salvarDiario = async () => {
+    if (!textoDiario || !dataDiario || !filhoSelecionado?.id || !user?.uid) {
+      Alert.alert("Preencha tudo");
+      return;
+    }
+
+    try {
+      await addDoc(
+        collection(
+          firestore,
+          "usuarios",
+          user.uid,
+          "filhos",
+          filhoSelecionado.id,
+          "diario",
+        ),
+        {
+          texto: textoDiario,
+          data: dataDiario,
+        },
+      );
+
+      setTextoDiario("");
+      setDataDiario("");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const deletarDiario = async (id: string) => {
+    if (!user?.uid || !filhoSelecionado?.id) return;
+
+    try {
+      await deleteDoc(
+        doc(
+          firestore,
+          "usuarios",
+          user.uid,
+          "filhos",
+          filhoSelecionado.id,
+          "diario",
+          id,
+        ),
+      );
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const pesos = historico.map((i) => i.peso);
   const alturas = historico.map((i) => i.altura);
   const datas = historico.map((i) => i.data);
-  // 📝 DIÁRIO STATES (coloque junto com os outros)
-const [textoDiario, setTextoDiario] = useState("");
-const [dataDiario, setDataDiario] = useState("");
-const [diario, setDiario] = useState<any[]>([]);
-
-// 🔥 buscar diário
-useEffect(() => {
-  if (!user || !filhoSelecionado) return;
-
-  const refDiario = ref(
-    db,
-    `usuarios/${user.uid}/filhos/${filhoSelecionado.id}/diario`
-  );
-
-  onValue(refDiario, (snapshot) => {
-    const dados = snapshot.val() || {};
-
-    const lista = Object.keys(dados).map((key) => ({
-      id: key,
-      ...dados[key]
-    }));
-
-    setDiario(lista.reverse());
-  });
-}, [filhoSelecionado]);
-
-// ➕ salvar diário
-const salvarDiario = () => {
-  if (!textoDiario || !dataDiario || !filhoSelecionado || !user) {
-    Alert.alert("Preencha tudo");
-    return;
-  }
-
-  push(
-    ref(
-      db,
-      `usuarios/${user.uid}/filhos/${filhoSelecionado.id}/diario`
-    ),
-    {
-      texto: textoDiario,
-      data: dataDiario
-    }
-  );
-
-  setTextoDiario("");
-  setDataDiario("");
-};
-
-// ❌ deletar diário
-const deletarDiario = (id: string) => {
-  if (!user || !filhoSelecionado) return;
-
-  remove(
-    ref(
-      db,
-      `usuarios/${user.uid}/filhos/${filhoSelecionado.id}/diario/${id}`
-    )
-  );
-};
 
   return (
     <ScrollView style={styles.container}>
-      
-      {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.replace("/menu")}>
           <Ionicons name="arrow-back" size={22} color="#fff" />
         </TouchableOpacity>
 
         <Text style={styles.title}>Desenvolvimento</Text>
-
-         
       </View>
 
-      {/* TABS */}
       <View style={styles.tabs}>
         <TouchableOpacity onPress={() => setAbaAtiva("marcos")}>
           <Text style={abaAtiva === "marcos" ? styles.tabActive : styles.tab}>
@@ -280,7 +350,9 @@ const deletarDiario = (id: string) => {
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => setAbaAtiva("crescimento")}>
-          <Text style={abaAtiva === "crescimento" ? styles.tabActive : styles.tab}>
+          <Text
+            style={abaAtiva === "crescimento" ? styles.tabActive : styles.tab}
+          >
             Crescimento
           </Text>
         </TouchableOpacity>
@@ -292,7 +364,6 @@ const deletarDiario = (id: string) => {
         </TouchableOpacity>
       </View>
 
-      {/* FILHO */}
       <View style={styles.card}>
         <Text style={styles.label}>Acompanhando</Text>
 
@@ -323,7 +394,6 @@ const deletarDiario = (id: string) => {
           ))}
       </View>
 
-      {/* ===== MARCOS ===== */}
       {abaAtiva === "marcos" && (
         <View style={styles.card}>
           <View style={styles.headerCard}>
@@ -349,13 +419,27 @@ const deletarDiario = (id: string) => {
               <MaskInput
                 value={dataMarco}
                 onChangeText={(masked) => setDataMarco(masked)}
-                mask={[/\d/, /\d/, "/", /\d/, /\d/, "/", /\d/, /\d/, /\d/, /\d/]}
+                mask={[
+                  /\d/,
+                  /\d/,
+                  "/",
+                  /\d/,
+                  /\d/,
+                  "/",
+                  /\d/,
+                  /\d/,
+                  /\d/,
+                  /\d/,
+                ]}
                 placeholder="DD/MM/AAAA"
                 style={styles.input}
               />
 
               <View style={styles.botoes}>
-                <TouchableOpacity style={styles.botaoSalvar} onPress={salvarMarco}>
+                <TouchableOpacity
+                  style={styles.botaoSalvar}
+                  onPress={salvarMarco}
+                >
                   <Text style={{ color: "#fff" }}>Salvar</Text>
                 </TouchableOpacity>
 
@@ -385,7 +469,6 @@ const deletarDiario = (id: string) => {
         </View>
       )}
 
-      {/* ===== CRESCIMENTO ===== */}
       {abaAtiva === "crescimento" && (
         <View style={styles.card}>
           <Text style={styles.cardTitulo}>Crescimento</Text>
@@ -414,7 +497,10 @@ const deletarDiario = (id: string) => {
             style={styles.input}
           />
 
-          <TouchableOpacity style={styles.botaoSalvar} onPress={salvarCrescimento}>
+          <TouchableOpacity
+            style={styles.botaoSalvar}
+            onPress={salvarCrescimento}
+          >
             <Text style={{ color: "#fff" }}>Adicionar</Text>
           </TouchableOpacity>
 
@@ -423,17 +509,17 @@ const deletarDiario = (id: string) => {
               data={{
                 labels: datas,
                 datasets: [{ data: pesos }, { data: alturas }],
-                legend: ["Peso", "Altura"]
+                legend: ["Peso", "Altura"],
               }}
-              width={screenWidth - 60} // 🔥 AJUSTADO (era -40)
+              width={screenWidth - 60}
               height={220}
               chartConfig={{
-                backgroundGradientFrom: "#ece3ff", // 🔥 IGUAL AO CARD
-                backgroundGradientTo: "#ece3ff",   // 🔥 IGUAL AO CARD
-                color: () => "#6a4bcf", // 🔥 COR MAIS SUAVE
-                labelColor: () => "#555" // 🔥 MELHOR LEITURA
+                backgroundGradientFrom: "#ece3ff",
+                backgroundGradientTo: "#ece3ff",
+                color: () => "#6a4bcf",
+                labelColor: () => "#555",
               }}
-              style={[ styles.grafico,{ alignSelf: "center" } ]}
+              style={styles.grafico} // 🔥 Remova os colchetes e o objeto extra
             />
           )}
 
@@ -451,44 +537,42 @@ const deletarDiario = (id: string) => {
         </View>
       )}
 
-      {/* ===== DIÁRIO ===== */}
-     {abaAtiva === "diario" && (
-  <View style={styles.card}>
-    <Text style={styles.cardTitulo}>Diário</Text>
+      {abaAtiva === "diario" && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitulo}>Diário</Text>
 
-    <TextInput
-      placeholder="Escreva algo sobre o dia..."
-      style={[styles.input, { height: 80 }]}
-      multiline
-      value={textoDiario}
-      onChangeText={setTextoDiario}
-    />
+          <TextInput
+            placeholder="Escreva algo sobre o dia..."
+            style={[styles.input, { height: 80 }]}
+            multiline
+            value={textoDiario}
+            onChangeText={setTextoDiario}
+          />
 
-    <MaskInput
-      value={dataDiario}
-      onChangeText={(masked) => setDataDiario(masked)}
-      mask={[/\d/, /\d/, "/", /\d/, /\d/, "/", /\d/, /\d/, /\d/, /\d/]}
-      placeholder="DD/MM/AAAA"
-      style={styles.input}
-    />
+          <MaskInput
+            value={dataDiario}
+            onChangeText={(masked) => setDataDiario(masked)}
+            mask={[/\d/, /\d/, "/", /\d/, /\d/, "/", /\d/, /\d/, /\d/, /\d/]}
+            placeholder="DD/MM/AAAA"
+            style={styles.input}
+          />
 
-    <TouchableOpacity style={styles.botaoSalvar} onPress={salvarDiario}>
-      <Text style={{ color: "#fff" }}>Salvar</Text>
-    </TouchableOpacity>
+          <TouchableOpacity style={styles.botaoSalvar} onPress={salvarDiario}>
+            <Text style={{ color: "#fff" }}>Salvar</Text>
+          </TouchableOpacity>
 
-    {diario.map((item) => (
-      <View key={item.id} style={styles.marco}>
-        <Text style={{ fontWeight: "bold" }}>{item.data}</Text>
-        <Text>{item.texto}</Text>
+          {diario.map((item) => (
+            <View key={item.id} style={styles.marco}>
+              <Text style={{ fontWeight: "bold" }}>{item.data}</Text>
+              <Text>{item.texto}</Text>
 
-        <TouchableOpacity onPress={() => deletarDiario(item.id)}>
-          <Ionicons name="trash-outline" size={20} color="red" />
-        </TouchableOpacity>
-      </View>
-    ))}
-  </View>
-)}
-
+              <TouchableOpacity onPress={() => deletarDiario(item.id)}>
+                <Ionicons name="trash-outline" size={20} color="red" />
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -505,24 +589,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-    marginBottom: 10
+    marginBottom: 10,
   },
 
   title: {
     color: "#fff",
     fontSize: 26,
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
   subTitle: {
     color: "#fff",
     fontSize: 12,
-    fontWeight: "bold"
+    fontWeight: "bold",
   },
 
   tabs: {
     flexDirection: "row",
     gap: 11,
-    marginBottom: 15
+    marginBottom: 15,
   },
 
   tab: {
@@ -542,16 +626,16 @@ const styles = StyleSheet.create({
   },
 
   card: {
-      overflow: "hidden" ,
+    overflow: "hidden",
     backgroundColor: "#ece3ff",
     borderRadius: 15,
     padding: 15,
-    marginBottom: 15
+    marginBottom: 15,
   },
 
   label: {
     color: "#777",
-    marginBottom: 5
+    marginBottom: 5,
   },
 
   select: {
@@ -560,18 +644,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f3f3f3",
     padding: 10,
-    borderRadius: 10
+    borderRadius: 10,
   },
 
   headerCard: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center"
+    alignItems: "center",
   },
 
   cardTitulo: {
     fontWeight: "bold",
-    fontSize: 16
+    fontSize: 16,
   },
 
   botaoAdd: {
@@ -580,14 +664,14 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: 15,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
   },
 
   form: {
     marginTop: 15,
     backgroundColor: "#f9f9f9",
     padding: 15,
-    borderRadius: 10
+    borderRadius: 10,
   },
 
   input: {
@@ -595,45 +679,45 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderRadius: 10,
     padding: 10,
-    marginBottom: 10
+    marginBottom: 10,
   },
 
   botoes: {
     flexDirection: "row",
     gap: 15,
     alignItems: "center",
-    marginTop: 5
+    marginTop: 5,
   },
 
   botaoSalvar: {
     backgroundColor: "#C642A6",
     padding: 10,
     borderRadius: 10,
-    alignItems: "center"
+    alignItems: "center",
   },
 
   marco: {
     marginTop: 15,
     padding: 12,
     backgroundColor: "#f3f3f3",
-    borderRadius: 10
+    borderRadius: 10,
   },
 
   acoes: {
     flexDirection: "row",
     gap: 15,
-    marginTop: 10
+    marginTop: 10,
   },
 
   pickerItem: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee"
+    borderBottomColor: "#eee",
   },
 
   grafico: {
     marginTop: 15,
     borderRadius: 10,
-   
-  }
+    alignSelf: "center",
+  },
 });

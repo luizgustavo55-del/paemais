@@ -11,8 +11,15 @@ import {
   View,
 } from "react-native";
 
-import { auth, db } from "@/src/services/firebase";
-import { onValue, push, ref, remove, update } from "firebase/database";
+import { auth, firestore } from "@/src/services/firebase";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
 
 import DateTimePicker from "@react-native-community/datetimepicker";
 import * as Notifications from "expo-notifications";
@@ -45,49 +52,55 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+    const unsubscribeAuth = auth.onAuthStateChanged((currentUser) => {
       if (!currentUser?.uid) return;
 
-      const userRef = ref(db, `usuarios/${currentUser.uid}/nome`);
+      const userDocRef = doc(firestore, "usuarios", currentUser.uid);
 
-      onValue(userRef, (snapshot) => {
-        const nome = snapshot.val();
-        setUserName(nome || "Usuário");
+      const unsubscribeSnapshot = onSnapshot(userDocRef, (docSnap) => {
+        if (docSnap.exists()) {
+          const dados = docSnap.data();
+          setUserName(dados.nome || "Usuário");
+        } else {
+          setUserName("Usuário");
+        }
       });
+
+      return () => unsubscribeSnapshot();
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeAuth();
   }, []);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
-      if (!currentUser?.email) return;
+    const unsubscribeAuth = auth.onAuthStateChanged((currentUser) => {
+      if (!currentUser?.uid) return;
 
-      const path = currentUser.email.replace(/[.#$[\]]/g, "_");
-      const refUser = ref(db, `lembretes/${path}`);
+      const lembretesRef = collection(
+        firestore,
+        "usuarios",
+        currentUser.uid,
+        "lembretes",
+      );
 
-      onValue(refUser, (snapshot) => {
-        const data = snapshot.val();
-
-        if (!data) {
-          setReminders([]);
-          return;
-        }
-
-        const list = Object.keys(data).map((key) => ({
-          id: key,
-          ...data[key],
+      const unsubscribeSnapshot = onSnapshot(lembretesRef, (querySnapshot) => {
+        const list = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
         }));
 
         list.sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+          (a: any, b: any) =>
+            new Date(a.date).getTime() - new Date(b.date).getTime(),
         );
 
         setReminders(list);
       });
+
+      return () => unsubscribeSnapshot();
     });
 
-    return () => unsubscribe();
+    return () => unsubscribeAuth();
   }, []);
 
   function mergeDateTime() {
@@ -106,48 +119,71 @@ export default function Home() {
         body: title,
       },
       trigger: {
-        seconds: Math.max(1, (finalDate.getTime() - Date.now()) / 1000),
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: finalDate,
       },
     });
   }
 
   async function saveReminder() {
     const currentUser = auth.currentUser;
-    if (!title || !currentUser?.email) return;
+    if (!title || !currentUser?.uid) return;
 
-    const path = currentUser.email.replace(/[.#$[\]]/g, "_");
     const finalDate = mergeDateTime();
-
     const data = {
       title,
       description,
       date: finalDate.toISOString(),
     };
 
-    if (editingId) {
-      await update(ref(db, `lembretes/${path}/${editingId}`), data);
-    } else {
-      await push(ref(db, `lembretes/${path}`), data);
-      await scheduleNotification(title, finalDate);
+    try {
+      if (editingId) {
+        const lembreteDocRef = doc(
+          firestore,
+          "usuarios",
+          currentUser.uid,
+          "lembretes",
+          editingId,
+        );
+        await updateDoc(lembreteDocRef, data);
+      } else {
+        const lembretesRef = collection(
+          firestore,
+          "usuarios",
+          currentUser.uid,
+          "lembretes",
+        );
+        await addDoc(lembretesRef, data);
+        await scheduleNotification(title, finalDate);
+      }
+
+      setTitle("");
+      setDescription("");
+      setDate(new Date());
+      setTime(new Date());
+      setEditingId(null);
+      setShowForm(false);
+    } catch (error) {
+      console.error(error);
     }
-
-    // ✅ LIMPAR CAMPOS
-    setTitle("");
-    setDescription("");
-    setDate(new Date());
-    setTime(new Date());
-
-    // ✅ RESET E FECHAR
-    setEditingId(null);
-    setShowForm(false);
   }
 
   async function deleteReminder(id: string) {
     const currentUser = auth.currentUser;
-    if (!currentUser?.email) return;
+    if (!currentUser?.uid) return;
 
-    const path = currentUser.email.replace(/[.#$[\]]/g, "_");
-    await remove(ref(db, `lembretes/${path}/${id}`));
+    try {
+      const lembreteDocRef = doc(
+        firestore,
+        "usuarios",
+        currentUser.uid,
+        "lembretes",
+        id,
+      );
+      await deleteDoc(lembreteDocRef);
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   function editReminder(item: any) {
@@ -173,7 +209,7 @@ export default function Home() {
             <Ionicons name="notifications-outline" size={24} color="#fff" />
           </View>
 
-          <Text style={styles.hello}>Ola,</Text>
+          <Text style={styles.hello}>Olá,</Text>
           <Text style={styles.name}>{userName}</Text>
         </View>
 
@@ -218,7 +254,7 @@ export default function Home() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.cardTitle}>Desenvolvimento</Text>
-                <Text style={styles.cardSubtitle}>Crescimento do bebê</Text>
+                <Text style={styles.cardSubtitle}>Crescimento do bebé</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color="#999" />
             </TouchableOpacity>
@@ -318,7 +354,6 @@ export default function Home() {
                   </Text>
                 </TouchableOpacity>
 
-                {/* ✅ BOTÃO CANCELAR */}
                 <TouchableOpacity
                   style={styles.cancelButton}
                   onPress={() => {
@@ -462,7 +497,6 @@ const styles = StyleSheet.create({
 
   addButtonText: { color: "#fff", fontWeight: "bold" },
 
-  // ✅ NOVO STYLE
   cancelButton: {
     marginTop: 8,
     backgroundColor: "#ccc",

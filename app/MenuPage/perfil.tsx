@@ -1,17 +1,24 @@
-import { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  FlatList,
-  TextInput,
-} from "react-native";
-import { useRouter } from "expo-router";
+import { auth, firestore } from "@/src/services/firebase";
 import { Ionicons } from "@expo/vector-icons";
-import { ref, onValue, update } from "firebase/database";
-import { db, auth } from "@/src/services/firebase";
+import { useRouter } from "expo-router";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { useEffect, useState } from "react";
+import {
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function Perfil() {
   const router = useRouter();
@@ -31,70 +38,80 @@ export default function Perfil() {
   const user = auth.currentUser;
 
   const handleVoltar = () => {
-    router.replace("/menu"); // sempre vai pro menu
+    router.replace("/menu");
   };
 
-  // 🔥 USER DATA
   useEffect(() => {
-    if (!user) return;
+    if (!user?.uid) return;
 
-    const userRef = ref(db, `usuarios/${user.uid}`);
+    const unsubUser = onSnapshot(
+      doc(firestore, "usuarios", user.uid),
+      (docSnap) => {
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setUserData(data);
 
-    onValue(userRef, (snapshot) => {
-      const data = snapshot.val();
-      setUserData(data);
+          if (!editando) {
+            setNome(data.nome || "");
+            setCidade(data.cidade || "");
+            setBio(data.bio || "");
+          }
+        }
+      },
+    );
 
-      if (data && !editando) {
-        setNome(data.nome || "");
-        setCidade(data.cidade || "");
-        setBio(data.bio || "");
-      }
-
-      if (data?.filhos) {
-        const lista = Object.keys(data.filhos).map((id) => ({
-          id,
-          ...data.filhos[id],
+    const unsubFilhos = onSnapshot(
+      collection(firestore, "usuarios", user.uid, "filhos"),
+      (snap) => {
+        const lista = snap.docs.map((docItem) => ({
+          id: docItem.id,
+          ...docItem.data(),
         }));
         setFilhos(lista);
-      } else {
-        setFilhos([]);
-      }
-    });
-  }, [editando]);
+      },
+    );
 
-  // 🔥 POSTS
+    return () => {
+      unsubUser();
+      unsubFilhos();
+    };
+  }, [editando, user]);
+
   useEffect(() => {
-    if (!user) return;
+    if (!user?.uid) return;
 
-    const postsRef = ref(db, "comunidade/posts");
+    const q = query(
+      collection(firestore, "comunidade"),
+      where("userId", "==", user.uid),
+    );
 
-    onValue(postsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (!data) return setPosts([]);
+    const unsubPosts = onSnapshot(q, (snapshot) => {
+      const lista = snapshot.docs.map((docItem) => ({
+        id: docItem.id,
+        ...docItem.data(),
+      }));
 
-      const lista = Object.keys(data)
-        .map((key) => ({
-          id: key,
-          ...data[key],
-        }))
-        .filter((post) => post.userId === user.uid);
-
-      lista.sort((a, b) => b.createdAt - a.createdAt);
+      lista.sort((a: any, b: any) => b.createdAt - a.createdAt);
 
       setPosts(lista);
     });
-  }, []);
+
+    return () => unsubPosts();
+  }, [user]);
 
   async function salvarPerfil() {
-    if (!user) return;
+    if (!user?.uid) return;
 
-    await update(ref(db, `usuarios/${user.uid}`), {
-      nome,
-      cidade,
-      bio,
-    });
-
-    setEditando(false);
+    try {
+      await updateDoc(doc(firestore, "usuarios", user.uid), {
+        nome,
+        cidade,
+        bio,
+      });
+      setEditando(false);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   function cancelarEdicao() {
@@ -111,10 +128,7 @@ export default function Perfil() {
       </TouchableOpacity>
 
       <View style={styles.header}>
-        <Image
-          source={{ uri: "null" }}
-          style={styles.avatar}
-        />
+        <Image source={{ uri: "null" }} style={styles.avatar} />
 
         {editando ? (
           <>
@@ -149,7 +163,9 @@ export default function Perfil() {
             </Text>
 
             <View style={styles.bioBox}>
-              <Text style={styles.bio}>{userData?.bio || "Adicione uma bio"}</Text>
+              <Text style={styles.bio}>
+                {userData?.bio || "Adicione uma bio"}
+              </Text>
             </View>
 
             <Text style={styles.info}>
@@ -194,7 +210,6 @@ export default function Perfil() {
         )}
       </View>
 
-      {/* 🔹 TABS MELHORADAS */}
       <View style={styles.tabs}>
         <TouchableOpacity
           style={aba === "posts" ? styles.tabActive : styles.tab}
@@ -205,9 +220,7 @@ export default function Perfil() {
             size={18}
             color={aba === "posts" ? "#fff" : "#555"}
           />
-          <Text
-            style={aba === "posts" ? styles.tabTextActive : styles.tabText}
-          >
+          <Text style={aba === "posts" ? styles.tabTextActive : styles.tabText}>
             Minhas Publicações
           </Text>
         </TouchableOpacity>
@@ -229,7 +242,6 @@ export default function Perfil() {
         </TouchableOpacity>
       </View>
 
-      {/* 🔹 CONTEÚDO */}
       {aba === "posts" && (
         <FlatList
           data={posts}
@@ -269,12 +281,14 @@ export default function Perfil() {
               )}
               {item.peso && (
                 <Text style={styles.infoPost}>
-                  <Ionicons name="barbell-outline" size={12} /> Peso: {item.peso}
+                  <Ionicons name="barbell-outline" size={12} /> Peso:{" "}
+                  {item.peso}
                 </Text>
               )}
               {item.altura && (
                 <Text style={styles.infoPost}>
-                  <Ionicons name="resize-outline" size={12} /> Altura: {item.altura}
+                  <Ionicons name="resize-outline" size={12} /> Altura:{" "}
+                  {item.altura}
                 </Text>
               )}
             </View>

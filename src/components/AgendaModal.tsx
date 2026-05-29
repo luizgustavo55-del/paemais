@@ -1,20 +1,27 @@
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  TextInput,
-  ScrollView,
   Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-import { useState, useEffect } from "react";
-import { Calendar } from "react-native-calendars";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { Ionicons } from "@expo/vector-icons";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useEffect, useState } from "react";
+import { Calendar } from "react-native-calendars";
 
-import { ref, push, onValue, remove, update } from "firebase/database";
-import { db, auth } from "@/src/services/firebase";
+import { auth, firestore } from "@/src/services/firebase";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  updateDoc,
+} from "firebase/firestore";
 
 import * as Notifications from "expo-notifications";
 
@@ -40,24 +47,21 @@ export default function AgendaModal({ onClose }: any) {
   const user = auth.currentUser;
 
   useEffect(() => {
-    if (!user?.email) return;
+    if (!user?.uid) return;
 
-    const path = user.email.replace(/[.#$[\]]/g, "_");
+    const eventosRef = collection(firestore, "usuarios", user.uid, "eventos");
 
-    onValue(ref(db, `eventos/${path}`), (snap) => {
-      const data = snap.val();
-      if (!data) return;
-
-      const lista = Object.keys(data).map((id) => ({
-        id,
-        ...data[id],
+    const unsubscribe = onSnapshot(eventosRef, (snapshot) => {
+      const lista = snapshot.docs.map((docItem) => ({
+        id: docItem.id,
+        ...docItem.data(),
       }));
-
       setEventos(lista);
     });
-  }, []);
 
-  // 🔥 TIMESTAMP UNIX (CORRETO E SEM TZ BUG)
+    return () => unsubscribe();
+  }, [user]);
+
   function juntarDataHora() {
     const [year, month, day] = selectedDate.split("-").map(Number);
 
@@ -71,7 +75,7 @@ export default function AgendaModal({ onClose }: any) {
     d.setSeconds(0);
     d.setMilliseconds(0);
 
-    return d.getTime(); // 🔥 timestamp
+    return d.getTime();
   }
 
   async function notificar(titulo: string, timestamp: number) {
@@ -92,41 +96,54 @@ export default function AgendaModal({ onClose }: any) {
   }
 
   async function adicionarEvento() {
-    if (!titulo || !selectedDate || !user?.email) {
+    if (!titulo || !selectedDate || !user?.uid) {
       Alert.alert("Preencha tudo");
       return;
     }
 
-    const path = user.email.replace(/[.#$[\]]/g, "_");
-
     const dataFinal = juntarDataHora();
+    const notificationId = await notificar(titulo, dataFinal);
 
-    let notificationId = await notificar(titulo, dataFinal);
+    try {
+      if (editandoId) {
+        const eventoRef = doc(
+          firestore,
+          "usuarios",
+          user.uid,
+          "eventos",
+          editandoId,
+        );
+        await updateDoc(eventoRef, {
+          titulo,
+          descricao,
+          categoria,
+          data: dataFinal,
+          notificationId,
+        });
+        setEditandoId(null);
+      } else {
+        const eventosRef = collection(
+          firestore,
+          "usuarios",
+          user.uid,
+          "eventos",
+        );
+        await addDoc(eventosRef, {
+          titulo,
+          descricao,
+          categoria,
+          data: dataFinal,
+          notificationId,
+        });
+      }
 
-    if (editandoId) {
-      await update(ref(db, `eventos/${path}/${editandoId}`), {
-        titulo,
-        descricao,
-        categoria,
-        data: dataFinal,
-        notificationId,
-      });
-
-      setEditandoId(null);
-    } else {
-      await push(ref(db, `eventos/${path}`), {
-        titulo,
-        descricao,
-        categoria,
-        data: dataFinal,
-        notificationId,
-      });
+      setTitulo("");
+      setDescricao("");
+      setCategoria("Geral");
+      setModoAdicionar(false);
+    } catch (error) {
+      console.log(error);
     }
-
-    setTitulo("");
-    setDescricao("");
-    setCategoria("Geral");
-    setModoAdicionar(false);
   }
 
   function editarEvento(evento: any) {
@@ -147,10 +164,14 @@ export default function AgendaModal({ onClose }: any) {
   }
 
   async function excluirEvento(id: string) {
-    if (!user?.email) return;
+    if (!user?.uid) return;
 
-    const path = user.email.replace(/[.#$[\]]/g, "_");
-    await remove(ref(db, `eventos/${path}/${id}`));
+    try {
+      const eventoRef = doc(firestore, "usuarios", user.uid, "eventos", id);
+      await deleteDoc(eventoRef);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   const eventosDoDia = eventos.filter((e) => {

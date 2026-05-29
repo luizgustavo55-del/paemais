@@ -1,5 +1,4 @@
-import { auth, db, firestore } from "@/src/services/firebase";
-import { get, ref } from "firebase/database";
+import { auth, firestore } from "@/src/services/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -29,33 +28,22 @@ export function AuthProvider({ children }: any) {
       }
 
       try {
-        const gestanteDocRef = doc(firestore, "usuarios", firebaseUser.uid);
-        const gestanteSnap = await getDoc(gestanteDocRef);
+        const userDocRef = doc(firestore, "usuarios", firebaseUser.uid);
+        const userSnap = await getDoc(userDocRef);
 
-        if (gestanteSnap.exists()) {
+        if (userSnap.exists()) {
+          const dadosDoBanco = userSnap.data();
+
           setUser({
             uid: firebaseUser.uid,
             email: firebaseUser.email || "",
-            tipo: "gestante",
-          });
-          setLoading(false);
-          return;
-        }
-
-        const paiRef = ref(db, `usuarios/${firebaseUser.uid}`);
-        const paiSnap = await get(paiRef);
-
-        if (paiSnap.exists()) {
-          setUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email || "",
-            tipo: "pai",
+            tipo: dadosDoBanco.tipo,
           });
         } else {
           setUser(null);
         }
       } catch (error) {
-        console.error(error);
+        console.error("Erro ao buscar dados do usuário:", error);
         setUser(null);
       } finally {
         setLoading(false);

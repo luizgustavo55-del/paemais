@@ -1,19 +1,16 @@
-import '@expo/metro-runtime'
-import { Link } from "expo-router";
+import "@expo/metro-runtime";
+import { LinearGradient } from "expo-linear-gradient";
+import { useRouter } from "expo-router";
+import { useRef, useState } from "react";
 import {
+  Animated,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
-  FlatList,
-  Dimensions,
-  Image,
-  Animated
 } from "react-native";
-import { LinearGradient } from 'expo-linear-gradient';
-import { useRef, useState } from "react";
-
-const { width } = Dimensions.get("window");
 
 const DATA = [
   {
@@ -37,19 +34,18 @@ const DATA = [
 ];
 
 export default function IndhomeLAG() {
+  const { width } = useWindowDimensions();
+  const router = useRouter();
   const scrollX = useRef(new Animated.Value(0)).current;
   const [paginaAtual, setPaginaAtual] = useState(0);
 
   return (
     <View style={styles.container}>
-
-      {/* 🧸 LOGO */}
       <Image
-        source={require("../assets/images/logo.png")} // ajuste o caminho se necessário
+        source={require("../assets/images/logo.png")}
         style={styles.logo}
       />
 
-      {/* 📱 CARROSSEL */}
       <Animated.FlatList
         data={DATA}
         horizontal
@@ -57,34 +53,24 @@ export default function IndhomeLAG() {
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.id}
         onMomentumScrollEnd={(event) => {
-          const index = Math.round(
-            event.nativeEvent.contentOffset.x / width
-          );
+          const index = Math.round(event.nativeEvent.contentOffset.x / width);
           setPaginaAtual(index);
         }}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-          { useNativeDriver: false }
+          { useNativeDriver: false },
         )}
         renderItem={({ item }) => (
           <View style={[styles.content, { width }]}>
             <Text style={styles.titulo}>{item.titulo}</Text>
-
-            <Text style={styles.descricao}>
-              {item.descricao}
-            </Text>
+            <Text style={styles.descricao}>{item.descricao}</Text>
           </View>
         )}
       />
 
-      {/* ⚪ BOLINHAS ANIMADAS */}
       <View style={styles.dotsContainer}>
         {DATA.map((_, i) => {
-          const inputRange = [
-            (i - 1) * width,
-            i * width,
-            (i + 1) * width,
-          ];
+          const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
 
           const scale = scrollX.interpolate({
             inputRange,
@@ -113,22 +99,21 @@ export default function IndhomeLAG() {
         })}
       </View>
 
-      {/* 🔘 BOTÃO */}
       {paginaAtual === DATA.length - 1 && (
-        <Link href={'/login'} asChild>
-          <TouchableOpacity style={styles.botaoContainer}>
-            <LinearGradient
-              colors={['#7050b3', '#b390d8']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.botao}
-            >
-              <Text style={styles.textoBotao}>Continuar</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </Link>
+        <TouchableOpacity
+          style={styles.botaoContainer}
+          onPress={() => router.replace("/login")}
+        >
+          <LinearGradient
+            colors={["#7050b3", "#b390d8"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.botao}
+          >
+            <Text style={styles.textoBotao}>Continuar</Text>
+          </LinearGradient>
+        </TouchableOpacity>
       )}
-
     </View>
   );
 }
@@ -136,65 +121,56 @@ export default function IndhomeLAG() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ece3ff',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    backgroundColor: "#ece3ff",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingVertical: 30,
   },
-
   logo: {
     width: 120,
     height: 120,
     resizeMode: "contain",
     marginTop: 40,
   },
-
   content: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: 30,
     gap: 20,
   },
-
   titulo: {
     fontSize: 36,
-    fontWeight: 'bold',
-    color: '#7050b3'
+    fontWeight: "bold",
+    color: "#7050b3",
   },
-
   descricao: {
     fontSize: 16,
-    textAlign: 'center',
-    color: '#555',
-    lineHeight: 24
+    textAlign: "center",
+    color: "#555",
+    lineHeight: 24,
   },
-
   dotsContainer: {
     flexDirection: "row",
     marginBottom: 10,
   },
-
   dot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#7050b3',
+    backgroundColor: "#7050b3",
     margin: 6,
   },
-
   botaoContainer: {
-    width: '90%',
-    marginBottom: 30
+    width: "90%",
+    marginBottom: 30,
   },
-
   botao: {
     paddingVertical: 16,
     borderRadius: 12,
-    alignItems: 'center'
+    alignItems: "center",
   },
-
   textoBotao: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
-    fontWeight: 'bold'
-  }
+    fontWeight: "bold",
+  },
 });

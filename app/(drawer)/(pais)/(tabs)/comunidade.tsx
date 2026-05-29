@@ -1,7 +1,6 @@
 import { theme } from "@/src/constants/theme";
-import { auth, db, firestore } from "@/src/services/firebase";
+import { auth, firestore } from "@/src/services/firebase";
 import { Ionicons } from "@expo/vector-icons";
-import { get, ref } from "firebase/database";
 import {
   addDoc,
   arrayRemove,
@@ -9,6 +8,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   orderBy,
   query,
@@ -56,11 +56,11 @@ export default function Comunidade() {
 
       if (user) {
         setUserIdLogado(user.uid);
-        const userRef = ref(db, `usuarios/${user.uid}`);
+        const userRef = doc(firestore, "usuarios", user.uid);
 
-        const snapshot = await get(userRef);
+        const snapshot = await getDoc(userRef);
         if (snapshot.exists()) {
-          const dados = snapshot.val();
+          const dados = snapshot.data();
           setNomeLogado(dados.nome || "Pais/Mães");
           tipoAtual = dados.tipo || "pai";
           setTipoLogado(tipoAtual);
@@ -87,7 +87,7 @@ export default function Comunidade() {
       const snapshot = await getDocs(q);
 
       const lista = snapshot.docs
-        .map((doc) => ({ id: doc.id, ...doc.data() }))
+        .map((docItem) => ({ id: docItem.id, ...docItem.data() }))
         .filter((post: any) => {
           if (post.visibilidade === "grupo") {
             return post.tipoAutor === tipoUsuarioAtual;
@@ -109,7 +109,10 @@ export default function Comunidade() {
         orderBy("createdAt", "asc"),
       );
       const snapshot = await getDocs(q);
-      const lista = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      const lista = snapshot.docs.map((docItem) => ({
+        id: docItem.id,
+        ...docItem.data(),
+      }));
       setComentarios(lista);
     } catch (error) {
       console.log(error);
@@ -214,7 +217,7 @@ export default function Comunidade() {
       setModalOpcoes(false);
       Alert.alert(
         "Sucesso",
-        "Publicação denunciada. Nossa equipe irá analisar.",
+        "Publicação denunciada. Nossa equipa irá analisar.",
       );
     } catch (error) {
       console.log(error);

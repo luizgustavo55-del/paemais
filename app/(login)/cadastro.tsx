@@ -11,26 +11,21 @@ import {
 } from "react-native";
 
 import { theme } from "@/src/constants/theme";
+import { auth, firestore } from "@/src/services/firebase";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 import MaskInput from "react-native-mask-input";
 
-import { auth, db, firestore } from "@/src/services/firebase";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { ref, set } from "firebase/database";
-import { doc, setDoc } from "firebase/firestore";
-
-// 👇 Importação adicionada para usar o contexto
 import { useAuth } from "@/src/context/AuthContext";
 
 export default function Cadastro() {
   const router = useRouter();
-
-  // 👇 Extração do setUser adicionada
   const { setUser } = useAuth();
 
   const [nome, setNome] = useState("");
@@ -63,17 +58,17 @@ export default function Cadastro() {
 
   async function salvar() {
     if (!nome || !email || !telefone || !cidade || !senha || !confirmarSenha) {
-      Alert.alert("Erro", "Preencha todos os campos");
+      Alert.alert("Aviso", "Preencha todos os campos");
       return;
     }
 
     if (!tipo) {
-      Alert.alert("Erro", "Selecione uma opção de perfil");
+      Alert.alert("Aviso", "Selecione uma opção de perfil");
       return;
     }
 
     if (senha !== confirmarSenha) {
-      Alert.alert("Erro", "As senhas não coincidem");
+      Alert.alert("Aviso", "As senhas não coincidem");
       return;
     }
 
@@ -85,16 +80,12 @@ export default function Cadastro() {
       );
       const uid = userCredential.user.uid;
 
-      // ---------------------------------------------------------
-      // GERA O CÓDIGO DE COMPARTILHAMENTO
-      // ---------------------------------------------------------
       const prefixo =
         nome.trim().length >= 3
           ? nome.trim().substring(0, 3).toUpperCase()
           : "USR";
       const codigoGerado = prefixo + Math.floor(1000 + Math.random() * 9000);
 
-      // Dados que serão salvos (iguais para ambos para manter padrão)
       const dadosUsuario = {
         nome,
         email,
@@ -107,23 +98,14 @@ export default function Cadastro() {
         perfilVinculado: null,
       };
 
-      // 🔥 DIVISÃO DE BANCO DE DADOS
+      await setDoc(doc(firestore, "usuarios", uid), dadosUsuario);
+
+      setUser({ uid, email, tipo });
+
       if (tipo === "gestante") {
-        // Gestante vai para o FIRESTORE
-        await setDoc(doc(firestore, "usuarios", uid), dadosUsuario);
-
-        // 👇 Atualização manual do state antes de navegar
-        setUser({ uid, email, tipo: "gestante" });
-
         router.replace("/dum");
       } else {
-        // Pai vai para o REALTIME DATABASE na estrutura solicitada (usuarios/[UID])
-        await set(ref(db, "usuarios/" + uid), dadosUsuario);
         Alert.alert("Sucesso", "Conta de parceiro criada!");
-
-        // 👇 Atualização manual do state antes de navegar
-        setUser({ uid, email, tipo: "pai" });
-
         router.replace("/addFilho");
       }
     } catch (error: any) {
@@ -194,9 +176,9 @@ export default function Cadastro() {
             ]}
           />
 
-          <View style={styles.rowInput}>
+          <View style={styles.inputContainer}>
             <TextInput
-              style={[styles.input, { flex: 1, marginTop: 0 }]}
+              style={styles.inputInside}
               placeholder="Data de Nascimento"
               placeholderTextColor={theme.colors.subtitle}
               value={dataTexto}
@@ -204,13 +186,13 @@ export default function Cadastro() {
               keyboardType="numeric"
             />
             <TouchableOpacity
-              style={styles.iconButton}
               onPress={() => setMostrarDate(true)}
+              style={styles.iconArea}
             >
               <MaterialCommunityIcons
                 name="calendar"
                 size={24}
-                color={theme.colors.cards}
+                color={theme.colors.subtitle}
               />
             </TouchableOpacity>
           </View>
@@ -241,44 +223,44 @@ export default function Cadastro() {
             onChangeText={setCidade}
           />
 
-          <View style={styles.rowInput}>
+          <View style={styles.inputContainer}>
             <TextInput
               secureTextEntry={!showSenha}
-              style={[styles.input, { flex: 1, marginTop: 0 }]}
+              style={styles.inputInside}
               placeholder="Senha"
               placeholderTextColor={theme.colors.subtitle}
               value={senha}
               onChangeText={setSenha}
             />
             <TouchableOpacity
-              style={styles.iconButton}
               onPress={() => setShowSenha(!showSenha)}
+              style={styles.iconArea}
             >
               <MaterialCommunityIcons
                 name={showSenha ? "eye-off" : "eye"}
                 size={24}
-                color={theme.colors.cards}
+                color={theme.colors.subtitle}
               />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.rowInput}>
+          <View style={styles.inputContainer}>
             <TextInput
               secureTextEntry={!showConfirmSenha}
-              style={[styles.input, { flex: 1, marginTop: 0 }]}
+              style={styles.inputInside}
               placeholder="Confirmar senha"
               placeholderTextColor={theme.colors.subtitle}
               value={confirmarSenha}
               onChangeText={setConfirmarSenha}
             />
             <TouchableOpacity
-              style={styles.iconButton}
               onPress={() => setShowConfirmSenha(!showConfirmSenha)}
+              style={styles.iconArea}
             >
               <MaterialCommunityIcons
                 name={showConfirmSenha ? "eye-off" : "eye"}
                 size={24}
-                color={theme.colors.cards}
+                color={theme.colors.subtitle}
               />
             </TouchableOpacity>
           </View>
@@ -287,7 +269,10 @@ export default function Cadastro() {
             <TouchableOpacity
               style={[
                 styles.opcao,
-                tipo === "pai" && { backgroundColor: theme.colors.cards },
+                tipo === "pai" && {
+                  backgroundColor: theme.colors.cards,
+                  borderColor: theme.colors.cards,
+                },
               ]}
               onPress={() => setTipo("pai")}
             >
@@ -301,7 +286,10 @@ export default function Cadastro() {
             <TouchableOpacity
               style={[
                 styles.opcao,
-                tipo === "gestante" && { backgroundColor: theme.colors.cards },
+                tipo === "gestante" && {
+                  backgroundColor: theme.colors.cards,
+                  borderColor: theme.colors.cards,
+                },
               ]}
               onPress={() => setTipo("gestante")}
             >
@@ -317,12 +305,11 @@ export default function Cadastro() {
           </View>
 
           <TouchableOpacity onPress={salvar} activeOpacity={0.8}>
-            <LinearGradient
-              colors={[theme.colors.cards, "#99acff"]}
-              style={styles.botao}
+            <View
+              style={[styles.botao, { backgroundColor: theme.colors.cards }]}
             >
               <Text style={styles.textoBotao}>CRIAR CONTA</Text>
-            </LinearGradient>
+            </View>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -331,7 +318,11 @@ export default function Cadastro() {
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, padding: 20, justifyContent: "center" },
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    justifyContent: "center",
+  },
   card: {
     backgroundColor: theme.colors.terceary,
     padding: 22,
@@ -349,39 +340,51 @@ const styles = StyleSheet.create({
     color: theme.colors.title,
     marginBottom: 20,
   },
+
   input: {
     borderWidth: 1,
     borderColor: theme.colors.secondary,
     marginTop: 12,
-    padding: 14,
+    paddingHorizontal: 14,
+    height: 55,
     borderRadius: 12,
     backgroundColor: "#FFF",
     fontSize: theme.texts.text,
     color: theme.colors.title,
   },
-  rowInput: {
+
+  inputContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 12,
-  },
-  iconButton: {
-    padding: 10,
-    marginLeft: 5,
-    backgroundColor: "#FFF",
-    borderRadius: 12,
     borderWidth: 1,
     borderColor: theme.colors.secondary,
+    marginTop: 12,
+    paddingHorizontal: 14,
     height: 55,
-    justifyContent: "center",
-    alignItems: "center",
-    width: 55,
+    borderRadius: 12,
+    backgroundColor: "#FFF",
   },
-  opcaoContainer: { flexDirection: "row", gap: 10, marginTop: 25 },
+
+  inputInside: {
+    flex: 1,
+    height: "100%",
+    fontSize: theme.texts.text,
+    color: theme.colors.title,
+  },
+
+  iconArea: {
+    padding: 5,
+  },
+  opcaoContainer: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 25,
+  },
   opcao: {
     flex: 1,
     padding: 14,
     borderWidth: 1,
-    borderColor: theme.colors.cards,
+    borderColor: theme.colors.secondary,
     borderRadius: 14,
     alignItems: "center",
     backgroundColor: "#FFF",
@@ -391,6 +394,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: theme.texts.text,
   },
-  botao: { marginTop: 30, padding: 18, borderRadius: 14, alignItems: "center" },
-  textoBotao: { color: "#fff", fontWeight: "bold", fontSize: theme.texts.text },
+  botao: {
+    marginTop: 30,
+    padding: 18,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+  textoBotao: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: theme.texts.text,
+  },
 });

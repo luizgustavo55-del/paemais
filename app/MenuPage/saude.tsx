@@ -11,8 +11,8 @@ import {
   View,
 } from "react-native";
 
-import { auth, db } from "@/src/services/firebase";
-import { onValue, ref, update } from "firebase/database";
+import { auth, firestore } from "@/src/services/firebase";
+import { collection, doc, onSnapshot, updateDoc } from "firebase/firestore";
 
 export default function Saude() {
   const [aba, setAba] = useState("vacinas");
@@ -29,15 +29,12 @@ export default function Saude() {
   useEffect(() => {
     if (!userId) return;
 
-    const filhosRef = ref(db, `usuarios/${userId}/filhos`);
-
-    onValue(filhosRef, (snapshot) => {
-      const data = snapshot.val();
-
-      if (data) {
-        const lista = Object.entries(data).map(([id, valor]) => ({
-          id,
-          ...(valor as object),
+    const unsubFilhos = onSnapshot(
+      collection(firestore, "usuarios", userId, "filhos"),
+      (snapshot) => {
+        const lista = snapshot.docs.map((docItem) => ({
+          id: docItem.id,
+          ...docItem.data(),
         }));
 
         setFilhos(lista);
@@ -45,59 +42,73 @@ export default function Saude() {
         if (lista.length === 1) {
           setFilhoSelecionado(lista[0]);
         }
-      }
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!filhoSelecionado) return;
-
-    const vacinasRef = ref(
-      db,
-      `usuarios/${userId}/filhos/${filhoSelecionado.id}/vacinas`,
+      },
     );
 
-    onValue(vacinasRef, (snapshot) => {
-      const data = snapshot.val();
+    return () => unsubFilhos();
+  }, [userId]);
 
-      if (data) {
-        setVacinas(Object.values(data));
-      } else {
-        const inicial = {
-          v1: { nome: "BCG", idade: "Ao nascer", data: "" },
-          v2: { nome: "Hepatite B", idade: "Ao nascer", data: "" },
-          v3: { nome: "Pentavalente 1ª dose", idade: "2 meses", data: "" },
-          v4: { nome: "VIP 1ª dose", idade: "2 meses", data: "" },
-          v5: { nome: "Rotavírus 1ª dose", idade: "2 meses", data: "" },
-          v6: { nome: "Pneumocócica 1ª dose", idade: "2 meses", data: "" },
-          v7: { nome: "Meningocócica C 1ª dose", idade: "3 meses", data: "" },
-          v8: { nome: "Pentavalente 2ª dose", idade: "4 meses", data: "" },
-          v9: { nome: "VIP 2ª dose", idade: "4 meses", data: "" },
-          v10: { nome: "Rotavírus 2ª dose", idade: "4 meses", data: "" },
-          v11: { nome: "Pneumocócica 2ª dose", idade: "4 meses", data: "" },
-          v12: { nome: "Meningocócica C 2ª dose", idade: "5 meses", data: "" },
-          v13: { nome: "Pentavalente 3ª dose", idade: "6 meses", data: "" },
-          v14: { nome: "VIP 3ª dose", idade: "6 meses", data: "" },
-          v15: { nome: "Febre Amarela", idade: "9 meses", data: "" },
-          v16: { nome: "Tríplice Viral", idade: "12 meses", data: "" },
-          v17: { nome: "Pneumocócica reforço", idade: "12 meses", data: "" },
-          v18: { nome: "Meningocócica reforço", idade: "12 meses", data: "" },
-          v19: { nome: "DTP reforço", idade: "15 meses", data: "" },
-          v20: { nome: "VOP reforço", idade: "15 meses", data: "" },
-          v21: { nome: "Hepatite A", idade: "15 meses", data: "" },
-          v22: { nome: "Tetraviral", idade: "15 meses", data: "" },
-        };
+  useEffect(() => {
+    if (!filhoSelecionado || !userId) return;
 
-        update(
-          ref(db, `usuarios/${userId}/filhos/${filhoSelecionado.id}/vacinas`),
-          inicial,
-        );
+    const docRef = doc(
+      firestore,
+      "usuarios",
+      userId,
+      "filhos",
+      filhoSelecionado.id,
+    );
+
+    const unsubVacinas = onSnapshot(docRef, async (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+
+        if (data.vacinas) {
+          const chaves = Object.keys(data.vacinas).sort(
+            (a, b) =>
+              parseInt(a.replace("v", "")) - parseInt(b.replace("v", "")),
+          );
+          setVacinas(chaves.map((k) => data.vacinas[k]));
+        } else {
+          const inicial = {
+            v1: { nome: "BCG", idade: "Ao nascer", data: "" },
+            v2: { nome: "Hepatite B", idade: "Ao nascer", data: "" },
+            v3: { nome: "Pentavalente 1ª dose", idade: "2 meses", data: "" },
+            v4: { nome: "VIP 1ª dose", idade: "2 meses", data: "" },
+            v5: { nome: "Rotavírus 1ª dose", idade: "2 meses", data: "" },
+            v6: { nome: "Pneumocócica 1ª dose", idade: "2 meses", data: "" },
+            v7: { nome: "Meningocócica C 1ª dose", idade: "3 meses", data: "" },
+            v8: { nome: "Pentavalente 2ª dose", idade: "4 meses", data: "" },
+            v9: { nome: "VIP 2ª dose", idade: "4 meses", data: "" },
+            v10: { nome: "Rotavírus 2ª dose", idade: "4 meses", data: "" },
+            v11: { nome: "Pneumocócica 2ª dose", idade: "4 meses", data: "" },
+            v12: {
+              nome: "Meningocócica C 2ª dose",
+              idade: "5 meses",
+              data: "",
+            },
+            v13: { nome: "Pentavalente 3ª dose", idade: "6 meses", data: "" },
+            v14: { nome: "VIP 3ª dose", idade: "6 meses", data: "" },
+            v15: { nome: "Febre Amarela", idade: "9 meses", data: "" },
+            v16: { nome: "Tríplice Viral", idade: "12 meses", data: "" },
+            v17: { nome: "Pneumocócica reforço", idade: "12 meses", data: "" },
+            v18: { nome: "Meningocócica reforço", idade: "12 meses", data: "" },
+            v19: { nome: "DTP reforço", idade: "15 meses", data: "" },
+            v20: { nome: "VOP reforço", idade: "15 meses", data: "" },
+            v21: { nome: "Hepatite A", idade: "15 meses", data: "" },
+            v22: { nome: "Tetraviral", idade: "15 meses", data: "" },
+          };
+
+          await updateDoc(docRef, { vacinas: inicial });
+        }
       }
     });
-  }, [filhoSelecionado]);
 
-  const salvarData = (index: number) => {
-    if (!dataTemp || !filhoSelecionado) return;
+    return () => unsubVacinas();
+  }, [filhoSelecionado, userId]);
+
+  const salvarData = async (index: number) => {
+    if (!dataTemp || !filhoSelecionado || !userId) return;
 
     const novas = [...vacinas];
     novas[index].data = dataTemp;
@@ -108,13 +119,17 @@ export default function Saude() {
 
     const atualizacao: any = {};
     novas.forEach((v, i) => {
-      atualizacao[`v${i + 1}`] = v;
+      atualizacao[`vacinas.v${i + 1}`] = v;
     });
 
-    update(
-      ref(db, `usuarios/${userId}/filhos/${filhoSelecionado.id}/vacinas`),
-      atualizacao,
+    const docRef = doc(
+      firestore,
+      "usuarios",
+      userId,
+      "filhos",
+      filhoSelecionado.id,
     );
+    await updateDoc(docRef, atualizacao);
   };
 
   const cancelar = () => {
