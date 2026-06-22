@@ -1,10 +1,13 @@
-import { theme } from "@/src/constants/theme";
+import { auth, firestore } from "@/src/services/firebase";
 import { Feather } from "@expo/vector-icons";
+import Constants from "expo-constants";
+import * as Notifications from "expo-notifications";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
   Modal,
-  ScrollView,
+  SectionList,
   StyleSheet,
   Switch,
   Text,
@@ -12,37 +15,60 @@ import {
   View,
 } from "react-native";
 
-// 🔥 Imports do Firebase
-import { auth, firestore } from "@/src/services/firebase";
-import { deleteUser } from "firebase/auth";
-import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore";
+import { AlterarEmail } from "@/src/components/(menu)/(config)/altEmail";
+import { AlterarSenha } from "@/src/components/(menu)/(config)/altSenha";
+import { ExcluirConta } from "@/src/components/(menu)/(config)/excluirConta";
+import { TamanhoFonte } from "@/src/components/(menu)/(config)/fonte";
+import { HoraDescanso } from "@/src/components/(menu)/(config)/horaDescanso";
+import { SonsVibracao } from "@/src/components/(menu)/(config)/sons&vibra";
+import { TrocarConta } from "@/src/components/(menu)/(config)/trocarConta";
+import { TrocarDum } from "@/src/components/(menu)/(config)/trocarDum";
+import { EscolhaUnidades } from "@/src/components/(menu)/(config)/unidades";
+import { useTheme } from "@/src/context/ThemeContext";
+
+type ItemProps = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  type: "link" | "switch" | "info";
+  icon?: keyof typeof Feather.glyphMap;
+};
 
 export function Configuracoes() {
-  const [visivel, setVisivel] = useState(false);
-  const [situacao, setSituacao] = useState<"gestante" | "filhos">("gestante");
-  const [modoEscuro, setModoEscuro] = useState(false);
-  const [sonsDoApp, setSonsDoApp] = useState(true);
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
 
-  // Carrega as preferências sempre que o modal abrir
+  const version = Constants.expoConfig?.version || "1.0.0";
+
+  const [visivel, setVisivel] = useState(false);
+  const [notificacoesAtivas, setNotificacoesAtivas] = useState(true);
+
+  const [modalDumVisivel, setModalDumVisivel] = useState(false);
+  const [modalPerfilVisivel, setModalPerfilVisivel] = useState(false);
+  const [modalSonsVisivel, setModalSonsVisivel] = useState(false);
+  const [modalDescansoVisivel, setModalDescansoVisivel] = useState(false);
+  const [modalSenhaVisivel, setModalSenhaVisivel] = useState(false);
+  const [modalEmailVisivel, setModalEmailVisivel] = useState(false);
+  const [modalContasVisivel, setModalContasVisivel] = useState(false);
+  const [modalExcluirVisivel, setModalExcluirVisivel] = useState(false);
+  const [modalFonteVisivel, setModalFonteVisivel] = useState(false);
+  const [modalUnidadesVisivel, setModalUnidadesVisivel] = useState(false);
+
   useEffect(() => {
     const carregarPreferencias = async () => {
       try {
         const user = auth.currentUser;
         if (!user) return;
-
-        const userRef = doc(firestore, "usuarios", user.uid);
-        const userSnap = await getDoc(userRef);
-
-        if (userSnap.exists()) {
-          const dados = userSnap.data();
-          if (dados.perfil) setSituacao(dados.perfil);
-
-          // Carrega as preferências de som e tema (se existirem)
-          if (dados.modoEscuro !== undefined) setModoEscuro(dados.modoEscuro);
-          if (dados.sonsDoApp !== undefined) setSonsDoApp(dados.sonsDoApp);
+        const userDocRef = doc(firestore, "usuarios", user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const dados = userDoc.data();
+          if (dados?.configuracoes?.notificacoesAtivas !== undefined) {
+            setNotificacoesAtivas(dados.configuracoes.notificacoesAtivas);
+          }
         }
       } catch (error) {
-        console.log("Erro ao carregar configurações:", error);
+        console.log(error);
       }
     };
 
@@ -51,71 +77,224 @@ export function Configuracoes() {
     }
   }, [visivel]);
 
-  // Atualiza o perfil (Gestante/Filhos) no Firestore
-  const handleMudarPerfil = async (novoPerfil: "gestante" | "filhos") => {
-    setSituacao(novoPerfil);
-    await salvarPreferenciaNoFirebase({ perfil: novoPerfil });
-  };
-
-  // Atualiza o Modo Escuro no Firestore
-  const handleMudarModoEscuro = async (valor: boolean) => {
-    setModoEscuro(valor);
-    await salvarPreferenciaNoFirebase({ modoEscuro: valor });
-  };
-
-  // Atualiza os Sons do App no Firestore
-  const handleMudarSonsDoApp = async (valor: boolean) => {
-    setSonsDoApp(valor);
-    await salvarPreferenciaNoFirebase({ sonsDoApp: valor });
-  };
-
-  // Função genérica para salvar qualquer preferência sem apagar as outras
-  const salvarPreferenciaNoFirebase = async (dado: object) => {
+  const handleToggleNotificacoes = async (value: boolean) => {
+    setNotificacoesAtivas(value);
     try {
       const user = auth.currentUser;
       if (!user) return;
-      const userRef = doc(firestore, "usuarios", user.uid);
-      await setDoc(userRef, dado, { merge: true });
+      const userDocRef = doc(firestore, "usuarios", user.uid);
+
+      await updateDoc(userDocRef, {
+        "configuracoes.notificacoesAtivas": value,
+      });
+
+      if (!value) {
+        await Notifications.cancelAllScheduledNotificationsAsync();
+      }
     } catch (error) {
-      console.error("Erro ao salvar a preferência no banco", error);
+      setNotificacoesAtivas(!value);
     }
   };
 
-  // Função para APAGAR TUDO
-  const handleExcluirConta = () => {
-    Alert.alert(
-      "Excluir Conta",
-      "Tem a certeza? Esta ação é permanente e apagará todos os seus dados de perfil e o seu acesso.",
-      [
-        { text: "Cancelar", style: "cancel" },
+  const handlePressItem = (id: string) => {
+    if ((id === "sons_vib" || id === "descanso") && !notificacoesAtivas) {
+      Alert.alert(
+        "Aviso",
+        "Ative as notificações para poder configurar esta opção.",
+      );
+      return;
+    }
+
+    if (id === "dum") setModalDumVisivel(true);
+    if (id === "perfil") setModalPerfilVisivel(true);
+    if (id === "sons_vib") setModalSonsVisivel(true);
+    if (id === "descanso") setModalDescansoVisivel(true);
+    if (id === "senha") setModalSenhaVisivel(true);
+    if (id === "email") setModalEmailVisivel(true);
+    if (id === "trocar_conta") setModalContasVisivel(true);
+    if (id === "excluir") setModalExcluirVisivel(true);
+    if (id === "fonte") setModalFonteVisivel(true);
+    if (id === "unidades") setModalUnidadesVisivel(true);
+  };
+
+  const SECTIONS = [
+    {
+      title: "Gestação",
+      data: [
+        { id: "dum", title: "Trocar DUM", type: "link", icon: "calendar" },
         {
-          text: "Excluir Permanentemente",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              const user = auth.currentUser;
-              if (!user) return;
-
-              const userRef = doc(firestore, "usuarios", user.uid);
-              await deleteDoc(userRef);
-              await deleteUser(user);
-
-              Alert.alert("Sucesso", "A sua conta foi eliminada.");
-              setVisivel(false);
-            } catch (error: any) {
-              console.error(error);
-              if (error.code === "auth/requires-recent-login") {
-                Alert.alert(
-                  "Segurança",
-                  "Para eliminar a conta, precisa de ter feito login recentemente. Saia e entre de novo para confirmar.",
-                );
-              } else {
-                Alert.alert("Erro", "Não foi possível eliminar a conta.");
-              }
-            }
-          },
+          id: "perfil",
+          title: "Alternar Perfil (Pai/Gestante)",
+          type: "link",
+          icon: "users",
         },
-      ],
+      ] as ItemProps[],
+    },
+    {
+      title: "Notificações",
+      data: [
+        { id: "notificacoes", title: "Ativar Notificações", type: "switch" },
+        {
+          id: "sons_vib",
+          title: "Configurar sons e vibração",
+          type: "link",
+          icon: "bell",
+        },
+        {
+          id: "descanso",
+          title: "Hora de descanso",
+          subtitle: "Pausar alertas",
+          type: "link",
+          icon: "moon",
+        },
+      ] as ItemProps[],
+    },
+    {
+      title: "Privacidade e Segurança",
+      data: [
+        { id: "senha", title: "Alterar Senha", type: "link", icon: "lock" },
+        { id: "email", title: "Alterar Email", type: "link", icon: "mail" },
+        {
+          id: "trocar_conta",
+          title: "Trocar de conta",
+          type: "link",
+          icon: "refresh-cw",
+        },
+        {
+          id: "excluir",
+          title: "Excluir conta",
+          type: "link",
+          icon: "trash-2",
+        },
+      ] as ItemProps[],
+    },
+    {
+      title: "Acessibilidade",
+      data: [
+        { id: "fonte", title: "Tamanho da fonte", type: "link", icon: "type" },
+        {
+          id: "unidades",
+          title: "Escolha de unidades",
+          type: "link",
+          icon: "sliders",
+        },
+      ] as ItemProps[],
+    },
+    {
+      title: "Informações do App",
+      data: [
+        {
+          id: "ajuda",
+          title: "Central de ajuda",
+          type: "link",
+          icon: "help-circle",
+        },
+        {
+          id: "feedback",
+          title: "Enviar feedback",
+          type: "link",
+          icon: "message-square",
+        },
+        { id: "sobre", title: "Sobre o App", type: "link", icon: "smartphone" },
+      ] as ItemProps[],
+    },
+  ];
+
+  const renderItem = ({ item }: { item: ItemProps }) => {
+    const dependenteDeNotificacao =
+      item.id === "sons_vib" || item.id === "descanso";
+    const itemDesativado = dependenteDeNotificacao && !notificacoesAtivas;
+
+    if (item.type === "switch") {
+      return (
+        <View style={styles.settingItemRow}>
+          <View style={styles.textColumn}>
+            <Text style={styles.settingItemMain}>{item.title}</Text>
+            {item.subtitle && (
+              <Text style={styles.settingItemSub}>{item.subtitle}</Text>
+            )}
+          </View>
+          <Switch
+            value={notificacoesAtivas}
+            onValueChange={handleToggleNotificacoes}
+            trackColor={{
+              true: theme.colors.gestantesPrimary,
+              false: theme.colors.subtitle,
+            }}
+            thumbColor={
+              notificacoesAtivas ? theme.colors.primary : theme.colors.text
+            }
+          />
+        </View>
+      );
+    }
+
+    if (item.type === "info") {
+      return (
+        <View style={styles.settingItemRow}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            {item.icon && (
+              <Feather
+                name={item.icon}
+                size={20}
+                color={theme.colors.textMenu}
+              />
+            )}
+            <View style={[styles.textColumn, { marginLeft: 15 }]}>
+              <Text style={styles.settingItemMain}>{item.title}</Text>
+            </View>
+          </View>
+          {item.subtitle && (
+            <Text style={styles.settingItemSubInfo}>{item.subtitle}</Text>
+          )}
+        </View>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        style={[styles.settingLinkItem, itemDesativado && { opacity: 0.4 }]}
+        onPress={() => handlePressItem(item.id)}
+        disabled={itemDesativado}
+      >
+        {item.icon && (
+          <Feather
+            name={item.icon}
+            size={20}
+            color={
+              item.id === "excluir"
+                ? theme.colors.gestantesBackground
+                : itemDesativado
+                  ? theme.colors.subtitle
+                  : theme.colors.textMenu
+            }
+          />
+        )}
+        <View style={[styles.textColumn, { marginLeft: 15 }]}>
+          <Text
+            style={[
+              styles.settingItemMain,
+              item.id === "excluir" && {
+                color: theme.colors.gestantesBackground,
+              },
+              itemDesativado && { color: theme.colors.subtitle },
+            ]}
+          >
+            {item.title}
+          </Text>
+          {item.subtitle && (
+            <Text
+              style={[
+                styles.settingItemSub,
+                itemDesativado && { color: theme.colors.subtitle },
+              ]}
+            >
+              {item.subtitle}
+            </Text>
+          )}
+        </View>
+        <Feather name="chevron-right" size={18} color={theme.colors.subtitle} />
+      </TouchableOpacity>
     );
   };
 
@@ -135,144 +314,164 @@ export function Configuracoes() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Configurações</Text>
               <TouchableOpacity onPress={() => setVisivel(false)}>
-                <Feather name="x" size={24} color="#333" />
+                <Feather name="x" size={24} color={theme.colors.textMenu} />
               </TouchableOpacity>
             </View>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Preferências</Text>
-                <View style={styles.settingItemRow}>
-                  <View style={styles.textColumn}>
-                    <Text style={styles.settingItemMain}>Modo Escuro</Text>
-                    <Text style={styles.settingItemSub}>
-                      Visual mais confortável
-                    </Text>
-                  </View>
-                  <Switch
-                    value={modoEscuro}
-                    onValueChange={handleMudarModoEscuro}
-                    trackColor={{ true: theme.colors.cards, false: "#ddd" }}
-                  />
+            <SectionList
+              sections={SECTIONS}
+              keyExtractor={(item) => item.id}
+              renderItem={renderItem}
+              showsVerticalScrollIndicator={false}
+              renderSectionHeader={({ section: { title } }) => (
+                <View style={styles.sectionHeaderContainer}>
+                  <Text style={styles.sectionTitle}>{title}</Text>
                 </View>
-
-                <View style={styles.settingItemRow}>
-                  <View style={styles.textColumn}>
-                    <Text style={styles.settingItemMain}>Sons do App</Text>
-                    <Text style={styles.settingItemSub}>
-                      Alertas e notificações
-                    </Text>
-                  </View>
-                  <Switch
-                    value={sonsDoApp}
-                    onValueChange={handleMudarSonsDoApp}
-                    trackColor={{ true: theme.colors.cards, false: "#ddd" }}
-                  />
-                </View>
-              </View>
-
-              <View style={[styles.section, { borderBottomWidth: 0 }]}>
-                <TouchableOpacity
-                  style={styles.settingLinkItem}
-                  onPress={handleExcluirConta}
-                >
-                  <Feather name="trash-2" size={20} color="#ff4d4d" />
-                  <Text
-                    style={[
-                      styles.settingItemMain,
-                      { color: "#ff4d4d", marginLeft: 15 },
-                    ]}
-                  >
-                    Excluir conta
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </ScrollView>
+              )}
+              SectionSeparatorComponent={() => (
+                <View style={styles.separator} />
+              )}
+            />
+            <View style={styles.footerVersao}>
+              <Text style={styles.textoVersao}>Versão {version}</Text>
+            </View>
           </View>
         </View>
       </Modal>
+
+      <TrocarDum
+        visivel={modalDumVisivel}
+        fechar={() => setModalDumVisivel(false)}
+      />
+      <SonsVibracao
+        visivel={modalSonsVisivel}
+        fechar={() => setModalSonsVisivel(false)}
+        notificacoesAtivas={notificacoesAtivas}
+      />
+      <HoraDescanso
+        visivel={modalDescansoVisivel}
+        fechar={() => setModalDescansoVisivel(false)}
+        notificacoesAtivas={notificacoesAtivas}
+      />
+      <AlterarSenha
+        visivel={modalSenhaVisivel}
+        fechar={() => setModalSenhaVisivel(false)}
+      />
+      <AlterarEmail
+        visivel={modalEmailVisivel}
+        fechar={() => setModalEmailVisivel(false)}
+      />
+      <TrocarConta
+        visivel={modalContasVisivel}
+        fechar={() => setModalContasVisivel(false)}
+      />
+      <ExcluirConta
+        visivel={modalExcluirVisivel}
+        fechar={() => setModalExcluirVisivel(false)}
+      />
+      <TamanhoFonte
+        visivel={modalFonteVisivel}
+        fechar={() => setModalFonteVisivel(false)}
+      />
+      <EscolhaUnidades
+        visivel={modalUnidadesVisivel}
+        fechar={() => setModalUnidadesVisivel(false)}
+      />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  menuItemText: {
-    marginLeft: 15,
-    fontSize: theme.texts.subtitle,
-    color: "#333",
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    height: "80%",
-    padding: 20,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-  },
-  modalTitle: { fontSize: 20, fontWeight: "bold", color: "#333" },
-  section: {
-    marginBottom: 25,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#999",
-    textTransform: "uppercase",
-    marginBottom: 15,
-    letterSpacing: 1,
-  },
-  situacaoItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    borderRadius: 15,
-    backgroundColor: "#f8f9fa",
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: "#eee",
-  },
-  situacaoItemAtiva: {
-    backgroundColor: theme.colors.cards,
-    borderColor: theme.colors.cards,
-  },
-  situacaoTextContainer: { marginLeft: 15, flex: 1 },
-  situacaoTextMain: { fontSize: 16, fontWeight: "600", color: "#333" },
-  situacaoTextSub: { fontSize: 12, color: "#777" },
-  settingItemRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-  },
-  textColumn: { flex: 1 },
-  settingItemMain: { fontSize: 16, color: "#333", fontWeight: "500" },
-  settingItemSub: { fontSize: 12, color: "#888" },
-  settingLinkItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 15,
-  },
-});
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    menuItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.subtitle,
+    },
+    menuItemText: {
+      marginLeft: 15,
+      fontSize: theme.texts.subtitle,
+      color: "#333",
+    },
+    modalContainer: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      justifyContent: "flex-end",
+    },
+    modalContent: {
+      backgroundColor: theme.colors.text,
+      borderTopLeftRadius: 25,
+      borderTopRightRadius: 25,
+      height: "85%",
+      padding: 20,
+    },
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 10,
+      paddingBottom: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.subtitle,
+    },
+    modalTitle: {
+      fontSize: theme.texts.title,
+      fontWeight: "bold",
+      color: theme.colors.textMenu,
+    },
+    sectionHeaderContainer: {
+      marginTop: 20,
+      marginBottom: 10,
+      paddingBottom: 5,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.subtitle,
+    },
+    sectionTitle: {
+      fontSize: theme.texts.text,
+      fontWeight: "700",
+      color: theme.colors.gestantesPrimary,
+      textTransform: "uppercase",
+      letterSpacing: 1,
+    },
+    settingItemRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingVertical: 12,
+    },
+    settingLinkItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 12,
+    },
+    textColumn: { flex: 1 },
+    settingItemMain: {
+      fontSize: theme.texts.text,
+      color: theme.colors.title,
+      fontWeight: "500",
+    },
+    settingItemSub: {
+      fontSize: theme.texts.text,
+      color: theme.colors.subtitle,
+      marginTop: 2,
+    },
+    settingItemSubInfo: {
+      fontSize: theme.texts.text,
+      color: theme.colors.subtitle,
+      fontWeight: "bold",
+    },
+    separator: {
+      height: 5,
+    },
+    footerVersao: {
+      marginTop: 15,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 10,
+    },
+    textoVersao: {
+      fontSize: theme.texts.text - 4,
+      color: theme.colors.subtitle,
+    },
+  });

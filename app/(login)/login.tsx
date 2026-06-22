@@ -1,5 +1,7 @@
+import { theme } from "@/src/constants/theme";
 import { useAuth } from "@/src/context/AuthContext";
 import { auth, firestore } from "@/src/services/firebase";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -17,6 +19,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
 
   const router = useRouter();
   const { setUser } = useAuth();
@@ -67,9 +70,9 @@ export default function Login() {
       });
 
       if (tipoIdentificado === "pai") {
-        router.replace("/menu");
+        router.replace("/(drawer)/(pais)/(tabs)/menu");
       } else if (tipoIdentificado === "gestante") {
-        router.replace("/gestacao");
+        router.replace("/(drawer)/(gestantes)/(tabs)/gestacao");
       }
     } catch (error: any) {
       if (
@@ -98,17 +101,32 @@ export default function Login() {
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
+          placeholderTextColor={theme.colors.subtitle}
           autoCapitalize="none"
           keyboardType="email-address"
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Senha"
-          secureTextEntry
-          value={senha}
-          onChangeText={setSenha}
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Senha"
+            placeholderTextColor={theme.colors.subtitle}
+            secureTextEntry={!mostrarSenha}
+            value={senha}
+            onChangeText={setSenha}
+          />
+          <TouchableOpacity
+            onPress={() => setMostrarSenha(!mostrarSenha)}
+            activeOpacity={0.6}
+            style={styles.eyeIcon}
+          >
+            <Ionicons
+              name={mostrarSenha ? "eye-off-outline" : "eye-outline"}
+              size={22}
+              color={theme.colors.subtitle}
+            />
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity onPress={() => router.push("/recuperacao")}>
           <Text style={styles.esqueceu}>Esqueceu a senha?</Text>
@@ -150,46 +168,72 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     padding: 30,
-    backgroundColor: "#b390d8",
+    backgroundColor: theme.colors.background,
   },
   content: { marginTop: 120, gap: 20 },
   titulo: {
-    fontSize: 42,
+    fontSize: theme.texts.title,
     fontWeight: "bold",
     textAlign: "center",
     color: "#28174cca",
   },
   subtitulo: {
     textAlign: "center",
-    fontSize: 16,
-    color: "#7050b3",
+    fontSize: theme.texts.subtitle,
+    color: theme.colors.subtitle,
     marginBottom: 20,
   },
   input: {
     backgroundColor: "#fff",
     padding: 14,
     borderRadius: 10,
-    fontSize: 16,
+    fontSize: theme.texts.text,
   },
-  esqueceu: { textAlign: "right", color: "#7b2cff", fontWeight: "bold" },
+  passwordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    paddingHorizontal: 14,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 14,
+    fontSize: theme.texts.text,
+    color: "#000",
+  },
+  eyeIcon: {
+    padding: 4,
+  },
+  esqueceu: {
+    textAlign: "right",
+    color: theme.colors.primary,
+    fontWeight: "bold",
+  },
   footer: { alignItems: "center", gap: 15, marginBottom: 40 },
   fullWidth: { width: "100%" },
   botao: {
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",
-    backgroundColor: "#7050d8",
+    backgroundColor: theme.colors.card,
   },
   botaoDesativado: { opacity: 0.5 },
-  textoBotao: { color: "#fff", fontSize: 18, fontWeight: "bold" },
-  link: { color: "#7b2cff", fontWeight: "bold" },
+  textoBotao: {
+    color: theme.colors.text,
+    fontSize: theme.texts.subtitle,
+    fontWeight: "bold",
+  },
+  link: { color: theme.colors.primary, fontWeight: "bold" },
   botaoColaborador: {
-    borderWidth: 2,
-    borderColor: "#a381c7",
-    backgroundColor: "#7050b3",
+    backgroundColor: theme.colors.card,
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 10,
   },
-  textoColaborador: { color: "#ece3ff", fontWeight: "bold", fontSize: 16 },
+  textoColaborador: {
+    color: "#ece3ff",
+    fontWeight: "bold",
+    fontSize: theme.texts.text,
+  },
 });

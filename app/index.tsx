@@ -1,4 +1,4 @@
-import "@expo/metro-runtime";
+import { theme } from "@/src/constants/theme";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
@@ -138,14 +138,14 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   titulo: {
-    fontSize: 36,
+    fontSize: theme.texts.title,
     fontWeight: "bold",
-    color: "#7050b3",
+    color: theme.colors.paisBackground,
   },
   descricao: {
-    fontSize: 16,
+    fontSize: theme.texts.subtitle,
     textAlign: "center",
-    color: "#555",
+    color: theme.colors.subtitle,
     lineHeight: 24,
   },
   dotsContainer: {

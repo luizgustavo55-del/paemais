@@ -1,16 +1,18 @@
+import { theme } from "@/src/constants/theme";
 import { auth, firestore } from "@/src/services/firebase";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
 import { addDoc, collection } from "firebase/firestore";
 import { useState } from "react";
 import {
-    Alert,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function Filhos() {
@@ -22,6 +24,7 @@ export default function Filhos() {
   const [dateObj, setDateObj] = useState(new Date());
 
   const router = useRouter();
+  const hoje = new Date();
 
   function handleData(text: string) {
     let cleaned = text.replace(/\D/g, "");
@@ -57,6 +60,25 @@ export default function Filhos() {
       return;
     }
 
+    if (data.length !== 10) {
+      Alert.alert("Aviso", "Preencha a data no formato DD/MM/AAAA");
+      return;
+    }
+
+    const partes = data.split("/");
+    const dia = parseInt(partes[0], 10);
+    const mes = parseInt(partes[1], 10) - 1;
+    const ano = parseInt(partes[2], 10);
+    const dataNascimento = new Date(ano, mes, dia);
+
+    if (dataNascimento > hoje) {
+      Alert.alert(
+        "Data Inválida",
+        "A data de nascimento não pode ser no futuro.",
+      );
+      return;
+    }
+
     if (loading) return;
 
     setLoading(true);
@@ -79,7 +101,7 @@ export default function Filhos() {
       });
 
       Alert.alert("Sucesso", "Filho cadastrado!");
-      router.replace("/menu");
+      router.replace("/(drawer)/(pais)/(tabs)/menu");
     } catch (error) {
       console.log(error);
       Alert.alert("Erro", "Erro ao salvar");
@@ -91,66 +113,72 @@ export default function Filhos() {
   return (
     <View style={styles.container}>
       <View style={styles.icone}>
-        <Text style={{ color: "#fff", fontSize: 30 }}>👶</Text>
+        <Text style={{ fontSize: 30 }}>👶</Text>
       </View>
 
       <Text style={styles.titulo}>Conte-nos sobre seu filho</Text>
 
       <View style={styles.card}>
-        <Text>Nome *</Text>
+        <Text style={styles.texto}>Nome</Text>
         <TextInput
           style={styles.input}
           value={nome}
           onChangeText={setNome}
           placeholder="Digite o nome"
+          placeholderTextColor={theme.colors.subtitle}
         />
 
-        <Text>Data de nascimento *</Text>
-        <TextInput
-          style={styles.input}
-          value={data}
-          onChangeText={handleData}
-          placeholder="DD/MM/AAAA"
-          keyboardType="numeric"
-        />
-
-        <TouchableOpacity
-          style={styles.botaoCalendario}
-          onPress={() => setShowPicker(true)}
-        >
-          <Text style={{ color: "#7b2cff" }}>Abrir calendário</Text>
-        </TouchableOpacity>
+        <Text style={styles.texto}>Data de nascimento</Text>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.inputInside}
+            value={data}
+            onChangeText={handleData}
+            placeholder="DD/MM/AAAA"
+            placeholderTextColor={theme.colors.subtitle}
+            keyboardType="numeric"
+            maxLength={10}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPicker(true)}
+            style={styles.iconArea}
+          >
+            <MaterialCommunityIcons
+              name="calendar"
+              size={24}
+              color={theme.colors.subtitle || theme.colors.title}
+            />
+          </TouchableOpacity>
+        </View>
 
         {showPicker && (
           <DateTimePicker
             value={dateObj}
             mode="date"
             display={Platform.OS === "ios" ? "spinner" : "default"}
+            maximumDate={hoje}
             onChange={onChange}
           />
         )}
 
-        <Text>Sexo *</Text>
+        <Text style={styles.texto}>Sexo</Text>
 
         <View style={styles.sexoContainer}>
           <TouchableOpacity
             style={[
               styles.sexoBotao,
-              sexo === "menino" && styles.sexoSelecionado,
+              sexo === "menino" && styles.sexoMasculino,
             ]}
             onPress={() => setSexo("menino")}
           >
-            <Text>👦 Menino</Text>
+            <Text style={styles.texto}>👦 Menino</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.sexoBotao,
-              sexo === "menina" && styles.sexoSelecionado,
-            ]}
+            style={[styles.sexoBotao, sexo === "menina" && styles.sexoFeminino]}
             onPress={() => setSexo("menina")}
           >
-            <Text>👧 Menina</Text>
+            <Text style={styles.texto}>👧 Menina</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -172,7 +200,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#FFF0F6",
+    backgroundColor: theme.colors.background,
     alignItems: "center",
   },
   icone: {
@@ -183,55 +211,82 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 40,
     marginBottom: 20,
-    backgroundColor: "#7b2cff",
+    backgroundColor: theme.colors.primary,
   },
   titulo: {
-    fontSize: 20,
+    fontSize: theme.texts.title,
+    marginBottom: 30,
     fontWeight: "bold",
     textAlign: "center",
   },
+  texto: {
+    fontSize: theme.texts.text,
+    marginBottom: 5,
+    color: theme.colors.text,
+  },
   card: {
     width: "100%",
-    backgroundColor: "#fff",
+    backgroundColor: theme.colors.card,
     padding: 15,
     borderRadius: 15,
     marginBottom: 20,
   },
   input: {
     backgroundColor: "#f2f2f2",
-    padding: 12,
+    paddingHorizontal: 16,
+    height: 55,
     borderRadius: 10,
     marginBottom: 10,
+    fontSize: theme.texts.text,
   },
-  botaoCalendario: {
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f2f2f2",
+    borderRadius: 10,
     marginBottom: 10,
-    alignItems: "flex-end",
+    paddingHorizontal: 16,
+    height: 55,
+  },
+  inputInside: {
+    flex: 1,
+    height: "100%",
+    fontSize: theme.texts.text,
+  },
+  iconArea: {
+    padding: 5,
   },
   sexoContainer: {
     flexDirection: "row",
     gap: 10,
+    marginTop: 10,
   },
   sexoBotao: {
     flex: 1,
-    padding: 12,
+    padding: 8,
     borderWidth: 1,
     borderRadius: 10,
     alignItems: "center",
     borderColor: "#ccc",
   },
-  sexoSelecionado: {
-    backgroundColor: "#ffe0f0",
+  sexoFeminino: {
+    backgroundColor: "#ff7dc0",
     borderColor: "#ff4db8",
+  },
+  sexoMasculino: {
+    backgroundColor: "#5e61ee",
+    borderColor: "#4d8bff",
   },
   botao: {
     width: "100%",
     padding: 15,
     borderRadius: 12,
     alignItems: "center",
-    backgroundColor: "#7b2cff",
+    backgroundColor: theme.colors.card,
   },
   textoBotao: {
-    color: "#fff",
+    color: theme.colors.text,
+    fontSize: theme.texts.text,
     fontWeight: "bold",
   },
 });

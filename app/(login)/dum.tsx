@@ -1,3 +1,4 @@
+import { theme } from "@/src/constants/theme";
 import { auth, firestore } from "@/src/services/firebase";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useRouter } from "expo-router";
@@ -82,7 +83,7 @@ export default function Dum() {
           style={styles.input}
           onPress={() => setMostrarDate(true)}
         >
-          <Text style={{ color: dataTexto ? "#000" : "#999" }}>
+          <Text style={{ color: dataTexto ? "#000" : "#ccc" }}>
             {dataTexto || "Selecionar data"}
           </Text>
         </TouchableOpacity>
@@ -120,19 +121,28 @@ export default function Dum() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f3e6ef",
+    backgroundColor: theme.colors.background,
     padding: 20,
     justifyContent: "center",
   },
   card: {
-    backgroundColor: "#e9d5e5",
+    backgroundColor: theme.colors.primary,
     padding: 20,
     borderRadius: 20,
     alignItems: "center",
   },
   emoji: { fontSize: 40, marginBottom: 10 },
-  titulo: { fontSize: 20, fontWeight: "bold" },
-  subtitulo: { textAlign: "center", marginBottom: 20 },
+  titulo: {
+    fontSize: theme.texts.title,
+    fontWeight: "bold",
+    color: theme.colors.subtitle,
+  },
+  subtitulo: {
+    textAlign: "center",
+    marginBottom: 20,
+    fontSize: theme.texts.text,
+    color: theme.colors.text,
+  },
   label: { alignSelf: "flex-start", marginBottom: 5 },
   input: {
     width: "100%",
@@ -146,7 +156,7 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
     alignItems: "center",
-    backgroundColor: "#a75dff",
+    backgroundColor: theme.colors.card,
   },
-  botaoTexto: { color: "#fff", fontWeight: "bold" },
+  botaoTexto: { color: "#fff", fontWeight: "bold", fontSize: theme.texts.text },
 });

@@ -1,40 +1,26 @@
 export const theme = {
   colors: {
-    /* CORES PRINCIPAIS */
-    primary: "#C54286",       // Rosa principal forte
-    secondary: "#bb6b93",     // Rosa médio suave
-    terceary: "#f3bed9",      // Rosa claro elegante
-    quaternary: "#FFEAF5",    // Fundo rosado suave
+    paisBackground: "#7050b3",
+    paisPrimary: "#8b64de",
+    paisSecondary: "#9b5de5",
 
-    /* FUNDOS */
-    background: "#CC5994",    // Fundo principal da tela
-    cards: "#f18bbd",         // Fundo dos cards
-    lightCard: "#ff96cb",     // Cards e inputs claros
+    gestantesBackground: "#C54286",
+    gestantesPrimary: "#8B2F61",
+    gestantesSecondary: "#ff6b9d",
 
-    /* HEADER */
-    header: "#B83F7B",        // Header rosa escuro
-    headerSecondary: "#D96CA6",
+    background: "#b390d8",
+    primary: "#7b2cff",
+    card: "#5407b8",
+    textMenu: "#28174cca",
 
-    /* TEXTOS */
-    title: "#55203a",         // Títulos em áreas escuras
-    textPrimary: "#8B2F61",   // Texto principal
-    subtitle: "#8A5B73",      // Texto secundário
-    texts: "#9f33c0",         // Branco padrão
-
-    /* DETALHES */
-    accent: "#C54286",
-    accentDark: "#8B2F61",
-
-    border: "#c07699",
-
-    shadow: "#6E2C50",
-
-    playButton: "rgba(139, 47, 97, 0.85)",
+    title: "#000",
+    subtitle: "#ccc",
+    text: "#fff",
   },
 
   texts: {
-    text: 15,
-    subtitle: 20,
+    text: 18,
+    subtitle: 24,
     title: 30,
   },
 };

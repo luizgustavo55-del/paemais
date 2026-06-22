@@ -13,7 +13,6 @@ import {
   View,
 } from "react-native";
 
-// 🔥 NOVOS IMPORTS DO FIRESTORE
 import { auth, firestore } from "@/src/services/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
@@ -37,7 +36,6 @@ export function EditarPerfil({ onUpdate }: { onUpdate?: () => void }) {
       if (visivel) {
         setCarregando(true);
         try {
-          // 🔥 BUSCA USUÁRIO LOGADO DIRETO DO AUTH
           const uid = auth.currentUser?.uid;
           if (!uid) return;
 
@@ -124,7 +122,7 @@ export function EditarPerfil({ onUpdate }: { onUpdate?: () => void }) {
               {carregando && !nome ? (
                 <ActivityIndicator
                   size="large"
-                  color={theme.colors.cards}
+                  color={theme.colors.gestantesPrimary}
                   style={{ marginVertical: 20 }}
                 />
               ) : (
@@ -269,16 +267,16 @@ const styles = StyleSheet.create({
     borderBottomColor: "#F0F0F0",
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: theme.texts.title,
     fontWeight: "bold",
-    color: "#333",
+    color: theme.colors.title,
   },
   form: {
     marginBottom: 20,
   },
   label: {
-    fontSize: 14,
-    color: "#666",
+    fontSize: theme.texts.subtitle,
+    color: theme.colors.subtitle,
     marginBottom: 8,
     fontWeight: "500",
   },
@@ -297,13 +295,13 @@ const styles = StyleSheet.create({
     textAlignVertical: "top",
   },
   colaboradorCard: {
-    backgroundColor: theme.colors.terceary,
+    backgroundColor: theme.colors.gestantesSecondary,
     borderRadius: 16,
     padding: 16,
     marginTop: 10,
     marginBottom: 20,
     borderWidth: 1,
-    borderColor: theme.colors.terceary,
+    borderColor: theme.colors.gestantesPrimary,
   },
   colaboradorHeader: {
     flexDirection: "row",
@@ -311,7 +309,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   starIconBg: {
-    backgroundColor: theme.colors.cards,
+    backgroundColor: theme.colors.gestantesPrimary,
     width: 32,
     height: 32,
     borderRadius: 16,
@@ -320,18 +318,18 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   colaboradorTitle: {
-    fontSize: 16,
+    fontSize: theme.texts.subtitle,
     fontWeight: "600",
     color: "#333",
   },
   colaboradorText: {
-    fontSize: 13,
-    color: "#666",
+    fontSize: theme.texts.text,
+    color: theme.colors.subtitle,
     lineHeight: 18,
     marginBottom: 16,
   },
   btnSolicitar: {
-    backgroundColor: theme.colors.cards,
+    backgroundColor: theme.colors.gestantesPrimary,
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: "center",
@@ -346,7 +344,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: "#EAEAEA",
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
     marginRight: 10,
@@ -355,8 +353,8 @@ const styles = StyleSheet.create({
     flex: 2,
   },
   btnSalvar: {
-    backgroundColor: theme.colors.cards,
-    borderRadius: 12,
+    backgroundColor: theme.colors.gestantesPrimary,
+    borderRadius: 14,
     paddingVertical: 14,
     alignItems: "center",
   },

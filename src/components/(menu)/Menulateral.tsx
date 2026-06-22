@@ -13,12 +13,10 @@ import { useRouter } from "expo-router";
 import { Configuracoes } from "@/src/components/(menu)/Configuracoes";
 import { EditarPerfil } from "@/src/components/(menu)/EditarPerfil";
 
-import { auth, db, firestore } from "@/src/services/firebase";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { onValue, ref } from "firebase/database";
-import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
-
 import { theme } from "@/src/constants/theme";
+import { auth, firestore } from "@/src/services/firebase";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 
 export default function Menulateral() {
   const router = useRouter();
@@ -35,52 +33,36 @@ export default function Menulateral() {
   });
 
   useEffect(() => {
+    let unsubUser: () => void = () => {};
+    let unsubGestacao: () => void = () => {};
+
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         const userRef = doc(firestore, "usuarios", user.uid);
 
-        // 1. Escuta os dados principais do utilizador (Nome, Email, Tipo)
-        const unsubUser = onSnapshot(userRef, (docSnap) => {
-          if (docSnap.exists()) {
-            const dbData = docSnap.data();
+        unsubUser = onSnapshot(
+          userRef,
+          (docSnap) => {
+            if (docSnap.exists()) {
+              const dbData = docSnap.data();
 
-            setUserData({
-              nome: dbData.nome || "Usuário",
-              email: user.email || dbData.email || "",
-              tipo: dbData.tipo || "gestante",
-            });
-
-            if (dbData.tipo === "pai") {
-              setGravidezData({
-                semanasText: "Perfil: Parceiro(a)",
-                dataParto: "N/A",
+              setUserData({
+                nome: dbData.nome || "Usuário",
+                email: user.email || dbData.email || "",
+                tipo: dbData.tipo || "gestante",
               });
-            }
-          } else {
-            // Caso seja parceiro no Realtime Database antigo
-            const paiRef = ref(db, "usuarios_pais/" + user.uid);
-            onValue(
-              paiRef,
-              (snapshot) => {
-                if (snapshot.exists()) {
-                  const paiData = snapshot.val();
-                  setUserData({
-                    nome: paiData.nome || "Usuário",
-                    email: user.email || paiData.email || "",
-                    tipo: paiData.tipo || "pai",
-                  });
-                  setGravidezData({
-                    semanasText: "Perfil: Parceiro(a)",
-                    dataParto: "N/A",
-                  });
-                }
-              },
-              { onlyOnce: true },
-            );
-          }
-        });
 
-        // 2. AQUI ESTÁ A CORREÇÃO! Escuta a subcoleção "gestacoes"
+              if (dbData.tipo === "pai") {
+                setGravidezData({
+                  semanasText: "Perfil: Parceiro(a)",
+                  dataParto: "N/A",
+                });
+              }
+            }
+          },
+          (error) => {},
+        );
+
         const gestacoesRef = collection(
           firestore,
           "usuarios",
@@ -89,66 +71,68 @@ export default function Menulateral() {
         );
         const qGestacao = query(gestacoesRef, where("status", "==", "ativa"));
 
-        const unsubGestacao = onSnapshot(qGestacao, (querySnapshot) => {
-          if (!querySnapshot.empty) {
-            // Pega os dados da primeira gestação ativa encontrada
-            const gestacaoData = querySnapshot.docs[0].data();
-            const dataGestacao = gestacaoData.dataUltimaMenstruacao;
+        unsubGestacao = onSnapshot(
+          qGestacao,
+          (querySnapshot) => {
+            if (!querySnapshot.empty) {
+              const gestacaoData = querySnapshot.docs[0].data();
+              const dataGestacao = gestacaoData.dataUltimaMenstruacao;
 
-            if (dataGestacao) {
-              const partes = dataGestacao.split("/");
-              if (partes.length === 3) {
-                const dum = new Date(
-                  Number(partes[2]),
-                  Number(partes[1]) - 1,
-                  Number(partes[0]),
-                );
-                dum.setHours(0, 0, 0, 0);
+              if (dataGestacao) {
+                const partes = dataGestacao.split("/");
+                if (partes.length === 3) {
+                  const dum = new Date(
+                    Number(partes[2]),
+                    Number(partes[1]) - 1,
+                    Number(partes[0]),
+                  );
+                  dum.setHours(0, 0, 0, 0);
 
-                const hoje = new Date();
-                hoje.setHours(0, 0, 0, 0);
+                  const hoje = new Date();
+                  hoje.setHours(0, 0, 0, 0);
 
-                const diffMs = hoje.getTime() - dum.getTime();
-                const diffDiasTotal = Math.round(
-                  diffMs / (1000 * 60 * 60 * 24),
-                );
-                const diasValidos = Math.max(0, diffDiasTotal);
+                  const diffMs = hoje.getTime() - dum.getTime();
+                  const diffDiasTotal = Math.round(
+                    diffMs / (1000 * 60 * 60 * 24),
+                  );
+                  const diasValidos = Math.max(0, diffDiasTotal);
 
-                const semanasCalculadas = Math.floor(diasValidos / 7);
-                const diasExtra = diasValidos % 7;
+                  const semanasCalculadas = Math.floor(diasValidos / 7);
+                  const diasExtra = diasValidos % 7;
 
-                const dataPrevista = new Date(
-                  dum.getTime() + 280 * 24 * 60 * 60 * 1000,
-                );
+                  const dataPrevista = new Date(
+                    dum.getTime() + 280 * 24 * 60 * 60 * 1000,
+                  );
 
-                setGravidezData({
-                  semanasText: `${semanasCalculadas} semanas e ${diasExtra} dias`,
-                  dataParto: dataPrevista.toLocaleDateString("pt-PT"),
-                });
+                  setGravidezData({
+                    semanasText: `${semanasCalculadas} semanas e ${diasExtra} dias`,
+                    dataParto: dataPrevista.toLocaleDateString("pt-PT"),
+                  });
+                }
               }
+            } else if (userData.tipo !== "pai") {
+              setGravidezData({
+                semanasText: "Não configurado",
+                dataParto: "...",
+              });
             }
-          } else if (userData.tipo !== "pai") {
-            // Se a coleção estiver vazia ou não houver gestação ativa
-            setGravidezData({
-              semanasText: "Não configurado",
-              dataParto: "...",
-            });
-          }
-        });
-
-        // Limpa as escutas ao sair
-        return () => {
-          unsubUser();
-          unsubGestacao();
-        };
+          },
+          (error) => {},
+        );
       } else {
         setUserData({ nome: "Carregando...", email: "", tipo: "" });
         setGravidezData({ semanasText: "Não configurado", dataParto: "..." });
+        unsubUser();
+        unsubGestacao();
       }
     });
 
-    return () => unsubscribeAuth();
-  }, [userData.tipo]); // Adicionado userData.tipo como dependência para segurança
+    return () => {
+      unsubscribeAuth();
+      unsubUser();
+      unsubGestacao();
+    };
+  }, []);
 
   async function handleLogout() {
     try {
@@ -178,7 +162,7 @@ export default function Menulateral() {
         <View style={styles.section}>
           <Text style={styles.title}>Estado Atual</Text>
 
-          <View style={styles.cardPurple}>
+          <View style={styles.card}>
             <Text style={styles.cardSubtitle}>
               {userData.tipo === "gestante" ? "Tempo de Gestação" : "Status"}
             </Text>
@@ -186,7 +170,7 @@ export default function Menulateral() {
           </View>
 
           {userData.tipo === "gestante" && (
-            <View style={styles.cardPink}>
+            <View style={styles.card}>
               <Text style={styles.cardSubtitle}>Previsão do Parto</Text>
               <Text style={styles.cardValue}>{gravidezData.dataParto}</Text>
             </View>
@@ -223,7 +207,7 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.gestantesSecondary,
   },
   avatar: {
     width: 60,
@@ -233,39 +217,42 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  avatarText: { color: theme.colors.cards, fontSize: 24, fontWeight: "600" },
+  avatarText: { color: "green", fontSize: 24, fontWeight: "600" },
   headerTextContainer: { marginLeft: 15, flex: 1 },
-  name: { color: "#fff", fontSize: theme.texts.title, fontWeight: "700" },
+  name: {
+    color: theme.colors.text,
+    fontSize: theme.texts.title,
+    fontWeight: "700",
+  },
   email: {
-    color: "rgba(255,255,255,0.8)",
+    color: theme.colors.text,
     fontSize: theme.texts.text,
     marginTop: 2,
   },
   content: { paddingTop: 20 },
   section: { paddingHorizontal: 20, marginBottom: 20 },
   title: {
-    fontSize: theme.texts.subtitle,
-    color: "#333",
+    fontSize: theme.texts.title,
+    color: theme.colors.title,
     marginBottom: 15,
     fontWeight: "bold",
   },
-  cardPurple: {
-    backgroundColor: theme.colors.cards,
+  card: {
+    backgroundColor: theme.colors.gestantesSecondary,
     padding: 15,
     borderRadius: 12,
     marginBottom: 10,
   },
-  cardPink: {
-    backgroundColor: theme.colors.cards,
-    padding: 15,
-    borderRadius: 12,
-  },
   cardSubtitle: {
     fontSize: theme.texts.subtitle,
-    color: "#333",
+    color: theme.colors.subtitle,
     marginBottom: 5,
   },
-  cardValue: { fontSize: theme.texts.text, color: "#666", fontWeight: "600" },
+  cardValue: {
+    fontSize: theme.texts.text,
+    color: theme.colors.text,
+    fontWeight: "600",
+  },
   menuItem: {
     flexDirection: "row",
     alignItems: "center",
