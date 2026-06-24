@@ -1,20 +1,30 @@
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
 } from "react-native";
 
 export default function PadroesContracoes() {
   const router = useRouter();
+  const { theme } = useTheme();
+
+  const { height } = useWindowDimensions();
+  const isModoCompacto = height < 600;
+
+  const styles = getStyles(theme, isModoCompacto);
 
   return (
     <View style={styles.container}>
+      <StatusBar hidden={true} />
+
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -22,16 +32,20 @@ export default function PadroesContracoes() {
         >
           <MaterialCommunityIcons
             name="arrow-left"
-            size={26}
-            color={theme.colors.title}
+            size={isModoCompacto ? 22 : 26}
+            color={theme.colors.text}
           />
         </TouchableOpacity>
+
         <Text style={styles.titulo}>Padrões</Text>
-        <View style={{ width: 26 }} />{" "}
-        {/* Espaçador para centralizar o título */}
+
+        <View style={{ width: isModoCompacto ? 34 : 40 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.descricaoGeral}>
           Entenda como identificar os sinais e padrões das suas contrações para
           saber a hora certa de ir à maternidade.
@@ -60,13 +74,8 @@ export default function PadroesContracoes() {
           </Text>
         </View>
 
-        <View
-          style={[
-            styles.card,
-            { borderColor: theme.colors.textPrimary, borderWidth: 2 },
-          ]}
-        >
-          <Text style={styles.cardTituloDestaque}>Trabalho de Parto Ativo</Text>
+        <View style={styles.card}>
+          <Text style={styles.cardTitulo}>Trabalho de Parto Ativo</Text>
           <Text style={styles.cardSubtitulo}>(Regra 5-1-1)</Text>
           <Text style={styles.cardTexto}>
             Atenção! Este é o padrão de alerta para contatar seu médico ou ir à
@@ -82,67 +91,81 @@ export default function PadroesContracoes() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.terceary,
-  },
-  header: {
-    height: 110,
-    paddingTop: 50,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    backgroundColor: theme.colors.terceary,
-  },
-  headerBtnLeft: {
-    padding: 5,
-  },
-  titulo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
-  },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  descricaoGeral: {
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  card: {
-    backgroundColor: theme.colors.secondary,
-    borderRadius: 15,
-    padding: 20,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-  },
-  cardTitulo: {
-    fontSize: theme.texts.subtitle,
-    fontWeight: "bold",
-    color: theme.colors.title,
-    marginBottom: 5,
-  },
-  cardTituloDestaque: {
-    fontSize: theme.texts.subtitle,
-    fontWeight: "bold",
-    color: theme.colors.textPrimary,
-    marginBottom: 5,
-  },
-  cardSubtitulo: {
-    fontSize: theme.texts.text,
-    color: theme.colors.subtitle,
-    fontStyle: "italic",
-    marginBottom: 15,
-  },
-  cardTexto: {
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
-    lineHeight: 28,
-  },
-});
+const getStyles = (theme: any, isModoCompacto: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#FFF7FB",
+    },
+    header: {
+      height: isModoCompacto ? 70 : 92,
+      paddingTop: isModoCompacto ? 20 : 40,
+      paddingHorizontal: 18,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: theme.colors.gestantesPrimary,
+      shadowColor: "#8E3D68",
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      elevation: 4,
+    },
+    headerBtnLeft: {
+      width: isModoCompacto ? 34 : 40,
+      height: isModoCompacto ? 34 : 40,
+      borderRadius: 20,
+      backgroundColor: "rgba(255,255,255,0.20)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    titulo: {
+      fontSize: isModoCompacto ? theme.texts.subtitle : theme.texts.title,
+      fontWeight: "bold",
+      color: theme.colors.text,
+    },
+    scrollContent: {
+      padding: isModoCompacto ? 14 : 20,
+      paddingBottom: 40,
+    },
+    descricaoGeral: {
+      fontSize: theme.texts.text,
+      color: theme.colors.title,
+      marginBottom: 20,
+      textAlign: "center",
+      paddingHorizontal: 10,
+    },
+    card: {
+      backgroundColor: theme.colors.gestantesCard,
+      borderRadius: 16,
+      padding: isModoCompacto ? 16 : 20,
+      marginBottom: 15,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+      borderColor: theme.colors.gestantesPrimary,
+      borderWidth: 2,
+    },
+    cardTitulo: {
+      fontSize: theme.texts.title,
+      fontWeight: "bold",
+      color: theme.colors.gestantesPrimary,
+      marginBottom: 4,
+    },
+    cardSubtitulo: {
+      fontSize: theme.texts.text,
+      color: theme.colors.subtitle,
+      fontStyle: "italic",
+      marginBottom: 12,
+    },
+    cardTexto: {
+      fontSize: theme.texts.text,
+      color: theme.colors.subtitle,
+      lineHeight: 24,
+    },
+  });

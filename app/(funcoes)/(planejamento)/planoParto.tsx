@@ -1,3 +1,12 @@
+import { useAuth } from "@/src/context/AuthContext";
+import { useTheme } from "@/src/context/ThemeContext";
+import { firestore } from "@/src/services/firebase";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Print from "expo-print";
+import { useFocusEffect, useRouter } from "expo-router";
+import * as Sharing from "expo-sharing";
+import { StatusBar } from "expo-status-bar";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import React, { useCallback, useState } from "react";
 import {
   Alert,
@@ -10,18 +19,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
-
-import { theme } from "@/src/constants/theme";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useFocusEffect, useRouter } from "expo-router";
-
-import * as Print from "expo-print";
-import * as Sharing from "expo-sharing";
-
-import { useAuth } from "@/src/context/AuthContext";
-import { firestore } from "@/src/services/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
 
 const OPCOES_PARTO = [
   "Parto Normal",
@@ -34,6 +33,12 @@ const OPCOES_PARTO = [
 export default function PlanoPartoScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { theme } = useTheme();
+
+  const { height } = useWindowDimensions();
+  const isModoCompacto = height < 600;
+
+  const styles = getStyles(theme, isModoCompacto);
 
   const [tipoParto, setTipoParto] = useState("Parto Normal");
   const [acompanhantes, setAcompanhantes] = useState("");
@@ -92,7 +97,7 @@ export default function PlanoPartoScreen() {
       if (Platform.OS === "web") {
         window.alert("Plano salvo com sucesso!");
       } else {
-        Alert.alert("Sucesso", "Plano salvo!");
+        Alert.alert("Sucesso", "Plano salvo com sucesso!");
       }
     } catch (error) {
       Alert.alert("Erro", "Erro ao salvar plano.");
@@ -101,31 +106,36 @@ export default function PlanoPartoScreen() {
 
   const gerarPDF = async () => {
     const itensMarcados = selecionados
-      .map((item) => `<li style="margin-bottom:8px;">${item}</li>`)
+      .map(
+        (item) => `<li style="margin-bottom:8px; color: #793459;">${item}</li>`,
+      )
       .join("");
 
     const html = `
       <html>
-      <body style="font-family: Arial; padding:40px;">
+      <body style="font-family: Arial; padding:40px; background-color: #FFF7FB;">
       
-      <h1 style="color:#8B5CF6;">
-      Plano de Parto
+      <h1 style="color:#C85C90; border-bottom: 2px solid #F5D3E3; padding-bottom: 10px;">
+      Meu Plano de Parto
       </h1>
 
-      <h2>Tipo de Parto</h2>
-      <p>${tipoParto}</p>
+      <h2 style="color:#8D3E67;">Tipo de Parto</h2>
+      <p style="color:#4A4A4A; font-size: 16px;">${tipoParto}</p>
 
-      <h2>Acompanhantes</h2>
-      <p>${acompanhantes}</p>
+      <h2 style="color:#8D3E67;">Acompanhantes</h2>
+      <p style="color:#4A4A4A; font-size: 16px;">${acompanhantes || "Não especificado"}</p>
 
-      <h2>Observações</h2>
-      <p>${observacoes}</p>
+      <h2 style="color:#8D3E67;">Observações Gerais</h2>
+      <p style="color:#4A4A4A; font-size: 16px;">${observacoes || "Nenhuma observação adicional"}</p>
 
-      <h2>Preferências Selecionadas</h2>
-      <ul>
-        ${itensMarcados}
+      <h2 style="color:#8D3E67;">Minhas Preferências</h2>
+      <ul style="font-size: 16px;">
+        ${itensMarcados || "<li style='color: #793459;'>Nenhuma preferência marcada</li>"}
       </ul>
 
+      <p style="margin-top: 50px; font-size: 12px; color: #9C7388; text-align: center;">
+        Este documento expressa os desejos da gestante e deve ser alinhado com a equipe médica.
+      </p>
       </body>
       </html>
     `;
@@ -186,52 +196,46 @@ export default function PlanoPartoScreen() {
   ];
 
   const contatoBebeItens = [
-    "Contato pele a pele",
-    "Amamentar logo após o parto",
-    "Permanecer com o bebê",
+    "Contato pele a pele logo ao nascer",
+    "Amamentar na primeira hora de vida",
+    "Permanecer com o bebê o tempo todo",
   ];
 
   const cordaoItens = [
-    "Cordão cortado após parar de pulsar",
-    "Escolher quem corta o cordão",
+    "Aguardar o cordão parar de pulsar para cortar",
+    "Escolher quem irá cortar o cordão",
   ];
 
   const bebeItens = [
     "Amamentação em livre demanda",
-    "Não oferecer chupeta",
-    "Alojamento conjunto",
-    "Participar dos cuidados do bebê",
+    "Não oferecer chupeta ou fórmulas sem autorização",
+    "Alojamento conjunto integral",
+    "Participar dos primeiros cuidados (banho, etc)",
   ];
 
   const cesareaItens = [
-    "Presença do acompanhante",
-    "Ambiente silencioso",
-    "Permanecer acordada",
-    "Ver o bebê nascer",
-    "Contato pele a pele rápido",
+    "Presença garantida do acompanhante",
+    "Ambiente silencioso e respeitoso",
+    "Permanecer acordada durante o procedimento",
+    "Campo cirúrgico rebaixado para ver o bebê nascer",
+    "Contato pele a pele imediato na sala de cirurgia",
   ];
 
   const emergenciaItens = [
-    "Sofrimento fetal",
-    "Falta de oxigênio",
-    "Hemorragias",
-    "Pressão alta grave",
-    "Risco para mãe ou bebê",
+    "Ser informada claramente sobre os riscos",
+    "Ter as opções explicadas antes de qualquer intervenção",
   ];
 
   const procedimentosItens = [
-    "Ocitocina",
-    "Monitoramento fetal",
-    "Analgesia",
-    "Rompimento da bolsa",
-    "Episiotomia",
+    "Evitar Ocitocina sintética de rotina",
+    "Monitoramento fetal intermitente (não contínuo)",
+    "Evitar rompimento artificial da bolsa",
+    "Evitar Episiotomia (corte vaginal) de rotina",
   ];
 
   const cuidadosEspeciaisItens = [
-    "Reanimação",
-    "Oxigênio",
-    "UTI neonatal",
-    "Avaliação médica urgente",
+    "Permitir acompanhante caso o bebê vá para UTI",
+    "Facilitar a extração de leite caso o bebê não possa sugar",
   ];
 
   const renderChecklist = (titulo: string, itens: string[], icon: string) => (
@@ -240,8 +244,8 @@ export default function PlanoPartoScreen() {
         <View style={styles.sectionIcon}>
           <MaterialCommunityIcons
             name={icon as any}
-            size={22}
-            color={theme.colors.cards}
+            size={isModoCompacto ? 20 : 22}
+            color={theme.colors.gestantesPrimary}
           />
         </View>
 
@@ -260,11 +264,15 @@ export default function PlanoPartoScreen() {
           >
             <MaterialCommunityIcons
               name={marcado ? "checkbox-marked" : "checkbox-blank-outline"}
-              size={26}
-              color={marcado ? theme.colors.cards : "#94A3B8"}
+              size={isModoCompacto ? 24 : 26}
+              color={marcado ? theme.colors.gestantesPrimary : "#D48CAE"}
             />
 
-            <Text style={styles.itemTexto}>{item}</Text>
+            <Text
+              style={[styles.itemTexto, marcado && styles.itemTextoMarcado]}
+            >
+              {item}
+            </Text>
           </TouchableOpacity>
         );
       })}
@@ -273,23 +281,27 @@ export default function PlanoPartoScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar hidden={true} />
+
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() =>
-            router.push("/(drawer)/(gestantes)/(tabs)/gestacao" as any)
-          }
+          onPress={() => router.back()}
           style={styles.headerLeft}
         >
-          <MaterialCommunityIcons name="arrow-left" size={28} color="#333" />
+          <MaterialCommunityIcons
+            name="arrow-left"
+            size={isModoCompacto ? 24 : 28}
+            color={theme.colors.text}
+          />
         </TouchableOpacity>
 
         <Text style={styles.tituloHeader}>Plano de Parto</Text>
 
         <TouchableOpacity onPress={gerarPDF} style={styles.headerRight}>
           <MaterialCommunityIcons
-            name="file-pdf-box"
-            size={30}
-            color={theme.colors.cards}
+            name="printer"
+            size={isModoCompacto ? 22 : 24}
+            color={theme.colors.text}
           />
         </TouchableOpacity>
       </View>
@@ -306,8 +318,8 @@ export default function PlanoPartoScreen() {
             <View style={styles.infoTop}>
               <MaterialCommunityIcons
                 name="heart-pulse"
-                size={30}
-                color={theme.colors.cards}
+                size={isModoCompacto ? 26 : 30}
+                color={theme.colors.gestantesPrimary}
               />
               <Text style={styles.infoTitulo}>O que é o Plano de Parto?</Text>
             </View>
@@ -316,14 +328,15 @@ export default function PlanoPartoScreen() {
               desejos, preferências e escolhas para o nascimento do bebê.
             </Text>
             <Text style={styles.infoTexto}>
-              Algumas decisões podem ser escolhidas pela mãe, enquanto outras
-              dependem da segurança da mãe, do bebê e da avaliação médica.
+              Lembre-se: o objetivo é garantir respeito e diálogo, mas algumas
+              decisões podem mudar para a segurança da mãe e do bebê.
             </Text>
           </View>
 
           <View style={styles.cardFormulario}>
             <Text style={styles.tituloSecao}>Preencha suas preferências</Text>
-            <Text style={styles.label}>Tipo de Parto</Text>
+
+            <Text style={styles.label}>Tipo de Parto Desejado</Text>
             <TouchableOpacity
               style={styles.dropdownButton}
               activeOpacity={0.7}
@@ -332,8 +345,8 @@ export default function PlanoPartoScreen() {
               <Text style={styles.dropdownText}>{tipoParto}</Text>
               <MaterialCommunityIcons
                 name="chevron-down"
-                size={24}
-                color="#64748B"
+                size={isModoCompacto ? 22 : 24}
+                color="#8D3E67"
               />
             </TouchableOpacity>
 
@@ -341,25 +354,23 @@ export default function PlanoPartoScreen() {
             <TextInput
               style={styles.input}
               placeholder="Ex: Parceiro, mãe, doula..."
-              placeholderTextColor="#94A3B8"
+              placeholderTextColor="#A2748B"
               value={acompanhantes}
               onChangeText={setAcompanhantes}
             />
 
-            <Text style={styles.label}>Observações</Text>
+            <Text style={styles.label}>Observações Extras</Text>
             <TextInput
               style={[styles.input, styles.textArea]}
-              placeholder="Digite suas preferências..."
-              placeholderTextColor="#94A3B8"
+              placeholder="Digite outras preferências ou recados para a equipe..."
+              placeholderTextColor="#A2748B"
               multiline
               textAlignVertical="top"
               value={observacoes}
               onChangeText={setObservacoes}
             />
 
-            <Text style={styles.guiaTitulo}>
-              Minhas Escolhas e Preferências
-            </Text>
+            <Text style={styles.guiaTitulo}>Checklist de Preferências</Text>
 
             {renderChecklist(
               "👨‍👩‍👧 Acompanhantes",
@@ -389,16 +400,16 @@ export default function PlanoPartoScreen() {
             )}
             {renderChecklist("✂️ Cordão Umbilical", cordaoItens, "content-cut")}
             {renderChecklist(
-              "👶 Cuidados com o Bebê",
+              "👶 Cuidados Iniciais",
               bebeItens,
               "baby-bottle-outline",
             )}
 
             {(tipoParto === "Cesárea" || tipoParto === "Ainda não decidi") &&
               renderChecklist(
-                "🏥 Caso seja necessária cesárea",
+                "🏥 Caso seja necessária Cesárea",
                 cesareaItens,
-                "hospital",
+                "hospital-box",
               )}
 
             <Text style={styles.alertaTitulo}>O que pode precisar mudar</Text>
@@ -414,42 +425,38 @@ export default function PlanoPartoScreen() {
               "medical-bag",
             )}
             {renderChecklist(
-              "👶 Cuidados Especiais",
+              "👶 Cuidados Especiais (UTI)",
               cuidadosEspeciaisItens,
-              "hospital-box",
+              "hospital-building",
             )}
 
             <View style={styles.importanteCard}>
-              <Text style={styles.importanteTitulo}>Importante</Text>
+              <View style={styles.infoTop}>
+                <MaterialCommunityIcons
+                  name="information"
+                  size={24}
+                  color="#D32F2F"
+                />
+                <Text style={styles.importanteTitulo}>Importante</Text>
+              </View>
               <Text style={styles.importanteTexto}>
                 Este plano de parto não é uma ordem médica e pode sofrer
-                alterações caso existam riscos para mãe ou bebê.
-              </Text>
-              <Text style={styles.importanteTexto}>
-                O objetivo é garantir respeito, diálogo e participação nas
-                decisões.
+                alterações em caso de emergência ou risco à saúde.
               </Text>
             </View>
 
             <TouchableOpacity
               onPress={salvarPlano}
               activeOpacity={0.8}
-              style={{ marginTop: 10 }}
+              style={styles.saveButton}
             >
-              <View
-                style={[
-                  styles.saveButton,
-                  { backgroundColor: theme.colors.cards },
-                ]}
-              >
-                <MaterialCommunityIcons
-                  name="content-save-outline"
-                  size={20}
-                  color="#FFF"
-                  style={{ marginRight: 8 }}
-                />
-                <Text style={styles.saveButtonText}>Guardar Plano</Text>
-              </View>
+              <MaterialCommunityIcons
+                name="content-save"
+                size={isModoCompacto ? 20 : 22}
+                color={theme.colors.text}
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.saveButtonText}>Guardar Meu Plano</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -458,21 +465,18 @@ export default function PlanoPartoScreen() {
               style={styles.pdfButton}
             >
               <MaterialCommunityIcons
-                name="export-variant"
-                size={20}
-                color={theme.colors.cards}
+                name="file-pdf-box"
+                size={isModoCompacto ? 20 : 22}
+                color={theme.colors.gestantesPrimary}
                 style={{ marginRight: 8 }}
               />
-              <Text
-                style={[styles.pdfButtonText, { color: theme.colors.cards }]}
-              >
-                Exportar PDF
-              </Text>
+              <Text style={styles.pdfButtonText}>Exportar Plano em PDF</Text>
             </TouchableOpacity>
 
             <View style={styles.cardsContainer}>
               <Text style={styles.cardsTitle}>Conheça os tipos de parto</Text>
 
+              {/* PARTO NORMAL */}
               <TouchableOpacity
                 activeOpacity={0.85}
                 style={styles.partoCard}
@@ -485,7 +489,7 @@ export default function PlanoPartoScreen() {
                 >
                   <MaterialCommunityIcons
                     name="human-pregnant"
-                    size={28}
+                    size={isModoCompacto ? 24 : 28}
                     color="#9333EA"
                   />
                 </View>
@@ -497,11 +501,12 @@ export default function PlanoPartoScreen() {
                 </View>
                 <MaterialCommunityIcons
                   name="chevron-right"
-                  size={28}
+                  size={isModoCompacto ? 24 : 28}
                   color="#9333EA"
                 />
               </TouchableOpacity>
 
+              {/* CESÁREA */}
               <TouchableOpacity
                 activeOpacity={0.85}
                 style={styles.partoCard}
@@ -514,7 +519,7 @@ export default function PlanoPartoScreen() {
                 >
                   <MaterialCommunityIcons
                     name="hospital-box-outline"
-                    size={28}
+                    size={isModoCompacto ? 24 : 28}
                     color="#DB2777"
                   />
                 </View>
@@ -526,11 +531,12 @@ export default function PlanoPartoScreen() {
                 </View>
                 <MaterialCommunityIcons
                   name="chevron-right"
-                  size={28}
+                  size={isModoCompacto ? 24 : 28}
                   color="#DB2777"
                 />
               </TouchableOpacity>
 
+              {/* PARTO HUMANIZADO */}
               <TouchableOpacity
                 activeOpacity={0.85}
                 style={styles.partoCard}
@@ -543,7 +549,7 @@ export default function PlanoPartoScreen() {
                 >
                   <MaterialCommunityIcons
                     name="heart-outline"
-                    size={28}
+                    size={isModoCompacto ? 24 : 28}
                     color="#0284C7"
                   />
                 </View>
@@ -555,11 +561,12 @@ export default function PlanoPartoScreen() {
                 </View>
                 <MaterialCommunityIcons
                   name="chevron-right"
-                  size={28}
+                  size={isModoCompacto ? 24 : 28}
                   color="#0284C7"
                 />
               </TouchableOpacity>
 
+              {/* PARTO NA ÁGUA */}
               <TouchableOpacity
                 activeOpacity={0.85}
                 style={styles.partoCard}
@@ -572,7 +579,7 @@ export default function PlanoPartoScreen() {
                 >
                   <MaterialCommunityIcons
                     name="waves"
-                    size={28}
+                    size={isModoCompacto ? 24 : 28}
                     color="#16A34A"
                   />
                 </View>
@@ -584,7 +591,7 @@ export default function PlanoPartoScreen() {
                 </View>
                 <MaterialCommunityIcons
                   name="chevron-right"
-                  size={28}
+                  size={isModoCompacto ? 24 : 28}
                   color="#16A34A"
                 />
               </TouchableOpacity>
@@ -624,8 +631,8 @@ export default function PlanoPartoScreen() {
                 {tipoParto === opcao && (
                   <MaterialCommunityIcons
                     name="check"
-                    size={20}
-                    color={theme.colors.cards}
+                    size={isModoCompacto ? 20 : 22}
+                    color={theme.colors.gestantesPrimary}
                   />
                 )}
               </TouchableOpacity>
@@ -637,286 +644,325 @@ export default function PlanoPartoScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FCF9FA",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
-  },
-  headerLeft: {
-    width: 40,
-    alignItems: "flex-start",
-  },
-  headerRight: {
-    width: 40,
-    alignItems: "flex-end",
-  },
-  tituloHeader: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  scrollContent: {
-    padding: 20,
-    paddingBottom: 120,
-  },
-  infoCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: "#F3E8FF",
-  },
-  infoTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-  infoTitulo: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1E293B",
-    marginLeft: 12,
-  },
-  infoTexto: {
-    fontSize: 14,
-    color: "#64748B",
-    lineHeight: 24,
-    marginBottom: 10,
-  },
-  cardFormulario: {
-    backgroundColor: "#FFF",
-    borderRadius: 20,
-    padding: 20,
-  },
-  tituloSecao: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#334155",
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    color: "#475569",
-    marginBottom: 8,
-    fontWeight: "500",
-  },
-  input: {
-    backgroundColor: "#FFF",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 12,
-    padding: 15,
-    fontSize: 16,
-    color: "#1E293B",
-    marginBottom: 20,
-  },
-  textArea: {
-    height: 120,
-  },
-  dropdownButton: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#FFF",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 20,
-  },
-  dropdownText: {
-    fontSize: 16,
-    color: "#1E293B",
-  },
-  guiaTitulo: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#1E293B",
-    marginBottom: 20,
-    marginTop: 10,
-  },
-  alertaTitulo: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#DC2626",
-    marginTop: 10,
-    marginBottom: 18,
-  },
-  sectionCard: {
-    backgroundColor: "#FAF5FF",
-    borderRadius: 22,
-    padding: 18,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: "#E9D5FF",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  sectionIcon: {
-    width: 42,
-    height: 42,
-    borderRadius: 14,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  sectionTitle: {
-    flex: 1,
-    fontSize: 17,
-    fontWeight: "bold",
-    color: "#4C1D95",
-  },
-  itemLinha: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 14,
-  },
-  itemTexto: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 14,
-    lineHeight: 22,
-    color: "#475569",
-  },
-  importanteCard: {
-    backgroundColor: "#FEF3C7",
-    borderRadius: 20,
-    padding: 18,
-    marginTop: 10,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: "#FCD34D",
-  },
-  importanteTitulo: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#92400E",
-    marginBottom: 10,
-  },
-  importanteTexto: {
-    fontSize: 14,
-    color: "#78350F",
-    lineHeight: 22,
-    marginBottom: 8,
-  },
-  saveButton: {
-    flexDirection: "row",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  saveButtonText: {
-    color: "#FFF",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  pdfButton: {
-    flexDirection: "row",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 15,
-    backgroundColor: "#FDF2F8",
-    borderWidth: 1,
-    borderColor: "#FBCFE8",
-  },
-  pdfButtonText: {
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  cardsContainer: {
-    marginTop: 28,
-  },
-  cardsTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#334155",
-    marginBottom: 16,
-  },
-  partoCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFF",
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  iconParto: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 14,
-  },
-  partoTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#1E293B",
-    marginBottom: 4,
-  },
-  partoDesc: {
-    fontSize: 13,
-    color: "#64748B",
-    lineHeight: 20,
-    paddingRight: 10,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalSeletorContent: {
-    width: "85%",
-    backgroundColor: "#FFF",
-    borderRadius: 20,
-    padding: 20,
-  },
-  modalSeletorTitulo: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 15,
-    textAlign: "center",
-  },
-  opcaoBotao: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F1F5F9",
-  },
-  opcaoTexto: {
-    fontSize: 16,
-    color: "#475569",
-  },
-  opcaoTextoAtiva: {
-    fontWeight: "bold",
-    color: theme.colors.cards,
-  },
-});
+const getStyles = (theme: any, isModoCompacto: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#FFF7FB",
+    },
+    header: {
+      height: isModoCompacto ? 70 : 92,
+      paddingTop: isModoCompacto ? 20 : 40,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 22,
+      backgroundColor: theme.colors.gestantesPrimary,
+      shadowColor: "#8E3D68",
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 4,
+    },
+    headerLeft: {
+      width: isModoCompacto ? 34 : 40,
+      height: isModoCompacto ? 34 : 40,
+      borderRadius: 20,
+      backgroundColor: "rgba(255,255,255,0.20)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    headerRight: {
+      width: isModoCompacto ? 34 : 40,
+      height: isModoCompacto ? 34 : 40,
+      borderRadius: 20,
+      backgroundColor: "rgba(255,255,255,0.20)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    tituloHeader: {
+      fontSize: isModoCompacto ? theme.texts.subtitle : theme.texts.title,
+      fontWeight: "700",
+      color: theme.colors.text,
+      letterSpacing: 0.2,
+    },
+    scrollContent: {
+      padding: isModoCompacto ? 16 : 22,
+      paddingBottom: 40,
+    },
+    infoCard: {
+      backgroundColor: "#FFF9FC",
+      borderRadius: 22,
+      padding: isModoCompacto ? 16 : 20,
+      marginBottom: isModoCompacto ? 16 : 20,
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+      shadowColor: "#A64D78",
+      shadowOpacity: 0.04,
+      shadowRadius: 5,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 2,
+    },
+    infoTop: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: isModoCompacto ? 10 : 12,
+    },
+    infoTitulo: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "700",
+      color: "#8D3E67",
+      marginLeft: 10,
+    },
+    infoTexto: {
+      fontSize: theme.texts.text,
+      color: "#9C7388",
+      lineHeight: isModoCompacto ? 20 : 22,
+      marginBottom: 8,
+    },
+    cardFormulario: {
+      backgroundColor: "#FFF9FC",
+      borderRadius: 24,
+      padding: isModoCompacto ? 16 : 22,
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+      shadowColor: "#A64D78",
+      shadowOpacity: 0.05,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
+    },
+    tituloSecao: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "700",
+      color: "#793459",
+      marginBottom: isModoCompacto ? 16 : 20,
+    },
+    label: {
+      fontSize: theme.texts.text,
+      color: "#91486F",
+      marginBottom: 8,
+      fontWeight: "600",
+    },
+    input: {
+      backgroundColor: "#FDEAF2",
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+      borderRadius: 16,
+      padding: 15,
+      fontSize: theme.texts.text,
+      color: "#8D3E67",
+      marginBottom: isModoCompacto ? 16 : 20,
+    },
+    textArea: {
+      height: isModoCompacto ? 100 : 120,
+    },
+    dropdownButton: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: "#FDEAF2",
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+      borderRadius: 16,
+      padding: 15,
+      marginBottom: isModoCompacto ? 16 : 20,
+    },
+    dropdownText: {
+      fontSize: theme.texts.text,
+      color: "#8D3E67",
+    },
+    guiaTitulo: {
+      fontSize: theme.texts.title,
+      fontWeight: "700",
+      color: "#793459",
+      marginBottom: isModoCompacto ? 16 : 20,
+      marginTop: 10,
+    },
+    alertaTitulo: {
+      fontSize: theme.texts.title,
+      fontWeight: "700",
+      color: "#E11D48",
+      marginTop: 20,
+      marginBottom: isModoCompacto ? 14 : 18,
+    },
+    sectionCard: {
+      backgroundColor: "#FDEAF2",
+      borderRadius: 20,
+      padding: isModoCompacto ? 14 : 18,
+      marginBottom: isModoCompacto ? 14 : 18,
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+    },
+    sectionHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: isModoCompacto ? 12 : 16,
+    },
+    sectionIcon: {
+      width: isModoCompacto ? 38 : 44,
+      height: isModoCompacto ? 38 : 44,
+      borderRadius: 14,
+      backgroundColor: "#FFF9FC",
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 12,
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+    },
+    sectionTitle: {
+      flex: 1,
+      fontSize: theme.texts.subtitle,
+      fontWeight: "700",
+      color: "#8D3E67",
+    },
+    itemLinha: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      marginBottom: isModoCompacto ? 10 : 14,
+    },
+    itemTexto: {
+      flex: 1,
+      marginLeft: 12,
+      fontSize: theme.texts.text,
+      lineHeight: isModoCompacto ? 20 : 22,
+      color: "#9C7388",
+    },
+    itemTextoMarcado: {
+      color: "#8D3E67",
+      fontWeight: "600",
+    },
+    importanteCard: {
+      backgroundColor: "#FFF5F5",
+      borderRadius: 20,
+      padding: isModoCompacto ? 16 : 20,
+      marginTop: 10,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: "#FECDD3",
+    },
+    importanteTitulo: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "700",
+      color: "#BE123C",
+      marginLeft: 10,
+    },
+    importanteTexto: {
+      fontSize: theme.texts.text,
+      color: "#9F1239",
+      lineHeight: isModoCompacto ? 20 : 22,
+    },
+    saveButton: {
+      flexDirection: "row",
+      backgroundColor: theme.colors.gestantesPrimary,
+      padding: isModoCompacto ? 14 : 16,
+      borderRadius: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: "#A64D78",
+      shadowOpacity: 0.1,
+      shadowRadius: 5,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
+    },
+    saveButtonText: {
+      color: theme.colors.text,
+      fontWeight: "700",
+      fontSize: theme.texts.subtitle,
+      letterSpacing: 0.2,
+    },
+    pdfButton: {
+      flexDirection: "row",
+      padding: isModoCompacto ? 14 : 16,
+      borderRadius: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: isModoCompacto ? 12 : 15,
+      backgroundColor: "#FDEAF2",
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+    },
+    pdfButtonText: {
+      fontWeight: "700",
+      fontSize: theme.texts.subtitle,
+      color: theme.colors.gestantesPrimary,
+    },
+    cardsContainer: {
+      marginTop: isModoCompacto ? 26 : 34,
+      borderTopWidth: 1,
+      borderTopColor: "#F5D3E3",
+      paddingTop: 20,
+    },
+    cardsTitle: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "700",
+      color: "#793459",
+      marginBottom: isModoCompacto ? 14 : 18,
+    },
+    partoCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#FFF9FC",
+      borderRadius: 20,
+      padding: isModoCompacto ? 14 : 18,
+      marginBottom: isModoCompacto ? 12 : 14,
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+    },
+    iconParto: {
+      width: isModoCompacto ? 48 : 56,
+      height: isModoCompacto ? 48 : 56,
+      borderRadius: 18,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 14,
+    },
+    partoTitle: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "700",
+      color: "#8D3E67",
+      marginBottom: 4,
+    },
+    partoDesc: {
+      fontSize: theme.texts.text,
+      color: "#9C7388",
+      lineHeight: isModoCompacto ? 18 : 20,
+      paddingRight: 10,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.40)",
+      justifyContent: "flex-end",
+    },
+    modalSeletorContent: {
+      backgroundColor: "#FFF9FC",
+      borderTopLeftRadius: 32,
+      borderTopRightRadius: 32,
+      paddingTop: 26,
+      paddingHorizontal: 24,
+      paddingBottom: isModoCompacto ? 20 : 40,
+    },
+    modalSeletorTitulo: {
+      fontSize: theme.texts.title,
+      fontWeight: "700",
+      color: "#91486F",
+      marginBottom: 20,
+      textAlign: "center",
+    },
+    opcaoBotao: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: isModoCompacto ? 14 : 16,
+      borderBottomWidth: 1,
+      borderBottomColor: "#F5D3E3",
+    },
+    opcaoTexto: {
+      fontSize: theme.texts.text,
+      color: "#9C7388",
+    },
+    opcaoTextoAtiva: {
+      fontWeight: "700",
+      color: theme.colors.gestantesPrimary,
+    },
+  });

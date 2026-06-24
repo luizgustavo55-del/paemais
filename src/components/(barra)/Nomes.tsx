@@ -1,4 +1,4 @@
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
 import { auth, firestore } from "@/src/services/firebase";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
@@ -15,45 +16,56 @@ import {
 } from "react-native";
 
 export default function Nomes() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
   const [nomes, setNomes] = useState<any[]>([]);
   const [favoritos, setFavoritos] = useState<string[]>([]);
   const [busca, setBusca] = useState("");
   const [aba, setAba] = useState<"sugestoes" | "favoritos">("sugestoes");
+  const [filtroGenero, setFiltroGenero] = useState<"todos" | "M" | "F">(
+    "todos",
+  );
   const [carregando, setCarregando] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const carregarDados = async () => {
+    try {
+      const resposta = await fetch(
+        "https://raw.githubusercontent.com/Ander-sonx/Nomes/refs/heads/main/nomes.json",
+      );
+      const dadosNomes = await resposta.json();
+      setNomes(dadosNomes);
+
+      const uid = auth.currentUser?.uid;
+      if (uid) {
+        const userRef = doc(firestore, "usuarios", uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists() && userSnap.data().nomesFavoritos) {
+          setFavoritos(userSnap.data().nomesFavoritos);
+        }
+      }
+    } catch (error) {
+      Alert.alert("Erro", "Não foi possível carregar os nomes.");
+    }
+  };
 
   useEffect(() => {
-    async function carregarDados() {
-      try {
-        const resposta = await fetch(
-          "https://raw.githubusercontent.com/Ander-sonx/Nomes/refs/heads/main/nomes.json",
-        );
-        const dadosNomes = await resposta.json();
-        setNomes(dadosNomes);
-
-        const uid = auth.currentUser?.uid;
-        if (uid) {
-          const userRef = doc(firestore, "usuarios", uid);
-          const userSnap = await getDoc(userRef);
-
-          if (userSnap.exists() && userSnap.data().nomesFavoritos) {
-            setFavoritos(userSnap.data().nomesFavoritos);
-          }
-        }
-      } catch (error) {
-        Alert.alert("Erro", "Não foi possível carregar os nomes.");
-      } finally {
-        setCarregando(false);
-      }
-    }
-
-    carregarDados();
+    carregarDados().finally(() => setCarregando(false));
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await carregarDados();
+    setRefreshing(false);
+  };
 
   async function favoritar(nome: string) {
     const uid = auth.currentUser?.uid;
 
     if (!uid) {
-      Alert.alert("Erro", "Usuário não autenticado");
+      Alert.alert("Erro", "Utilizador não autenticado");
       return;
     }
 
@@ -71,14 +83,17 @@ export default function Nomes() {
       const userRef = doc(firestore, "usuarios", uid);
       await updateDoc(userRef, { nomesFavoritos: novaLista });
     } catch (error) {
-      Alert.alert("Erro", "Não foi possível salvar.");
+      Alert.alert("Erro", "Não foi possível guardar.");
     }
   }
 
   const nomesFiltrados = nomes.filter((item) => {
     const nomeMatch = item.nome.toLowerCase().includes(busca.toLowerCase());
     const abaMatch = aba === "sugestoes" ? true : favoritos.includes(item.nome);
-    return nomeMatch && abaMatch;
+    const generoMatch =
+      filtroGenero === "todos" ? true : item.genero === filtroGenero;
+
+    return nomeMatch && abaMatch && generoMatch;
   });
 
   if (carregando) {
@@ -100,6 +115,7 @@ export default function Nomes() {
         <MaterialCommunityIcons name="magnify" size={18} color="#BBB" />
         <TextInput
           placeholder="Buscar nomes"
+          placeholderTextColor={theme.colors.subtitle}
           style={styles.input}
           value={busca}
           onChangeText={setBusca}
@@ -109,51 +125,74 @@ export default function Nomes() {
       <View style={styles.filterContainer}>
         <TouchableOpacity
           style={
-            aba === "sugestoes"
-              ? [
-                  styles.filterBtnActive,
-                  { backgroundColor: theme.colors.quaternary },
-                ]
-              : styles.filterBtn
+            aba === "sugestoes" ? styles.filterBtnActive : styles.filterBtn
           }
           onPress={() => setAba("sugestoes")}
         >
-          <Text
-            style={
-              aba === "sugestoes"
-                ? styles.filterTextActive
-                : {
-                    color: theme.colors.subtitle,
-                    fontSize: theme.texts.subtitle,
-                  }
-            }
-          >
-            Sugestões
-          </Text>
+          <Text style={styles.filterTextActive}>Sugestões</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={
-            aba === "favoritos"
-              ? [
-                  styles.filterBtnActive,
-                  { backgroundColor: theme.colors.secondary },
-                ]
-              : styles.filterBtn
+            aba === "favoritos" ? styles.filterBtnActive : styles.filterBtn
           }
           onPress={() => setAba("favoritos")}
         >
-          <Text
-            style={
-              aba === "favoritos"
-                ? styles.filterTextActive
-                : {
-                    color: theme.colors.subtitle,
-                    fontSize: theme.texts.subtitle,
-                  }
-            }
-          >
+          <Text style={styles.filterTextActive}>
             Favoritos ({favoritos.length})
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.genderFilterContainer}>
+        <TouchableOpacity
+          style={[
+            styles.genderBtn,
+            filtroGenero === "todos" && styles.genderBtnActive,
+          ]}
+          onPress={() => setFiltroGenero("todos")}
+        >
+          <Text
+            style={[
+              styles.genderBtnText,
+              filtroGenero === "todos" && styles.genderBtnTextActive,
+            ]}
+          >
+            Todos
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.genderBtn,
+            filtroGenero === "F" && styles.genderBtnActiveF,
+          ]}
+          onPress={() => setFiltroGenero("F")}
+        >
+          <Text
+            style={[
+              styles.genderBtnText,
+              filtroGenero === "F" && styles.genderBtnTextActiveF,
+            ]}
+          >
+            Meninas
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.genderBtn,
+            filtroGenero === "M" && styles.genderBtnActiveM,
+          ]}
+          onPress={() => setFiltroGenero("M")}
+        >
+          <Text
+            style={[
+              styles.genderBtnText,
+              filtroGenero === "M" && styles.genderBtnTextActiveM,
+            ]}
+          >
+            Meninos
           </Text>
         </TouchableOpacity>
       </View>
@@ -163,6 +202,14 @@ export default function Nomes() {
         keyExtractor={(item) => String(item.nome)}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 20 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={["#C85C90", "#A855F7"]}
+            tintColor="#C85C90"
+          />
+        }
         ListEmptyComponent={
           <Text
             style={{
@@ -200,17 +247,14 @@ export default function Nomes() {
               style={[
                 styles.genderTag,
                 {
-                  backgroundColor:
-                    item.genero === "F"
-                      ? theme.colors.terceary
-                      : theme.colors.quaternary,
+                  backgroundColor: item.genero === "F" ? "#ff7dc0" : "#2196F3",
                 },
               ]}
             >
               <Text
                 style={[
                   styles.genderTagText,
-                  { color: item.genero === "F" ? "#D81B60" : "#2196F3" },
+                  { color: item.genero === "F" ? "#D81B60" : "#5e61ee" },
                 ]}
               >
                 {item.genero === "F" ? "Feminino" : "Masculino"}
@@ -223,200 +267,166 @@ export default function Nomes() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-
-    padding: 18,
-
-    backgroundColor: "#FFF7FB",
-  },
-
-  searchBar: {
-    flexDirection: "row",
-
-    backgroundColor: "#ffe5f2",
-
-    paddingVertical: 13,
-    paddingHorizontal: 14,
-
-    borderRadius: 18,
-
-    alignItems: "center",
-
-    marginBottom: 18,
-
-    borderWidth: 1,
-
-    borderColor: "#F5D3E3",
-
-    shadowColor: "#A64D78",
-
-    shadowOpacity: 0.04,
-
-    shadowRadius: 4,
-
-    shadowOffset: {
-      width: 0,
-      height: 2,
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 5,
     },
-
-    elevation: 2,
-  },
-
-  input: {
-    marginLeft: 10,
-
-    flex: 1,
-
-    fontSize: 15,
-
-    color: "#8D3E67",
-  },
-
-  filterContainer: {
-    flexDirection: "row",
-
-    justifyContent: "space-between",
-
-    marginBottom: 18,
-
-    gap: 10,
-  },
-
-  filterBtnActive: {
-    flex: 1,
-
-    paddingVertical: 13,
-
-    alignItems: "center",
-
-    borderRadius: 14,
-
-    marginHorizontal: 2,
-
-    backgroundColor: "#C85C90",
-
-    shadowColor: "#A64D78",
-
-    shadowOpacity: 0.08,
-
-    shadowRadius: 4,
-
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    searchBar: {
+      flexDirection: "row",
+      backgroundColor: "#ffe5f2",
+      paddingVertical: 4,
+      paddingHorizontal: 14,
+      borderRadius: 18,
+      alignItems: "center",
+      marginBottom: 18,
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+      shadowColor: "#A64D78",
+      shadowOpacity: 0.04,
+      shadowRadius: 4,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      elevation: 2,
     },
-
-    elevation: 2,
-  },
-
-  filterBtn: {
-    flex: 1,
-
-    paddingVertical: 13,
-
-    alignItems: "center",
-
-    borderRadius: 14,
-
-    backgroundColor: "#f397bd",
-
-    marginHorizontal: 2,
-
-    borderWidth: 1,
-
-    borderColor: "#F5D3E3",
-  },
-
-  filterTextActive: {
-    color: "#FFF",
-
-    fontSize: 15,
-
-    fontWeight: "700",
-  },
-
-  card: {
-    backgroundColor: "#f5a8cf",
-
-    padding: 18,
-
-    borderRadius: 22,
-
-    marginBottom: 16,
-
-    borderWidth: 1,
-
-    borderColor: "#F5D3E3",
-
-    shadowColor: "#A64D78",
-
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    input: {
+      marginLeft: 10,
+      flex: 1,
+      fontSize: theme.texts.text,
+      color: theme.colors.title,
     },
-
-    shadowOpacity: 0.05,
-
-    shadowRadius: 5,
-
-    elevation: 2,
-  },
-
-  cardHeader: {
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    marginBottom: 12,
-
-    justifyContent: "space-between",
-  },
-
-  nameText: {
-    fontSize: 21,
-
-    fontWeight: "700",
-
-    color: "#8D3E67",
-  },
-
-  genderTag: {
-    alignSelf: "flex-start",
-
-    paddingHorizontal: 12,
-
-    paddingVertical: 5,
-
-    borderRadius: 12,
-
-    marginTop: 8,
-
-    backgroundColor: "#f8a6ce",
-  },
-
-  genderTagText: {
-    fontSize: 13,
-
-    fontWeight: "700",
-
-    color: "#91486F",
-  },
-
-  infoText: {
-    color: "#8E7180",
-
-    marginBottom: 6,
-
-    fontSize: 14,
-
-    lineHeight: 22,
-  },
-
-  bold: {
-    fontWeight: "700",
-
-    color: "#8D3E67",
-  },
-});
+    filterContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 14,
+      gap: 10,
+    },
+    filterBtnActive: {
+      flex: 1,
+      paddingVertical: 8,
+      alignItems: "center",
+      borderRadius: 14,
+      marginHorizontal: 2,
+      backgroundColor: "#C85C90",
+      shadowColor: "#A64D78",
+      shadowOpacity: 0.08,
+      shadowRadius: 4,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+    },
+    filterBtn: {
+      flex: 1,
+      paddingVertical: 8,
+      alignItems: "center",
+      borderRadius: 14,
+      backgroundColor: "#f397bd",
+      marginHorizontal: 2,
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+      shadowOpacity: 0.08,
+      shadowRadius: 4,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+    },
+    filterTextActive: {
+      color: theme.colors.text,
+      fontSize: theme.texts.text,
+      fontWeight: "700",
+    },
+    genderFilterContainer: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 18,
+      gap: 8,
+    },
+    genderBtn: {
+      flex: 1,
+      paddingVertical: 6,
+      alignItems: "center",
+      borderRadius: 10,
+      backgroundColor: "#f0f0f0",
+      borderWidth: 1,
+      borderColor: "#ddd",
+    },
+    genderBtnActive: {
+      backgroundColor: "#666",
+      borderColor: "#555",
+    },
+    genderBtnActiveF: {
+      backgroundColor: "#ff7dc0",
+      borderColor: "#D81B60",
+    },
+    genderBtnActiveM: {
+      backgroundColor: "#2196F3",
+      borderColor: "#5e61ee",
+    },
+    genderBtnText: {
+      fontSize: theme.texts.text,
+      color: "#666",
+      fontWeight: "600",
+    },
+    genderBtnTextActive: {
+      color: "#fff",
+    },
+    genderBtnTextActiveF: {
+      color: "#fff",
+    },
+    genderBtnTextActiveM: {
+      color: "#fff",
+    },
+    card: {
+      backgroundColor: theme.colors.gestantesCard,
+      padding: 18,
+      borderRadius: 22,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+      shadowColor: "#A64D78",
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.05,
+      shadowRadius: 5,
+      elevation: 2,
+    },
+    cardHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 12,
+      justifyContent: "space-between",
+    },
+    nameText: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "700",
+      color: theme.colors.gestantesPrimary,
+    },
+    genderTag: {
+      alignSelf: "flex-start",
+      paddingHorizontal: 12,
+      paddingVertical: 5,
+      borderRadius: 12,
+      marginTop: 8,
+    },
+    genderTagText: {
+      fontSize: theme.texts.text,
+      fontWeight: "700",
+    },
+    infoText: {
+      color: theme.colors.subtitle,
+      marginBottom: 6,
+      fontSize: theme.texts.text,
+      lineHeight: 22,
+    },
+    bold: {
+      fontWeight: "700",
+      color: "#8D3E67",
+    },
+  });

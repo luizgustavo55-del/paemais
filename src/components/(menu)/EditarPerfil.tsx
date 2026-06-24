@@ -1,9 +1,11 @@
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
 import { Feather } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Modal,
   ScrollView,
   StyleSheet,
@@ -17,8 +19,12 @@ import { auth, firestore } from "@/src/services/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
 export function EditarPerfil({ onUpdate }: { onUpdate?: () => void }) {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
   const [visivel, setVisivel] = useState(false);
   const [carregando, setCarregando] = useState(false);
+  const [zoomVisivel, setZoomVisivel] = useState(false);
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -26,6 +32,7 @@ export function EditarPerfil({ onUpdate }: { onUpdate?: () => void }) {
   const [cidade, setCidade] = useState("");
   const [bio, setBio] = useState("");
   const [dataNascimento, setDataNascimento] = useState("");
+  const [fotoPerfil, setFotoPerfil] = useState<string | null>(null);
 
   const ativarFuncao = () => {
     setVisivel(!visivel);
@@ -39,7 +46,6 @@ export function EditarPerfil({ onUpdate }: { onUpdate?: () => void }) {
           const uid = auth.currentUser?.uid;
           if (!uid) return;
 
-          // 🔥 REFERÊNCIA DO DOCUMENTO NO FIRESTORE (usuarios/uid)
           const userRef = doc(firestore, "usuarios", uid);
           const userSnap = await getDoc(userRef);
 
@@ -51,8 +57,8 @@ export function EditarPerfil({ onUpdate }: { onUpdate?: () => void }) {
             setCidade(dadosSalvos.cidade || "");
             setDataNascimento(dadosSalvos.dataNascimento || "");
             setBio(dadosSalvos.bio || "");
+            setFotoPerfil(dadosSalvos.fotoPerfil || null);
           } else {
-            // Se o documento não existir ainda, preenche ao menos o e-mail do Auth
             setEmail(auth.currentUser?.email || "");
           }
         } catch (error) {
@@ -65,6 +71,31 @@ export function EditarPerfil({ onUpdate }: { onUpdate?: () => void }) {
     carregarPerfil();
   }, [visivel]);
 
+  const escolherFoto = async () => {
+    const permissao = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (permissao.status !== "granted") {
+      Alert.alert(
+        "Permissão negada",
+        "Precisamos de acesso à galeria para mudar a foto.",
+      );
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.3,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      const imagemBase64 = `data:image/jpeg;base64,${result.assets[0].base64}`;
+      setFotoPerfil(imagemBase64);
+    }
+  };
+
   const salvarAlteracoes = async () => {
     setCarregando(true);
     try {
@@ -76,7 +107,6 @@ export function EditarPerfil({ onUpdate }: { onUpdate?: () => void }) {
 
       const userRef = doc(firestore, "usuarios", uid);
 
-      // 🔥 SALVA OU ATUALIZA DADOS USANDO MERGE PARA NÃO APAGAR OUTROS CAMPOS DA RAÍZ
       await setDoc(
         userRef,
         {
@@ -87,6 +117,7 @@ export function EditarPerfil({ onUpdate }: { onUpdate?: () => void }) {
           dataNascimento,
           bio,
           uid: uid,
+          fotoPerfil: fotoPerfil,
         },
         { merge: true },
       );
@@ -108,6 +139,24 @@ export function EditarPerfil({ onUpdate }: { onUpdate?: () => void }) {
         <Text style={styles.menuItemText}>Editar Perfil</Text>
       </TouchableOpacity>
 
+      <Modal visible={zoomVisivel} transparent={true} animationType="fade">
+        <View style={styles.zoomContainer}>
+          <TouchableOpacity
+            style={styles.fecharZoom}
+            onPress={() => setZoomVisivel(false)}
+          >
+            <Feather name="x" size={32} color="#FFF" />
+          </TouchableOpacity>
+          {fotoPerfil && (
+            <Image
+              source={{ uri: fotoPerfil }}
+              style={styles.imagemZoom}
+              resizeMode="contain"
+            />
+          )}
+        </View>
+      </Modal>
+
       <Modal visible={visivel} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -127,6 +176,37 @@ export function EditarPerfil({ onUpdate }: { onUpdate?: () => void }) {
                 />
               ) : (
                 <View style={styles.form}>
+                  <View style={styles.fotoContainer}>
+                    <View style={styles.fotoWrapper}>
+                      <TouchableOpacity
+                        style={styles.fotoBotao}
+                        onPress={() => {
+                          if (fotoPerfil) setZoomVisivel(true);
+                        }}
+                      >
+                        {fotoPerfil ? (
+                          <Image
+                            source={{ uri: fotoPerfil }}
+                            style={styles.fotoImagem}
+                          />
+                        ) : (
+                          <Feather
+                            name="user"
+                            size={50}
+                            color={theme.colors.subtitle}
+                          />
+                        )}
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.fotoIconeEditar}
+                        onPress={escolherFoto}
+                      >
+                        <Feather name="camera" size={16} color="#FFF" />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+
                   <Text style={styles.label}>Nome Completo</Text>
                   <TextInput
                     style={styles.input}
@@ -232,130 +312,194 @@ export function EditarPerfil({ onUpdate }: { onUpdate?: () => void }) {
   );
 }
 
-const styles = StyleSheet.create({
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  menuItemText: {
-    marginLeft: 15,
-    fontSize: theme.texts.subtitle,
-    color: "#333",
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    height: "90%",
-    padding: 20,
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-    paddingBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-  },
-  modalTitle: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
-  },
-  form: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: theme.texts.subtitle,
-    color: theme.colors.subtitle,
-    marginBottom: 8,
-    fontWeight: "500",
-  },
-  input: {
-    backgroundColor: "#F8F9FA",
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 16,
-    color: "#333",
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#EAEAEA",
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: "top",
-  },
-  colaboradorCard: {
-    backgroundColor: theme.colors.gestantesSecondary,
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 10,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: theme.colors.gestantesPrimary,
-  },
-  colaboradorHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
-  },
-  starIconBg: {
-    backgroundColor: theme.colors.gestantesPrimary,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  colaboradorTitle: {
-    fontSize: theme.texts.subtitle,
-    fontWeight: "600",
-    color: "#333",
-  },
-  colaboradorText: {
-    fontSize: theme.texts.text,
-    color: theme.colors.subtitle,
-    lineHeight: 18,
-    marginBottom: 16,
-  },
-  btnSolicitar: {
-    backgroundColor: theme.colors.gestantesPrimary,
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  actionButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 10,
-    paddingBottom: 20,
-  },
-  btnCancelar: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#EAEAEA",
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: "center",
-    marginRight: 10,
-  },
-  btnSalvarContainer: {
-    flex: 2,
-  },
-  btnSalvar: {
-    backgroundColor: theme.colors.gestantesPrimary,
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-});
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    menuItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: "#f0f0f0",
+    },
+    menuItemText: {
+      marginLeft: 15,
+      fontSize: theme.texts.subtitle,
+      color: "#333",
+    },
+    modalContainer: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      justifyContent: "flex-end",
+    },
+    modalContent: {
+      backgroundColor: "#fff",
+      borderTopLeftRadius: 25,
+      borderTopRightRadius: 25,
+      height: "90%",
+      padding: 20,
+    },
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 20,
+      paddingBottom: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: "#F0F0F0",
+    },
+    modalTitle: {
+      fontSize: theme.texts.title,
+      fontWeight: "bold",
+      color: theme.colors.title,
+    },
+    form: {
+      marginBottom: 20,
+    },
+    /* ESTILOS DA FOTO */
+    fotoContainer: {
+      alignItems: "center",
+      marginBottom: 25,
+      marginTop: 10,
+    },
+    fotoWrapper: {
+      width: 110,
+      height: 110,
+      position: "relative",
+    },
+    fotoBotao: {
+      width: 110,
+      height: 110,
+      borderRadius: 55,
+      backgroundColor: "#f0f0f0",
+      justifyContent: "center",
+      alignItems: "center",
+      borderWidth: 3,
+      borderColor: theme.colors.gestantesPrimary,
+      overflow: "hidden",
+    },
+    fotoImagem: {
+      width: "100%",
+      height: "100%",
+    },
+    fotoIconeEditar: {
+      position: "absolute",
+      bottom: 0,
+      right: 0,
+      backgroundColor: theme.colors.gestantesPrimary,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      justifyContent: "center",
+      alignItems: "center",
+      borderWidth: 2,
+      borderColor: "#fff",
+      elevation: 5,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.3,
+      shadowRadius: 2,
+    },
+
+    zoomContainer: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.9)",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    fecharZoom: {
+      position: "absolute",
+      top: 50,
+      right: 20,
+      zIndex: 10,
+      padding: 10,
+    },
+    imagemZoom: {
+      width: "100%",
+      height: "80%",
+    },
+
+    label: {
+      fontSize: theme.texts.subtitle,
+      color: theme.colors.subtitle,
+      marginBottom: 8,
+      fontWeight: "500",
+    },
+    input: {
+      backgroundColor: "#F8F9FA",
+      borderRadius: 12,
+      padding: 12,
+      fontSize: 16,
+      color: "#333",
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: "#EAEAEA",
+    },
+    textArea: {
+      height: 100,
+      textAlignVertical: "top",
+    },
+    colaboradorCard: {
+      backgroundColor: theme.colors.gestantesSecondary,
+      borderRadius: 16,
+      padding: 16,
+      marginTop: 10,
+      marginBottom: 20,
+      borderWidth: 1,
+      borderColor: theme.colors.gestantesPrimary,
+    },
+    colaboradorHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 10,
+    },
+    starIconBg: {
+      backgroundColor: theme.colors.gestantesPrimary,
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 10,
+    },
+    colaboradorTitle: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "600",
+      color: "#333",
+    },
+    colaboradorText: {
+      fontSize: theme.texts.text,
+      color: theme.colors.subtitle,
+      lineHeight: 18,
+      marginBottom: 16,
+    },
+    btnSolicitar: {
+      backgroundColor: theme.colors.gestantesPrimary,
+      borderRadius: 10,
+      paddingVertical: 12,
+      alignItems: "center",
+    },
+    actionButtons: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 10,
+      paddingBottom: 20,
+    },
+    btnCancelar: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: "#EAEAEA",
+      borderRadius: 14,
+      paddingVertical: 14,
+      alignItems: "center",
+      marginRight: 10,
+    },
+    btnSalvarContainer: {
+      flex: 2,
+    },
+    btnSalvar: {
+      backgroundColor: theme.colors.gestantesPrimary,
+      borderRadius: 14,
+      paddingVertical: 14,
+      alignItems: "center",
+    },
+  });

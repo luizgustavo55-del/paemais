@@ -1,19 +1,22 @@
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
+import { useUnit } from "@/src/context/UnitContext";
 import { auth, firestore } from "@/src/services/firebase";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import React, { useCallback, useMemo, useState } from "react";
 import {
-    Alert,
-    FlatList,
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
 } from "react-native";
 
 interface RegistroPeso {
@@ -24,6 +27,12 @@ interface RegistroPeso {
 
 export default function Peso() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const { unidadeAtual } = useUnit();
+  const labelUnidade = unidadeAtual === "imperial" ? "lb" : "kg";
+  const { height } = useWindowDimensions();
+  const isModoCompacto = height < 600;
+  const styles = getStyles(theme, isModoCompacto);
   const [pesoInput, setPesoInput] = useState("");
   const [historico, setHistorico] = useState<RegistroPeso[]>([]);
 
@@ -80,7 +89,6 @@ export default function Peso() {
       await updateDoc(userRef, { historicoPeso: novaLista });
     } catch {
       Alert.alert("Erro", "Não foi possível salvar seu peso. Tente novamente.");
-
       setHistorico(historico);
     }
   };
@@ -118,16 +126,18 @@ export default function Peso() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+      <StatusBar hidden={true} />
+
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.iconBtn}>
           <MaterialCommunityIcons
             name="arrow-left"
-            size={26}
-            color={theme.colors.title}
+            size={isModoCompacto ? 22 : 26}
+            color={theme.colors.text}
           />
         </TouchableOpacity>
         <Text style={styles.titulo}>Meu Peso</Text>
-        <View style={{ width: 26 }} />
+        <View style={{ width: isModoCompacto ? 34 : 40 }} />
       </View>
 
       <View style={styles.main}>
@@ -135,13 +145,17 @@ export default function Peso() {
           <View style={styles.infoResumo}>
             <Text style={styles.labelResumo}>Último Peso</Text>
             <Text style={styles.valorResumo}>
-              {historico.length > 0 ? `${historico[0].peso} kg` : "--"}
+              {historico.length > 0
+                ? `${historico[0].peso} ${labelUnidade}`
+                : `-- ${labelUnidade}`}
             </Text>
           </View>
           <View style={styles.divisor} />
           <View style={styles.infoResumo}>
             <Text style={styles.labelResumo}>Ganhou/Perdeu</Text>
-            <Text style={styles.valorResumo}>{ganhoTotal} kg</Text>
+            <Text style={styles.valorResumo}>
+              {ganhoTotal} {labelUnidade}
+            </Text>
           </View>
         </View>
 
@@ -152,12 +166,14 @@ export default function Peso() {
               style={styles.input}
               keyboardType="numeric"
               placeholder="00.0"
-              placeholderTextColor={theme.colors.title}
+              placeholderTextColor="#A2748B"
               value={pesoInput}
               onChangeText={setPesoInput}
               maxLength={6}
             />
-            <Text style={styles.unidade}>kg</Text>
+            <View style={styles.unidadeContainer}>
+              <Text style={styles.unidade}>{labelUnidade}</Text>
+            </View>
           </View>
 
           <TouchableOpacity style={styles.botaoSalvar} onPress={registrarPeso}>
@@ -179,12 +195,14 @@ export default function Peso() {
               <View style={styles.cardHistorico}>
                 <Text style={styles.cardData}>{item.data}</Text>
                 <View style={styles.cardDireita}>
-                  <Text style={styles.cardPeso}>{item.peso} kg</Text>
+                  <Text style={styles.cardPeso}>
+                    {item.peso} {labelUnidade}
+                  </Text>
                   <TouchableOpacity onPress={() => apagarRegistro(item.id)}>
                     <MaterialCommunityIcons
                       name="trash-can-outline"
                       size={24}
-                      color={theme.colors.textPrimary}
+                      color="#FF0000"
                     />
                   </TouchableOpacity>
                 </View>
@@ -197,297 +215,195 @@ export default function Peso() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFF7FB",
-  },
-
-  header: {
-    height: 95,
-
-    paddingTop: 42,
-
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-
-    paddingHorizontal: 22,
-
-    backgroundColor: "#C85C90",
-
-   
-
-    shadowColor: "#8E3D68",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-
-    shadowOffset: {
-      width: 0,
-      height: 4,
+const getStyles = (theme: any, isModoCompacto: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#FFF7FB",
     },
-
-    elevation: 4,
-  },
-
-  iconBtn: {
-    width: 40,
-    height: 40,
-
-    borderRadius: 20,
-
-    backgroundColor: "rgba(255,255,255,0.20)",
-
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  titulo: {
-    fontSize: 23,
-
-    fontWeight: "700",
-
-    color: "#FFF8FC",
-
-    letterSpacing: 0.2,
-  },
-
-  main: {
-    flex: 1,
-
-    paddingHorizontal: 22,
-    paddingTop: 22,
-  },
-
-  cardResumo: {
-    flexDirection: "row",
-
-    backgroundColor: "#FDEAF2",
-
-    borderRadius: 24,
-
-    paddingVertical: 22,
-    paddingHorizontal: 18,
-
-    justifyContent: "space-between",
-    alignItems: "center",
-
-    marginBottom: 30,
-
-    borderWidth: 1,
-    borderColor: "#F5D3E3",
-
-    shadowColor: "#A64D78",
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    header: {
+      height: isModoCompacto ? 70 : 92,
+      paddingTop: isModoCompacto ? 20 : 40,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 18,
+      backgroundColor: theme.colors.gestantesPrimary,
+      shadowColor: "#8E3D68",
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      elevation: 4,
     },
-
-    elevation: 2,
-  },
-
-  infoResumo: {
-    alignItems: "center",
-
-    flex: 1,
-  },
-
-  labelResumo: {
-    fontSize: 14,
-
-    color: "#9C7388",
-
-    marginBottom: 6,
-
-    fontWeight: "500",
-  },
-
-  valorResumo: {
-    fontSize: 28,
-
-    fontWeight: "700",
-
-    color: "#91486F",
-  },
-
-  divisor: {
-    width: 1,
-
-    height: "75%",
-
-    backgroundColor: "#E7BDD0",
-  },
-
-  inputContainer: {
-    alignItems: "center",
-
-    marginBottom: 34,
-  },
-
-  inputLabel: {
-    fontSize: 17,
-
-    color: "#91486F",
-
-    marginBottom: 16,
-
-    fontWeight: "600",
-  },
-
-  inputRow: {
-    flexDirection: "row",
-
-    alignItems: "flex-end",
-
-    marginBottom: 26,
-  },
-
-  input: {
-    fontSize: 52,
-
-    fontWeight: "700",
-
-    color: "#B2487D",
-
-    borderBottomWidth: 2,
-
-    borderBottomColor: "#D48CAE",
-
-    minWidth: 95,
-
-    textAlign: "center",
-
-    paddingBottom: 6,
-  },
-
-  unidade: {
-    fontSize: 48,
-
-    paddingBottom: 6,
-
-    color: "#B2487D",
-
-    fontWeight: "700",
-
-    borderBottomWidth: 2,
-
-    borderBottomColor: "#D48CAE",
-
-    minWidth: 45,
-
-    textAlign: "center",
-  },
-
-  botaoSalvar: {
-    backgroundColor: "#C85C90",
-
-    paddingVertical: 15,
-    paddingHorizontal: 44,
-
-    borderRadius: 28,
-
-    shadowColor: "#A64D78",
-    shadowOpacity: 0.10,
-    shadowRadius: 6,
-
-    shadowOffset: {
-      width: 0,
-      height: 3,
+    iconBtn: {
+      width: isModoCompacto ? 34 : 40,
+      height: isModoCompacto ? 34 : 40,
+      borderRadius: 20,
+      backgroundColor: "rgba(255,255,255,0.20)",
+      alignItems: "center",
+      justifyContent: "center",
     },
-
-    elevation: 3,
-  },
-
-  botaoTexto: {
-    color: "#FFF",
-
-    fontSize: 15,
-
-    fontWeight: "700",
-
-    letterSpacing: 0.2,
-  },
-
-  historicoContainer: {
-    flex: 1,
-  },
-
-  historicoTitulo: {
-    fontSize: 18,
-
-    fontWeight: "700",
-
-    color: "#91486F",
-
-    marginBottom: 16,
-  },
-
-  textoVazio: {
-    fontSize: 15,
-
-    color: "#A2748B",
-
-    textAlign: "center",
-
-    marginTop: 28,
-
-    lineHeight: 22,
-  },
-
-  cardHistorico: {
-    flexDirection: "row",
-
-    justifyContent: "space-between",
-
-    alignItems: "center",
-
-    backgroundColor: "#FDEAF2",
-
-    padding: 18,
-
-    borderRadius: 22,
-
-    marginBottom: 14,
-
-    borderWidth: 1,
-    borderColor: "#F5D3E3",
-
-    shadowColor: "#A64D78",
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    titulo: {
+      fontSize: isModoCompacto ? theme.texts.subtitle : theme.texts.title,
+      fontWeight: "700",
+      color: theme.colors.text,
+      letterSpacing: 0.2,
     },
-
-    elevation: 2,
-  },
-
-  cardData: {
-    fontSize: 15,
-
-    color: "#8D3E67",
-
-    fontWeight: "700",
-  },
-
-  cardDireita: {
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    gap: 14,
-  },
-
-  cardPeso: {
-    fontSize: 16,
-
-    color: "#B2487D",
-
-    fontWeight: "700",
-  },
-});
+    main: {
+      flex: 1,
+      paddingHorizontal: 22,
+      paddingTop: isModoCompacto ? 14 : 22,
+    },
+    cardResumo: {
+      flexDirection: "row",
+      backgroundColor: theme.colors.gestantesCard,
+      borderRadius: 24,
+      paddingVertical: isModoCompacto ? 14 : 22,
+      paddingHorizontal: 18,
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: isModoCompacto ? 16 : 30,
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+      shadowColor: "#A64D78",
+      shadowOpacity: 0.05,
+      shadowRadius: 5,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      elevation: 2,
+    },
+    infoResumo: {
+      alignItems: "center",
+      flex: 1,
+    },
+    labelResumo: {
+      fontSize: theme.texts.text,
+      color: "#9C7388",
+      marginBottom: 6,
+      fontWeight: "500",
+    },
+    valorResumo: {
+      fontSize: isModoCompacto ? 22 : 28,
+      fontWeight: "700",
+      color: "#91486F",
+    },
+    divisor: {
+      width: 1,
+      height: "75%",
+      backgroundColor: "#E7BDD0",
+    },
+    inputContainer: {
+      alignItems: "center",
+      marginBottom: isModoCompacto ? 20 : 34,
+    },
+    inputLabel: {
+      fontSize: theme.texts.subtitle,
+      color: "#91486F",
+      marginBottom: isModoCompacto ? 8 : 16,
+      fontWeight: "600",
+    },
+    inputRow: {
+      flexDirection: "row",
+      alignItems: "flex-end",
+      marginBottom: isModoCompacto ? 16 : 26,
+    },
+    input: {
+      fontSize: isModoCompacto ? 38 : 52,
+      fontWeight: "700",
+      color: "#B2487D",
+      borderBottomWidth: 2,
+      borderBottomColor: "#D48CAE",
+      minWidth: 95,
+      textAlign: "center",
+      paddingBottom: 6,
+    },
+    unidadeContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      borderBottomWidth: 2,
+      borderBottomColor: "#D48CAE",
+      paddingBottom: 6,
+    },
+    unidade: {
+      fontSize: isModoCompacto ? 34 : 48,
+      color: "#B2487D",
+      fontWeight: "700",
+      minWidth: 45,
+      textAlign: "center",
+    },
+    botaoSalvar: {
+      backgroundColor: theme.colors.gestantesPrimary,
+      paddingVertical: 15,
+      paddingHorizontal: 44,
+      borderRadius: 28,
+      shadowColor: "#A64D78",
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
+      shadowOffset: {
+        width: 0,
+        height: 3,
+      },
+      elevation: 3,
+    },
+    botaoTexto: {
+      color: theme.colors.text,
+      fontSize: theme.texts.text,
+      fontWeight: "700",
+      letterSpacing: 0.2,
+    },
+    historicoContainer: {
+      flex: 1,
+    },
+    historicoTitulo: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "700",
+      color: "#91486F",
+      marginBottom: 16,
+    },
+    textoVazio: {
+      fontSize: theme.texts.text,
+      color: "#A2748B",
+      textAlign: "center",
+      marginTop: 28,
+      lineHeight: 22,
+    },
+    cardHistorico: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      backgroundColor: theme.colors.gestantesCard,
+      padding: 18,
+      borderRadius: 22,
+      marginBottom: 14,
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+      shadowColor: "#A64D78",
+      shadowOpacity: 0.05,
+      shadowRadius: 5,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      elevation: 2,
+    },
+    cardData: {
+      fontSize: theme.texts.text,
+      color: theme.colors.text,
+      fontWeight: "700",
+    },
+    cardDireita: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 14,
+    },
+    cardPeso: {
+      fontSize: theme.texts.subtitle,
+      color: theme.colors.text,
+      fontWeight: "700",
+    },
+  });

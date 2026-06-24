@@ -1,3 +1,4 @@
+import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
   ScrollView,
@@ -5,32 +6,45 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 
+import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-
 import { useRouter } from "expo-router";
 
 export default function PartoNaAgua() {
   const router = useRouter();
+  const { theme } = useTheme();
+
+  const { height } = useWindowDimensions();
+  const isModoCompacto = height < 600;
+
+  const styles = getStyles(theme, isModoCompacto);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* HEADER VOLTAR */}
+      <StatusBar hidden={true} />
+
       <View style={styles.topHeader}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => router.push("/(funcoes)/(planejamento)/planoParto")}
+          onPress={() => router.back()}
         >
-          <Ionicons name="arrow-back" size={24} color="#1E293B" />
+          <Ionicons
+            name="arrow-back"
+            size={isModoCompacto ? 22 : 24}
+            color="#1E293B"
+          />
         </TouchableOpacity>
-
-        <Text style={styles.backText}>Voltar</Text>
       </View>
 
-      {/* HEADER */}
       <View style={styles.headerCard}>
-        <MaterialCommunityIcons name="water" size={48} color="#9333EA" />
+        <MaterialCommunityIcons
+          name="waves"
+          size={isModoCompacto ? 42 : 48}
+          color="#16A34A"
+        />
 
         <Text style={styles.title}>Parto na Água</Text>
 
@@ -39,7 +53,6 @@ export default function PartoNaAgua() {
         </Text>
       </View>
 
-      {/* INTRODUÇÃO */}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>O que é o Parto na Água?</Text>
 
@@ -140,9 +153,9 @@ export default function PartoNaAgua() {
         <Text style={styles.sectionTitle}>Cuidados Durante a Imersão</Text>
 
         <Text style={styles.text}>
-          • Temperatura ideal: A água deve ser mantida rigorosamente entre
-          **36°C e 37°C** para evitar o superaquecimento da mãe ou induzir o
-          bebê a respirar antes da hora.
+          • Temperatura ideal: A água deve ser mantida rigorosamente entre 36°C
+          e 37°C para evitar o superaquecimento da mãe ou induzir o bebê a
+          respirar antes da hora.
         </Text>
 
         <Text style={styles.text}>
@@ -205,121 +218,116 @@ export default function PartoNaAgua() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FCF9FA",
-    padding: 16,
-  },
+const getStyles = (theme: any, isModoCompacto: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#FFF7FB",
+      padding: isModoCompacto ? 12 : 16,
+    },
 
-  topHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 40,
-    marginBottom: 16,
-  },
+    topHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginTop: isModoCompacto ? 20 : 40,
+      marginBottom: isModoCompacto ? 12 : 16,
+    },
 
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "#FFF",
-    justifyContent: "center",
-    alignItems: "center",
+    backButton: {
+      width: isModoCompacto ? 38 : 42,
+      height: isModoCompacto ? 38 : 42,
+      borderRadius: 21,
+      backgroundColor: "#FFF",
+      justifyContent: "center",
+      alignItems: "center",
+      elevation: 4,
+      shadowColor: "#000",
+      shadowOpacity: 0.08,
+      shadowRadius: 4,
+      shadowOffset: { width: 0, height: 2 },
+    },
 
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-  },
+    headerCard: {
+      backgroundColor: "#FFF",
+      borderRadius: 24,
+      padding: isModoCompacto ? 18 : 24,
+      alignItems: "center",
+      marginBottom: 20,
+      elevation: 4,
+      shadowColor: "#000",
+      shadowOpacity: 0.06,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 3 },
+    },
 
-  backText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#1E293B",
-    marginLeft: 12,
-  },
+    title: {
+      fontSize: theme.texts.title,
+      fontWeight: "bold",
+      color: "#1E293B",
+      marginTop: 12,
+    },
 
-  headerCard: {
-    backgroundColor: "#FFF",
-    borderRadius: 24,
-    padding: 24,
-    alignItems: "center",
-    marginBottom: 20,
+    subtitle: {
+      fontSize: theme.texts.text,
+      color: "#64748B",
+      marginTop: 8,
+      textAlign: "center",
+      lineHeight: 22,
+    },
 
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-  },
+    card: {
+      backgroundColor: "#FFF",
+      borderRadius: 20,
+      padding: isModoCompacto ? 14 : 18,
+      marginBottom: 18,
+    },
 
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#1E293B",
-    marginTop: 12,
-  },
+    cardPurple: {
+      backgroundColor: "#9333EA",
+      borderRadius: 20,
+      padding: isModoCompacto ? 14 : 18,
+      marginBottom: 18,
+    },
 
-  subtitle: {
-    color: "#64748B",
-    marginTop: 8,
-    textAlign: "center",
-    lineHeight: 22,
-  },
+    cardPink: {
+      backgroundColor: "#FCE7F3",
+      borderRadius: 20,
+      padding: isModoCompacto ? 14 : 18,
+      marginBottom: 18,
+    },
 
-  card: {
-    backgroundColor: "#FFF",
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 18,
-  },
+    cardGreen: {
+      backgroundColor: "#DCFCE7",
+      borderRadius: 20,
+      padding: isModoCompacto ? 14 : 18,
+      marginBottom: 18,
+    },
 
-  cardPurple: {
-    backgroundColor: "#9333EA",
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 18,
-  },
+    sectionTitle: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "bold",
+      color: "#1E293B",
+      marginBottom: 14,
+    },
 
-  cardPink: {
-    backgroundColor: "#FCE7F3",
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 18,
-  },
+    sectionTitleWhite: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "bold",
+      color: "#FFF",
+      marginBottom: 14,
+    },
 
-  cardGreen: {
-    backgroundColor: "#DCFCE7",
-    borderRadius: 20,
-    padding: 18,
-    marginBottom: 18,
-  },
+    text: {
+      fontSize: theme.texts.text,
+      color: "#475569",
+      lineHeight: isModoCompacto ? 22 : 26,
+      marginBottom: 12,
+    },
 
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#1E293B",
-    marginBottom: 14,
-  },
-
-  sectionTitleWhite: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FFF",
-    marginBottom: 14,
-  },
-
-  text: {
-    fontSize: 15,
-    color: "#475569",
-    lineHeight: 26,
-    marginBottom: 12,
-  },
-
-  textWhite: {
-    fontSize: 15,
-    color: "#FFF",
-    lineHeight: 26,
-    marginBottom: 12,
-  },
-});
+    textWhite: {
+      fontSize: theme.texts.text,
+      color: "#FFF",
+      lineHeight: isModoCompacto ? 22 : 26,
+      marginBottom: 12,
+    },
+  });

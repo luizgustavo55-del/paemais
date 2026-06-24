@@ -1,6 +1,14 @@
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
+import { auth, firestore } from "@/src/services/firebase";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
+import {
+  arrayRemove,
+  arrayUnion,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,20 +19,19 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
-
-// 🔥 Imports do Firebase
-import { auth, firestore } from "@/src/services/firebase";
-import {
-  arrayRemove,
-  arrayUnion,
-  doc,
-  getDoc,
-  updateDoc,
-} from "firebase/firestore";
 
 export default function Contador() {
   const router = useRouter();
+  const { theme } = useTheme();
+
+  // Detecta tela dividida/espremida
+  const { height } = useWindowDimensions();
+  const isModoCompacto = height < 600;
+
+  const styles = getStyles(theme, isModoCompacto);
+
   const [chutes, setChutes] = useState(0);
   const [tempo, setTempo] = useState(0);
   const [ativo, setAtivo] = useState(false);
@@ -36,6 +43,7 @@ export default function Contador() {
   const [mensagemAviso, setMensagemAviso] = useState("");
   const [meta, setMeta] = useState(10);
 
+  // Recarrega sempre que a tela ganha foco
   useFocusEffect(
     useCallback(() => {
       const carregarDadosIniciais = async () => {
@@ -93,7 +101,7 @@ export default function Contador() {
 
   const adicionarChute = () => {
     if (!ativo) {
-      Alert.alert("Ops!", "Toque em 'Iniciar' primeiro!");
+      Alert.alert("Ops!", "Toque em 'Começar' primeiro!");
       return;
     }
     setChutes((prev) => prev + 1);
@@ -161,36 +169,37 @@ export default function Contador() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => router.push("/gestacao")}
+          onPress={() => router.back()}
           style={[styles.back, { left: 20 }]}
         >
           <MaterialCommunityIcons
             name="arrow-left"
-            size={26}
-            color={theme.colors.title}
+            size={isModoCompacto ? 22 : 26}
+            color={theme.colors.text}
           />
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => router.push("/padroes")}
-          style={[styles.back, { right: 60 }]}
+          style={[styles.back, { right: 50 }]}
         >
           <MaterialCommunityIcons
             name="chart-bell-curve"
-            size={26}
-            color={theme.colors.title}
+            size={isModoCompacto ? 22 : 26}
+            color={theme.colors.text}
           />
         </TouchableOpacity>
 
         <Text style={styles.titulo}>Contador de Chutes</Text>
+
         <TouchableOpacity
           onPress={() => setModalVisivel(true)}
-          style={[styles.back, { right: 20 }]}
+          style={[styles.back, { right: 5 }]}
         >
           <MaterialCommunityIcons
             name="history"
-            size={28}
-            color={theme.colors.title}
+            size={isModoCompacto ? 22 : 28}
+            color={theme.colors.text}
           />
         </TouchableOpacity>
       </View>
@@ -224,39 +233,52 @@ export default function Contador() {
       <View style={styles.footer}>
         {!ativo ? (
           <TouchableOpacity
-            style={[styles.bot, { backgroundColor: theme.colors.primary }]}
+            style={[
+              styles.bot,
+              { backgroundColor: theme.colors.gestantesCard },
+            ]}
             onPress={() => setAtivo(true)}
           >
             <Text style={styles.botText}> Começar </Text>
           </TouchableOpacity>
         ) : (
           <>
-            <TouchableOpacity
-              style={[styles.bot, { backgroundColor: theme.colors.quaternary }]}
-              onPress={() => {
-                setChutes(0);
-                setTempo(0);
-              }}
-            >
-              <Text style={styles.botText}>Zerar</Text>
-            </TouchableOpacity>
+            {/* Oculta o botão Zerar em telas muito espremidas para não encavalar botões */}
+            {!isModoCompacto && (
+              <TouchableOpacity
+                style={[
+                  styles.bot,
+                  { backgroundColor: theme.colors.gestantesSecondary },
+                ]}
+                onPress={() => {
+                  setChutes(0);
+                  setTempo(0);
+                }}
+              >
+                <Text style={styles.botText}>Zerar</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
-              style={[styles.bot, { backgroundColor: theme.colors.cards }]}
+              style={[
+                styles.bot,
+                { backgroundColor: theme.colors.gestantesPrimary },
+              ]}
               onPress={finalizar}
               disabled={carregando}
             >
               {carregando ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.botText}>Finalizar e Salvar</Text>
+                <Text style={[styles.botText, { color: "#FFF" }]}>
+                  {isModoCompacto ? "Finalizar" : "Finalizar e Salvar"}
+                </Text>
               )}
             </TouchableOpacity>
           </>
         )}
       </View>
 
-      {/* MODAL DE HISTÓRICO */}
       <Modal animationType="slide" transparent visible={modalVisivel}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -266,7 +288,7 @@ export default function Contador() {
                 <MaterialCommunityIcons
                   name="close"
                   size={28}
-                  color={theme.colors.title}
+                  color={theme.colors.gestantesPrimary}
                 />
               </TouchableOpacity>
             </View>
@@ -305,323 +327,224 @@ export default function Contador() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFF7FB",
-  },
-
-  header: {
-    height: 92,
-
-    paddingTop: 40,
-
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-
-    backgroundColor: "#C85C90",
-
-   
-
-    shadowColor: "#8E3D68",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-
-    shadowOffset: {
-      width: 0,
-      height: 4,
+const getStyles = (theme: any, isModoCompacto: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#FFF7FB",
     },
 
-    elevation: 4,
-  },
-
-  back: {
-    position: "absolute",
-
-    top: 44,
-
-    width: 40,
-    height: 40,
-
-    borderRadius: 20,
-
-    backgroundColor: "rgba(255,255,255,0.20)",
-
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  titulo: {
-    fontSize: 23,
-
-    fontWeight: "700",
-
-    color: "#FFF8FC",
-
-    letterSpacing: 0.2,
-  },
-
-  avisoContainer: {
-    backgroundColor: "#A64D78",
-
-    paddingVertical: 11,
-    paddingHorizontal: 16,
-
-    marginHorizontal: 22,
-
-    borderRadius: 16,
-
-    alignItems: "center",
-
-    position: "absolute",
-
-    top: 100,
-
-    width: "86%",
-
-    zIndex: 10,
-
-    alignSelf: "center",
-
-    shadowColor: "#8E3D68",
-    shadowOpacity: 0.10,
-    shadowRadius: 6,
-
-    shadowOffset: {
-      width: 0,
-      height: 3,
+    header: {
+      height: isModoCompacto ? 70 : 92,
+      paddingTop: isModoCompacto ? 20 : 40,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: theme.colors.gestantesPrimary,
+      shadowColor: "#8E3D68",
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      elevation: 4,
     },
 
-    elevation: 3,
-  },
-
-  avisoTexto: {
-    color: "#FFF",
-
-    fontWeight: "600",
-
-    fontSize: 14,
-  },
-
-  main: {
-    flex: 1,
-
-    alignItems: "center",
-    justifyContent: "center",
-
-    paddingHorizontal: 24,
-  },
-
-  status: {
-    fontSize: 18,
-
-    color: "#91486F",
-
-    fontWeight: "600",
-
-    marginBottom: 10,
-  },
-
-  tempo: {
-    fontSize: 64,
-
-    fontWeight: "700",
-
-    color: "#B2487D",
-
-    letterSpacing: 1,
-
-    marginBottom: 2,
-  },
-
-  progresso: {
-    fontSize: 17,
-
-    color: "#A2748B",
-
-    marginBottom: 34,
-
-    fontWeight: "500",
-  },
-
-  botaoChute: {
-    width: 220,
-    height: 220,
-
-    borderRadius: 120,
-
-    backgroundColor: "#C85C90",
-
-    alignItems: "center",
-    justifyContent: "center",
-
-    shadowColor: "#A64D78",
-
-    shadowOffset: {
-      width: 0,
-      height: 8,
+    back: {
+      position: "absolute",
+      top: isModoCompacto ? 15 : 44,
+      width: isModoCompacto ? 34 : 40,
+      height: isModoCompacto ? 34 : 40,
+      borderRadius: 20,
+      backgroundColor: "rgba(255,255,255,0.20)",
+      alignItems: "center",
+      justifyContent: "center",
     },
 
-    shadowOpacity: 0.16,
-    shadowRadius: 12,
-
-    elevation: 8,
-  },
-
-  botaoTexto: {
-    color: "#FFF",
-
-    fontSize: 22,
-
-    fontWeight: "700",
-
-    letterSpacing: 0.5,
-  },
-
-  footer: {
-    flexDirection: "row",
-
-    gap: 14,
-
-    paddingHorizontal: 22,
-    paddingTop: 8,
-    paddingBottom: 34,
-
-    justifyContent: "center",
-  },
-
-  bot: {
-    flex: 1,
-
-    minHeight: 72,
-
-    borderRadius: 20,
-
-    alignItems: "center",
-    justifyContent: "center",
-
-    paddingHorizontal: 14,
-
-    shadowColor: "#8E3D68",
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-
-    shadowOffset: {
-      width: 0,
-      height: 3,
+    titulo: {
+      fontSize: isModoCompacto ? theme.texts.subtitle : theme.texts.title,
+      fontWeight: "700",
+      color: theme.colors.text,
+      letterSpacing: 0.2,
     },
 
-    elevation: 3,
-  },
-
-  botText: {
-    color: "#FFF",
-
-    fontWeight: "700",
-
-    fontSize: 15,
-
-    textAlign: "center",
-
-    letterSpacing: 0.2,
-  },
-
-  modalOverlay: {
-    flex: 1,
-
-    backgroundColor: "rgba(0,0,0,0.40)",
-
-    justifyContent: "flex-end",
-  },
-
-  modalContent: {
-    backgroundColor: "#FFF9FC",
-
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-
-    height: "84%",
-
-    paddingTop: 24,
-    paddingHorizontal: 22,
-  },
-
-  modalHeader: {
-    flexDirection: "row",
-
-    justifyContent: "space-between",
-
-    alignItems: "center",
-
-    marginBottom: 22,
-  },
-
-  modalTitulo: {
-    fontSize: 24,
-
-    fontWeight: "700",
-
-    color: "#91486F",
-  },
-
-  cardHistorico: {
-    flexDirection: "row",
-
-    justifyContent: "space-between",
-
-    alignItems: "center",
-
-    padding: 18,
-
-    backgroundColor: "#FDEAF2",
-
-    borderRadius: 22,
-
-    marginBottom: 14,
-
-    borderWidth: 1,
-    borderColor: "#F5D3E3",
-
-    shadowColor: "#A64D78",
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    avisoContainer: {
+      backgroundColor: theme.colors.gestantesSecondary,
+      paddingVertical: 11,
+      paddingHorizontal: 16,
+      marginHorizontal: 22,
+      borderRadius: 16,
+      alignItems: "center",
+      position: "absolute",
+      top: isModoCompacto ? 80 : 100,
+      width: "86%",
+      zIndex: 10,
+      alignSelf: "center",
+      shadowColor: "#8E3D68",
+      shadowOpacity: 0.1,
+      shadowRadius: 6,
+      shadowOffset: {
+        width: 0,
+        height: 3,
+      },
+      elevation: 3,
     },
 
-    elevation: 2,
-  },
+    avisoTexto: {
+      color: theme.colors.text,
+      fontWeight: "600",
+      fontSize: theme.texts.text,
+    },
 
-  cardData: {
-    fontWeight: "700",
+    main: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 24,
+    },
 
-    marginBottom: 5,
+    status: {
+      fontSize: theme.texts.text,
+      color: theme.colors.gestantesPrimary,
+      fontWeight: "600",
+      marginBottom: isModoCompacto ? 4 : 10,
+    },
 
-    fontSize: 15,
+    tempo: {
+      fontSize: isModoCompacto ? 48 : 64,
+      fontWeight: "700",
+      color: theme.colors.gestantesPrimary,
+      letterSpacing: 1,
+      marginBottom: 2,
+    },
 
-    color: "#8D3E67",
-  },
+    progresso: {
+      fontSize: theme.texts.subtitle,
+      color: "#A2748B",
+      marginBottom: isModoCompacto ? 16 : 34,
+      fontWeight: "500",
+    },
 
-  historicoTexto: {
-    color: "#8E7180",
+    botaoChute: {
+      width: isModoCompacto ? 160 : 220,
+      height: isModoCompacto ? 160 : 220,
+      borderRadius: 120,
+      backgroundColor: "#C85C90",
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: "#A64D78",
+      shadowOffset: {
+        width: 0,
+        height: 8,
+      },
+      shadowOpacity: 0.16,
+      shadowRadius: 12,
+      elevation: 8,
+    },
 
-    fontSize: 14,
+    botaoTexto: {
+      color: "#FFF",
+      fontSize: theme.texts.subtitle,
+      fontWeight: "700",
+      letterSpacing: 0.5,
+    },
 
-    lineHeight: 22,
-  },
+    footer: {
+      flexDirection: "row",
+      gap: 14,
+      paddingHorizontal: 22,
+      paddingTop: 8,
+      paddingBottom: isModoCompacto ? 16 : 34,
+      justifyContent: "center",
+    },
 
-  iconeLixeira: {
-    width: 38,
-    height: 38,
+    bot: {
+      flex: 1,
+      minHeight: isModoCompacto ? 54 : 72,
+      borderRadius: 20,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 14,
+      shadowColor: "#8E3D68",
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      shadowOffset: {
+        width: 0,
+        height: 3,
+      },
+      elevation: 3,
+    },
 
-    borderRadius: 19,
+    botText: {
+      color: theme.colors.text,
+      fontWeight: "700",
+      fontSize: theme.texts.subtitle,
+      textAlign: "center",
+      letterSpacing: 0.2,
+    },
 
-    backgroundColor: "#FFF3F7",
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.40)",
+      justifyContent: "flex-end",
+    },
 
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+    modalContent: {
+      backgroundColor: "#FFF9FC",
+      borderTopLeftRadius: 32,
+      borderTopRightRadius: 32,
+      height: "84%",
+      paddingTop: 24,
+      paddingHorizontal: 22,
+    },
+
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 22,
+    },
+
+    modalTitulo: {
+      fontSize: theme.texts.title,
+      fontWeight: "700",
+      color: theme.colors.gestantesPrimary,
+    },
+
+    cardHistorico: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: 18,
+      backgroundColor: "#FDEAF2",
+      borderRadius: 22,
+      marginBottom: 14,
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+      shadowColor: "#A64D78",
+      shadowOpacity: 0.05,
+      shadowRadius: 5,
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      elevation: 2,
+    },
+
+    cardData: {
+      fontWeight: "700",
+      marginBottom: 5,
+      fontSize: theme.texts.subtitle,
+      color: theme.colors.gestantesPrimary,
+    },
+
+    iconeLixeira: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      backgroundColor: "#FFF3F7",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+  });

@@ -1,4 +1,3 @@
-import { theme } from "@/src/constants/theme";
 import { auth, firestore } from "@/src/services/firebase";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -15,10 +14,17 @@ import {
   View,
 } from "react-native";
 
+import { useTheme } from "@/src/context/ThemeContext";
+
 export default function Filhos() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
   const [nome, setNome] = useState("");
   const [data, setData] = useState("");
   const [sexo, setSexo] = useState("");
+  const [relacao, setRelacao] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [dateObj, setDateObj] = useState(new Date());
@@ -55,8 +61,8 @@ export default function Filhos() {
   }
 
   async function salvarFilho() {
-    if (!nome || !data || !sexo) {
-      Alert.alert("Aviso", "Preencha todos os campos");
+    if (!nome || !data || !sexo || !relacao) {
+      Alert.alert("Aviso", "Preencha todos os campos para continuar.");
       return;
     }
 
@@ -97,14 +103,15 @@ export default function Filhos() {
         nome,
         dataNascimento: data,
         sexo,
+        relacao,
         criadoEm: new Date().toISOString(),
       });
 
-      Alert.alert("Sucesso", "Filho cadastrado!");
+      Alert.alert("Sucesso", "Filho cadastrado com sucesso!");
       router.replace("/(drawer)/(pais)/(tabs)/menu");
     } catch (error) {
       console.log(error);
-      Alert.alert("Erro", "Erro ao salvar");
+      Alert.alert("Erro", "Ocorreu um erro ao salvar.");
     } finally {
       setLoading(false);
     }
@@ -161,7 +168,24 @@ export default function Filhos() {
           />
         )}
 
-        <Text style={styles.texto}>Sexo</Text>
+        <Text style={styles.texto}>Você é:</Text>
+        <View style={styles.sexoContainer}>
+          <TouchableOpacity
+            style={[styles.sexoBotao, relacao === "pai" && styles.relacaoPai]}
+            onPress={() => setRelacao("pai")}
+          >
+            <Text style={styles.texto}>👨 Pai</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.sexoBotao, relacao === "mae" && styles.relacaoMae]}
+            onPress={() => setRelacao("mae")}
+          >
+            <Text style={styles.texto}>👩 Mãe</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.texto}>Sexo da criança</Text>
 
         <View style={styles.sexoContainer}>
           <TouchableOpacity
@@ -196,97 +220,112 @@ export default function Filhos() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: theme.colors.background,
-    alignItems: "center",
-  },
-  icone: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 40,
-    marginBottom: 20,
-    backgroundColor: theme.colors.primary,
-  },
-  titulo: {
-    fontSize: theme.texts.title,
-    marginBottom: 30,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  texto: {
-    fontSize: theme.texts.text,
-    marginBottom: 5,
-    color: theme.colors.text,
-  },
-  card: {
-    width: "100%",
-    backgroundColor: theme.colors.card,
-    padding: 15,
-    borderRadius: 15,
-    marginBottom: 20,
-  },
-  input: {
-    backgroundColor: "#f2f2f2",
-    paddingHorizontal: 16,
-    height: 55,
-    borderRadius: 10,
-    marginBottom: 10,
-    fontSize: theme.texts.text,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#f2f2f2",
-    borderRadius: 10,
-    marginBottom: 10,
-    paddingHorizontal: 16,
-    height: 55,
-  },
-  inputInside: {
-    flex: 1,
-    height: "100%",
-    fontSize: theme.texts.text,
-  },
-  iconArea: {
-    padding: 5,
-  },
-  sexoContainer: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 10,
-  },
-  sexoBotao: {
-    flex: 1,
-    padding: 8,
-    borderWidth: 1,
-    borderRadius: 10,
-    alignItems: "center",
-    borderColor: "#ccc",
-  },
-  sexoFeminino: {
-    backgroundColor: "#ff7dc0",
-    borderColor: "#ff4db8",
-  },
-  sexoMasculino: {
-    backgroundColor: "#5e61ee",
-    borderColor: "#4d8bff",
-  },
-  botao: {
-    width: "100%",
-    padding: 15,
-    borderRadius: 12,
-    alignItems: "center",
-    backgroundColor: theme.colors.card,
-  },
-  textoBotao: {
-    color: theme.colors.text,
-    fontSize: theme.texts.text,
-    fontWeight: "bold",
-  },
-});
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 20,
+      backgroundColor: theme.colors.background,
+      alignItems: "center",
+    },
+    icone: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 40,
+      marginBottom: 20,
+      backgroundColor: theme.colors.primary,
+    },
+    titulo: {
+      fontSize: theme.texts.title,
+      marginBottom: 30,
+      fontWeight: "bold",
+      textAlign: "center",
+      color: theme.colors.title,
+    },
+    texto: {
+      fontSize: theme.texts.text,
+      marginTop: 10,
+      marginBottom: 5,
+      color: theme.colors.text,
+      fontWeight: "500",
+    },
+    card: {
+      width: "100%",
+      backgroundColor: theme.colors.card,
+      padding: 15,
+      borderRadius: 15,
+      marginBottom: 20,
+    },
+    input: {
+      backgroundColor: "#f2f2f2",
+      paddingHorizontal: 16,
+      height: 55,
+      borderRadius: 10,
+      marginBottom: 10,
+      fontSize: theme.texts.text,
+      color: theme.colors.title,
+    },
+    inputContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: "#f2f2f2",
+      borderRadius: 10,
+      marginBottom: 10,
+      paddingHorizontal: 16,
+      height: 55,
+    },
+    inputInside: {
+      flex: 1,
+      height: "100%",
+      fontSize: theme.texts.text,
+      color: theme.colors.title,
+    },
+    iconArea: {
+      padding: 5,
+    },
+    sexoContainer: {
+      flexDirection: "row",
+      gap: 10,
+      marginTop: 5,
+      marginBottom: 15,
+    },
+    sexoBotao: {
+      flex: 1,
+      padding: 8,
+      borderWidth: 1,
+      borderRadius: 10,
+      alignItems: "center",
+      borderColor: "#ccc",
+      backgroundColor: "transparent",
+    },
+    sexoFeminino: {
+      backgroundColor: "#ff7dc0",
+      borderColor: "#ff4db8",
+    },
+    sexoMasculino: {
+      backgroundColor: "#5e61ee",
+      borderColor: "#4d8bff",
+    },
+    relacaoPai: {
+      backgroundColor: "rgba(94, 97, 238, 0.8)",
+      borderColor: "#5e61ee",
+    },
+    relacaoMae: {
+      backgroundColor: "rgba(255, 125, 192, 0.8)",
+    },
+    botao: {
+      width: "100%",
+      padding: 15,
+      borderRadius: 12,
+      alignItems: "center",
+      backgroundColor: theme.colors.card,
+    },
+    textoBotao: {
+      color: theme.colors.text,
+      fontSize: theme.texts.text,
+      fontWeight: "bold",
+    },
+  });

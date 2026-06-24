@@ -1,15 +1,16 @@
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useState } from "react";
 import {
   RefreshControl,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 
 import { auth, firestore } from "@/src/services/firebase";
@@ -19,11 +20,18 @@ interface RegistroChute {
   id: string | number;
   tempo: string;
   hora: string;
-  chutes: number; // Adicionado para tipagem correta
+  chutes: number;
 }
 
 export default function Padroes() {
   const router = useRouter();
+  const { theme } = useTheme();
+
+  // Detecta tela dividida/espremida
+  const { height } = useWindowDimensions();
+  const isModoCompacto = height < 600;
+
+  const styles = getStyles(theme, isModoCompacto);
 
   const [historico, setHistorico] = useState<RegistroChute[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -55,7 +63,6 @@ export default function Padroes() {
     return `${min}:${seg < 10 ? "0" : ""}${seg}`;
   };
 
-  // 🔥 Carrega os dados diretamente do Firestore
   const carregarPadroes = async () => {
     try {
       const user = auth.currentUser;
@@ -160,173 +167,193 @@ export default function Padroes() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => router.push("/(funcoes)/(contador)/contador" as any)}
-            style={styles.back}
-          >
-            <MaterialCommunityIcons
-              name="arrow-left"
-              size={26}
-              color={theme.colors.title}
-            />
-          </TouchableOpacity>
-          <Text style={styles.titulo}>Padrões</Text>
-        </View>
-
-        <ScrollView
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={aoAtualizar}
-              tintColor={theme.colors.primary}
-            />
-          }
-          style={styles.content}
-          showsVerticalScrollIndicator={false}
+    <View style={styles.container}>
+      <StatusBar hidden={true} />
+      <View style={styles.header}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={[styles.back, { left: 20 }]}
         >
-          <Text style={styles.topInfo}>
-            Sessões registradas: {historico.length}
-          </Text>
-
-          {historico.length < 3 ? (
-            <Text
-              style={{
-                textAlign: "center",
-                marginTop: 20,
-                color: theme.colors.title,
-                opacity: 0.7,
-              }}
-            >
-              Use o contador pelo menos 3 vezes para gerar os primeiros padrões
-              do seu bebê.
-            </Text>
-          ) : (
-            <>
-              <View style={styles.card}>
-                <Text style={styles.cardTitle}>Resumo</Text>
-                <Text style={styles.cardText}>{resumo}</Text>
-              </View>
-
-              <View style={styles.card}>
-                <Text style={styles.cardTitle}>Status Atual</Text>
-                <Text style={styles.cardText}>{alerta}</Text>
-              </View>
-
-              {/* GRID */}
-              <View style={styles.grid}>
-                <View style={styles.cardHalf}>
-                  <Text style={styles.valor}>{mediaTempo}</Text>
-                  <Text style={styles.legenda}>Média</Text>
-                </View>
-
-                <View style={styles.cardHalf}>
-                  <Text style={styles.valor}>{horarioPico}</Text>
-                  <Text style={styles.legenda}>Pico</Text>
-                </View>
-
-                <View style={styles.cardHalf}>
-                  <Text style={styles.valor}>{melhorTempo}</Text>
-                  <Text style={styles.legenda}>Melhor</Text>
-                </View>
-
-                <View style={styles.cardHalf}>
-                  <Text style={styles.valor}>{tendencia}</Text>
-                  <Text style={styles.legenda}>Tendência</Text>
-                </View>
-
-                <View style={styles.cardHalf}>
-                  <Text style={styles.valor}>{score}</Text>
-                  <Text style={styles.legenda}>Score</Text>
-                </View>
-
-                <View style={styles.cardHalf}>
-                  <Text style={[styles.valor, { fontSize: 18 }]}>
-                    {consistencia}
-                  </Text>
-                  <Text style={styles.legenda}>Consistência</Text>
-                </View>
-              </View>
-            </>
-          )}
-        </ScrollView>
+          <MaterialCommunityIcons
+            name="arrow-left"
+            size={isModoCompacto ? 22 : 26}
+            color={theme.colors.text}
+          />
+        </TouchableOpacity>
+        <Text style={styles.titulo}>Padrões</Text>
       </View>
-    </SafeAreaView>
+
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={aoAtualizar}
+            tintColor={theme.colors.primary}
+          />
+        }
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.topInfo}>
+          Sessões registradas: {historico.length}
+        </Text>
+
+        {historico.length < 3 ? (
+          <Text
+            style={{
+              textAlign: "center",
+              marginTop: 20,
+              fontSize: theme.texts.text,
+              color: theme.colors.subtitle,
+              opacity: 0.7,
+            }}
+          >
+            Use o contador pelo menos 3 vezes para gerar os primeiros padrões do
+            seu bebê.
+          </Text>
+        ) : (
+          <>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Resumo</Text>
+              <Text style={styles.cardText}>{resumo}</Text>
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Status Atual</Text>
+              <Text style={styles.cardText}>{alerta}</Text>
+            </View>
+
+            <View style={styles.grid}>
+              <View style={styles.cardHalf}>
+                <Text style={styles.legenda}>Média</Text>
+                <Text style={styles.valor}>{mediaTempo}</Text>
+              </View>
+
+              <View style={styles.cardHalf}>
+                <Text style={styles.legenda}>Pico</Text>
+                <Text style={styles.valor}>{horarioPico}</Text>
+              </View>
+
+              <View style={styles.cardHalf}>
+                <Text style={styles.legenda}>Melhor</Text>
+                <Text style={styles.valor}>{melhorTempo}</Text>
+              </View>
+
+              <View style={styles.cardHalf}>
+                <Text style={styles.legenda}>Tendência</Text>
+                <Text style={styles.valor}>{tendencia}</Text>
+              </View>
+
+              <View style={styles.cardHalf}>
+                <Text style={styles.legenda}>Score</Text>
+                <Text style={styles.valor}>{score}</Text>
+              </View>
+
+              <View style={styles.cardHalf}>
+                <Text style={styles.legenda}>Consistência</Text>
+                <Text
+                  style={[styles.valor, { fontSize: isModoCompacto ? 14 : 16 }]}
+                >
+                  {consistencia}
+                </Text>
+              </View>
+            </View>
+          </>
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: theme.colors.terceary, marginTop: 50 },
-  container: { flex: 1, backgroundColor: theme.colors.terceary },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    backgroundColor: theme.colors.terceary,
-  },
-  back: { position: "absolute", left: 20, zIndex: 10 },
-  titulo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
-  },
-  content: { padding: 20 },
-  topInfo: {
-    textAlign: "center",
-    marginBottom: 15,
-    color: theme.colors.title,
-    fontWeight: "500",
-    opacity: 0.8,
-  },
-  card: {
-    backgroundColor: theme.colors.secondary,
-    padding: 18,
-    borderRadius: 16,
-    marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  cardTitle: {
-    fontWeight: "bold",
-    fontSize: 16,
-    marginBottom: 8,
-    color: theme.colors.textPrimary,
-  },
-  cardText: { color: theme.colors.title, lineHeight: 22 },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    paddingBottom: 20,
-  },
-  cardHalf: {
-    width: "48%",
-    backgroundColor: theme.colors.secondary,
-    paddingVertical: 20,
-    paddingHorizontal: 10,
-    borderRadius: 16,
-    marginBottom: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  valor: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: theme.colors.textPrimary,
-    marginBottom: 4,
-    textAlign: "center",
-  },
-  legenda: { fontSize: 14, color: theme.colors.title, opacity: 0.8 },
-});
+const getStyles = (theme: any, isModoCompacto: boolean) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: "#FFF7FB" },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingTop: isModoCompacto ? 20 : 30,
+      paddingBottom: 10,
+      paddingHorizontal: 20,
+      backgroundColor: theme.colors.gestantesPrimary,
+    },
+    back: {
+      position: "absolute",
+      top: isModoCompacto ? 14 : 20,
+      width: isModoCompacto ? 34 : 40,
+      height: isModoCompacto ? 34 : 40,
+      borderRadius: 20,
+      backgroundColor: "rgba(255,255,255,0.20)",
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    titulo: {
+      fontSize: isModoCompacto ? theme.texts.subtitle : theme.texts.title,
+      fontWeight: "bold",
+      color: theme.colors.text,
+    },
+    content: { padding: isModoCompacto ? 12 : 20 },
+    topInfo: {
+      textAlign: "center",
+      marginBottom: 15,
+      color: theme.colors.subtitle,
+      fontSize: theme.texts.text,
+      fontWeight: "500",
+      opacity: 0.8,
+    },
+    card: {
+      backgroundColor: theme.colors.gestantesCard,
+      padding: isModoCompacto ? 14 : 18,
+      borderRadius: 16,
+      marginBottom: 12,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 3,
+      elevation: 2,
+    },
+    cardTitle: {
+      fontWeight: "bold",
+      fontSize: theme.texts.subtitle,
+      marginBottom: 8,
+      color: theme.colors.subtitle,
+    },
+    cardText: {
+      color: theme.colors.text,
+      lineHeight: 22,
+      fontSize: theme.texts.text,
+    },
+    grid: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      justifyContent: "space-between",
+      paddingBottom: 20,
+    },
+    cardHalf: {
+      width: "48%",
+      backgroundColor: theme.colors.gestantesCard,
+      paddingVertical: isModoCompacto ? 14 : 20,
+      paddingHorizontal: 10,
+      borderRadius: 16,
+      marginBottom: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 3,
+      elevation: 2,
+    },
+    valor: {
+      fontSize: theme.texts.text,
+      fontWeight: "bold",
+      color: theme.colors.text,
+      marginBottom: 4,
+      textAlign: "center",
+    },
+    legenda: {
+      fontSize: theme.texts.text,
+      color: theme.colors.subtitle,
+      opacity: 0.8,
+    },
+  });

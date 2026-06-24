@@ -1,6 +1,7 @@
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -12,9 +13,9 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 
-// 🔥 IMPORTS DO FIREBASE
 import { auth, firestore } from "@/src/services/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -33,6 +34,12 @@ interface ItemEnxoval {
 
 export default function EnxovalScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
+
+  const { height } = useWindowDimensions();
+  const isModoCompacto = height < 600;
+
+  const styles = getStyles(theme, isModoCompacto);
 
   const [itens, setItens] = useState<ItemEnxoval[]>([]);
   const [novoItemNome, setNovoItemNome] = useState("");
@@ -51,7 +58,6 @@ export default function EnxovalScreen() {
         );
 
         const unsubscribeSnapshot = onSnapshot(enxovalRef, (snapshot) => {
-          // Agora apenas lê os dados, ninguém começa com lista pronta
           const listaEnxoval = snapshot.docs.map((doc) => ({
             id: doc.id,
             ...doc.data(),
@@ -127,7 +133,6 @@ export default function EnxovalScreen() {
       Alert.alert("Opções de Exclusão", `O que deseja fazer com "${nome}"?`, [
         { text: "Cancelar", style: "cancel" },
         { text: "Apagar apenas este", onPress: () => apagarItem(id) },
-        // 🔥 Nova opção para apagar tudo!
         {
           text: "Apagar TUDO",
           style: "destructive",
@@ -171,7 +176,6 @@ export default function EnxovalScreen() {
   const apagarTudo = async () => {
     if (!userId) return;
     try {
-      // Loop para apagar cada documento da coleção do usuário
       for (const item of itens) {
         const itemRef = doc(firestore, "usuarios", userId, "enxoval", item.id);
         await deleteDoc(itemRef);
@@ -188,15 +192,17 @@ export default function EnxovalScreen() {
 
   return (
     <View style={styles.container}>
+      <StatusBar hidden={true} />
+
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => router.push("/gestacao")}
+          onPress={() => router.back()}
           style={styles.headerLeft}
         >
           <MaterialCommunityIcons
             name="arrow-left"
-            size={28}
-            color={theme.colors.texts}
+            size={isModoCompacto ? 24 : 28}
+            color={theme.colors.text}
           />
         </TouchableOpacity>
         <Text style={styles.tituloHeader}>Enxoval</Text>
@@ -224,7 +230,11 @@ export default function EnxovalScreen() {
               activeOpacity={0.8}
               style={styles.addButton}
             >
-              <MaterialCommunityIcons name="plus" size={24} color="#FFF" />
+              <MaterialCommunityIcons
+                name="plus"
+                size={isModoCompacto ? 22 : 24}
+                color="#FFF"
+              />
             </TouchableOpacity>
           </View>
 
@@ -239,6 +249,7 @@ export default function EnxovalScreen() {
                   textAlign: "center",
                   color: theme.colors.subtitle,
                   marginTop: 20,
+                  fontSize: theme.texts.text,
                 }}
               >
                 Nenhum item adicionado ainda.
@@ -259,8 +270,8 @@ export default function EnxovalScreen() {
                     style={[
                       styles.checkbox,
                       item.marcado && {
-                        backgroundColor: theme.colors.cards,
-                        borderColor: theme.colors.cards,
+                        backgroundColor: theme.colors.gestantesCard,
+                        borderColor: theme.colors.gestantesCard,
                       },
                     ]}
                   >
@@ -268,7 +279,7 @@ export default function EnxovalScreen() {
                       <MaterialCommunityIcons
                         name="check"
                         size={16}
-                        color="#FFF"
+                        color="#4cb80df3"
                       />
                     )}
                   </View>
@@ -282,14 +293,6 @@ export default function EnxovalScreen() {
                     {item.nome}
                   </Text>
                 </View>
-
-                {item.marcado && (
-                  <MaterialCommunityIcons
-                    name="check"
-                    size={20}
-                    color={theme.colors.cards}
-                  />
-                )}
               </TouchableOpacity>
             )}
           />
@@ -317,295 +320,169 @@ export default function EnxovalScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFF7FB",
-  },
-
-  header: {
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    justifyContent: "space-between",
-
-    paddingTop: 46,
-
-    paddingHorizontal: 22,
-
-    paddingBottom: 18,
-
-    backgroundColor: "#C85C90",
-
-   
-
-    shadowColor: "#8E3D68",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-
-    shadowOffset: {
-      width: 0,
-      height: 4,
+const getStyles = (theme: any, isModoCompacto: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#FFF7FB",
     },
-
-    elevation: 4,
-  },
-
-  headerLeft: {
-    width: 42,
-
-    height: 42,
-
-    borderRadius: 21,
-
-    backgroundColor: "#df5f9d",
-
-    alignItems: "center",
-
-    justifyContent: "center",
-  },
-
-  headerRight: {
-    width: 42,
-
-    height: 42,
-
-    borderRadius: 21,
-
-    backgroundColor: "#c85c90",
-
-    alignItems: "center",
-
-    justifyContent: "center",
-  },
-
-  tituloHeader: {
-    fontSize: 23,
-
-    fontWeight: "700",
-
-    color: "#FFF8FC",
-
-    letterSpacing: 0.2,
-  },
-
-  content: {
-    flex: 1,
-
-    padding: 22,
-
-    backgroundColor: "#FFF9FC",
-
-    margin: 18,
-
-    borderRadius: 28,
-
-    shadowColor: "#A64D78",
-    shadowOffset: {
-      width: 0,
-      height: 3,
+    header: {
+      height: isModoCompacto ? 70 : 92,
+      paddingTop: isModoCompacto ? 20 : 40,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      paddingHorizontal: 22,
+      backgroundColor: theme.colors.gestantesPrimary,
+      shadowColor: "#8E3D68",
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 4 },
+      elevation: 4,
     },
-
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-
-    elevation: 3,
-  },
-
-  tituloSecao: {
-    fontSize: 18,
-
-    fontWeight: "700",
-
-    color: "#793459",
-
-    marginBottom: 18,
-  },
-
-  inputContainer: {
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    marginBottom: 22,
-  },
-
-  input: {
-    flex: 1,
-
-    backgroundColor: "#FDEAF2",
-
-    borderWidth: 1,
-
-    borderColor: "#F5D3E3",
-
-    borderRadius: 16,
-
-    padding: 15,
-
-    fontSize: 15,
-
-    color: "#8D3E67",
-  },
-
-  addButton: {
-    borderRadius: 16,
-
-    width: 52,
-    height: 52,
-
-    alignItems: "center",
-
-    justifyContent: "center",
-
-    marginLeft: 12,
-
-    backgroundColor: "#C85C90",
-
-    shadowColor: "#A64D78",
-    shadowOpacity: 0.10,
-    shadowRadius: 5,
-
-    shadowOffset: {
-      width: 0,
-      height: 3,
+    headerLeft: {
+      width: isModoCompacto ? 34 : 40,
+      height: isModoCompacto ? 34 : 40,
+      borderRadius: 20,
+      backgroundColor: "rgba(255,255,255,0.20)",
+      alignItems: "center",
+      justifyContent: "center",
     },
-
-    elevation: 3,
-  },
-
-  itemCard: {
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    justifyContent: "space-between",
-
-    backgroundColor: "#FDEAF2",
-
-    borderWidth: 1,
-
-    borderColor: "#F5D3E3",
-
-    borderRadius: 18,
-
-    padding: 16,
-
-    marginBottom: 14,
-
-    shadowColor: "#A64D78",
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-
-    shadowOffset: {
-      width: 0,
-      height: 2,
+    headerRight: {
+      width: isModoCompacto ? 34 : 40,
+      height: isModoCompacto ? 34 : 40,
+      backgroundColor: "transparent",
     },
-
-    elevation: 2,
-  },
-
-  itemCardMarcado: {
-    backgroundColor: "#F7DDE9",
-
-    borderColor: "#E7BDD0",
-
-    opacity: 0.8,
-  },
-
-  itemLeft: {
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    flex: 1,
-  },
-
-  checkbox: {
-    width: 26,
-    height: 26,
-
-    borderRadius: 8,
-
-    borderWidth: 2,
-
-    borderColor: "#C85C90",
-
-    alignItems: "center",
-
-    justifyContent: "center",
-
-    marginRight: 14,
-
-    backgroundColor: "#FFF6FA",
-  },
-
-  itemTexto: {
-    fontSize: 15,
-
-    color: "#8D3E67",
-
-    flex: 1,
-
-    fontWeight: "500",
-  },
-
-  itemTextoMarcado: {
-    color: "#B18A9D",
-
-    textDecorationLine: "line-through",
-  },
-
-  progressContainer: {
-    marginTop: 18,
-
-    paddingTop: 18,
-
-    borderTopWidth: 1,
-
-    borderTopColor: "#F0D4E1",
-  },
-
-  progressTextRow: {
-    flexDirection: "row",
-
-    justifyContent: "space-between",
-
-    marginBottom: 12,
-  },
-
-  progressLabel: {
-    fontSize: 15,
-
-    fontWeight: "600",
-
-    color: "#91486F",
-  },
-
-  progressValue: {
-    fontSize: 15,
-
-    fontWeight: "700",
-
-    color: "#C85C90",
-  },
-
-  progressBarBackground: {
-    height: 13,
-
-    backgroundColor: "#F3DCE7",
-
-    borderRadius: 12,
-
-    overflow: "hidden",
-  },
-
-  progressBarFill: {
-    height: "100%",
-
-    borderRadius: 12,
-
-    backgroundColor: "#C85C90",
-  },
-});
+    tituloHeader: {
+      fontSize: isModoCompacto ? theme.texts.subtitle : theme.texts.title,
+      fontWeight: "700",
+      color: theme.colors.text,
+      letterSpacing: 0.2,
+    },
+    content: {
+      flex: 1,
+      padding: isModoCompacto ? 16 : 22,
+      backgroundColor: "#FFF9FC",
+      margin: isModoCompacto ? 12 : 18,
+      borderRadius: 28,
+      shadowColor: "#A64D78",
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.06,
+      shadowRadius: 6,
+      elevation: 3,
+    },
+    tituloSecao: {
+      fontSize: isModoCompacto ? theme.texts.text : theme.texts.subtitle,
+      fontWeight: "700",
+      color: "#793459",
+      marginBottom: isModoCompacto ? 14 : 18,
+    },
+    inputContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: isModoCompacto ? 16 : 22,
+    },
+    input: {
+      flex: 1,
+      backgroundColor: "#FDEAF2",
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+      borderRadius: 16,
+      padding: isModoCompacto ? 12 : 15,
+      fontSize: theme.texts.text,
+      color: theme.colors.title,
+    },
+    addButton: {
+      borderRadius: 16,
+      width: isModoCompacto ? 46 : 52,
+      height: isModoCompacto ? 46 : 52,
+      alignItems: "center",
+      justifyContent: "center",
+      marginLeft: 12,
+      backgroundColor: theme.colors.gestantesPrimary,
+      shadowColor: "#A64D78",
+      shadowOpacity: 0.1,
+      shadowRadius: 5,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 3,
+    },
+    itemCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: "#FDEAF2",
+      borderWidth: 1,
+      borderColor: "#F5D3E3",
+      borderRadius: 18,
+      padding: isModoCompacto ? 12 : 16,
+      marginBottom: isModoCompacto ? 10 : 14,
+      shadowColor: "#A64D78",
+      shadowOpacity: 0.04,
+      shadowRadius: 4,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 2,
+    },
+    itemCardMarcado: {
+      backgroundColor: "#F7DDE9",
+      borderColor: "#E7BDD0",
+      opacity: 0.8,
+    },
+    itemLeft: {
+      flexDirection: "row",
+      alignItems: "center",
+      flex: 1,
+    },
+    checkbox: {
+      width: isModoCompacto ? 22 : 26,
+      height: isModoCompacto ? 22 : 26,
+      borderRadius: 8,
+      borderWidth: 2,
+      borderColor: theme.colors.gestantesPrimary,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 14,
+      backgroundColor: "#FFF6FA",
+    },
+    itemTexto: {
+      fontSize: theme.texts.text,
+      color: "#91486F",
+      flex: 1,
+      fontWeight: "500",
+    },
+    itemTextoMarcado: {
+      color: "#B18A9D",
+      textDecorationLine: "line-through",
+    },
+    progressContainer: {
+      marginTop: isModoCompacto ? 12 : 18,
+      paddingTop: isModoCompacto ? 12 : 18,
+      borderTopWidth: 1,
+      borderTopColor: "#F0D4E1",
+    },
+    progressTextRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginBottom: 12,
+    },
+    progressLabel: {
+      fontSize: theme.texts.text,
+      fontWeight: "600",
+      color: "#91486F",
+    },
+    progressValue: {
+      fontSize: theme.texts.text,
+      fontWeight: "700",
+      color: theme.colors.gestantesPrimary,
+    },
+    progressBarBackground: {
+      height: 13,
+      backgroundColor: "#F3DCE7",
+      borderRadius: 12,
+      overflow: "hidden",
+    },
+    progressBarFill: {
+      height: "100%",
+      borderRadius: 12,
+      backgroundColor: theme.colors.gestantesPrimary,
+    },
+  });

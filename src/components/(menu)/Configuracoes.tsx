@@ -17,6 +17,7 @@ import {
 
 import { AlterarEmail } from "@/src/components/(menu)/(config)/altEmail";
 import { AlterarSenha } from "@/src/components/(menu)/(config)/altSenha";
+import { EnviarFeedback } from "@/src/components/(menu)/(config)/enviarFeedback";
 import { ExcluirConta } from "@/src/components/(menu)/(config)/excluirConta";
 import { TamanhoFonte } from "@/src/components/(menu)/(config)/fonte";
 import { HoraDescanso } from "@/src/components/(menu)/(config)/horaDescanso";
@@ -53,6 +54,7 @@ export function Configuracoes() {
   const [modalExcluirVisivel, setModalExcluirVisivel] = useState(false);
   const [modalFonteVisivel, setModalFonteVisivel] = useState(false);
   const [modalUnidadesVisivel, setModalUnidadesVisivel] = useState(false);
+  const [modalFeedbackVisivel, setModalFeedbackVisivel] = useState(false);
 
   useEffect(() => {
     const carregarPreferencias = async () => {
@@ -115,6 +117,7 @@ export function Configuracoes() {
     if (id === "excluir") setModalExcluirVisivel(true);
     if (id === "fonte") setModalFonteVisivel(true);
     if (id === "unidades") setModalUnidadesVisivel(true);
+    if (id === "feedback") setModalFeedbackVisivel(true);
   };
 
   const SECTIONS = [
@@ -375,6 +378,10 @@ export function Configuracoes() {
       <EscolhaUnidades
         visivel={modalUnidadesVisivel}
         fechar={() => setModalUnidadesVisivel(false)}
+      />
+      <EnviarFeedback
+        visivel={modalFeedbackVisivel}
+        fechar={() => setModalFeedbackVisivel(false)}
       />
     </View>
   );

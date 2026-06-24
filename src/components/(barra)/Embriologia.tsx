@@ -1,25 +1,30 @@
+import { theme as staticTheme } from "@/src/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
+import { auth, firestore } from "@/src/services/firebase";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
-import { doc, getDoc } from "firebase/firestore"; // Importações do Firestore
+import { collection, getDocs, query, where } from "firebase/firestore";
 import React, { useCallback, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-import { theme } from "@/src/constants/theme";
-import { auth, firestore } from "@/src/services/firebase"; // Certifique-se de exportar 'db' daqui
-
-// --- TIPAGENS (TypeScript) ---
 interface TopicoProps {
   text: string;
+  theme: any;
 }
 
 interface EmbriologiaCardProps {
   title: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap; // Tipagem correta para os ícones
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
   color: string;
   topicos: string[];
 }
 
-// --- DADOS DA TELA (Tirando os textos do meio do código) ---
 const FASES_EMBRIOLOGIA: EmbriologiaCardProps[] = [
   {
     title: "1ª e 2ª Semana — DUM",
@@ -198,84 +203,156 @@ const FASES_EMBRIOLOGIA: EmbriologiaCardProps[] = [
   },
 ];
 
-// --- SUBCOMPONENTES ---
-const Topico = ({ text }: TopicoProps) => (
-  <View style={styles.item}>
-    <View style={styles.bullet} />
-    <Text style={styles.itemText}>{text}</Text>
-  </View>
-);
+const pertenceASemana = (titulo: string, s: number): boolean => {
+  const t = titulo.toLowerCase();
+  if (t.includes("1ª e 2ª")) return s <= 2;
+  if (
+    t.includes("3ª semana") ||
+    t.includes("clivagem") ||
+    t.includes("mórula") ||
+    t.includes("blastocisto")
+  )
+    return s === 3;
+  if (t.includes("nidação")) return s === 4;
+  if (t.includes("gastrulação") || t.includes("folhetos")) return s === 5;
+  if (t.includes("neurulação") || t.includes("coração")) return s === 6;
+  if (t.includes("organogênese")) return s === 7 || s === 8;
+  if (t.includes("placenta")) return s >= 4 && s <= 8;
+  if (t.includes("embrião")) return s >= 3 && s <= 8;
+  if (t.includes("feto")) return s >= 9;
+  return false;
+};
+
+const Topico = ({ text, theme }: TopicoProps) => {
+  const styles = getStyles(theme);
+  return (
+    <View style={styles.item}>
+      <View style={styles.bullet} />
+      <Text style={styles.itemText}>{text}</Text>
+    </View>
+  );
+};
 
 const EmbriologiaCard = ({
   title,
   icon,
   color,
   topicos,
-}: EmbriologiaCardProps) => (
-  <View style={[styles.card, { backgroundColor: color }]}>
-    <View style={styles.cardHeader}>
-      <MaterialCommunityIcons name={icon} size={24} color="#fff" />
-      <Text style={styles.cardTitle}>{title}</Text>
+  theme,
+}: EmbriologiaCardProps & { theme: any }) => {
+  const styles = getStyles(theme);
+  return (
+    <View style={[styles.card, { backgroundColor: color }]}>
+      <View style={styles.cardHeader}>
+        <MaterialCommunityIcons name={icon} size={24} color="#fff" />
+        <Text style={styles.cardTitle}>{title}</Text>
+      </View>
+      {topicos.map((texto, index) => (
+        <Topico key={index} text={texto} theme={theme} />
+      ))}
     </View>
-    {topicos.map((texto, index) => (
-      <Topico key={index} text={texto} />
-    ))}
-  </View>
-);
+  );
+};
 
-// --- COMPONENTE PRINCIPAL ---
 export default function Embriologia() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [semana, setSemana] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // useFocusEffect garante que os dados atualizem sempre que a tela for focada
-  useFocusEffect(
-    useCallback(() => {
-      async function carregarDadosDoFirestore() {
-        try {
-          const uid = auth.currentUser?.uid;
-          if (!uid) return;
+  const carregarDadosDoFirestore = async () => {
+    try {
+      const uid = auth.currentUser?.uid;
+      if (!uid) return;
 
-          // Busca direto do Firestore na coleção 'users' (Ajuste o nome se necessário)
-          const userDocRef = doc(firestore, "users", uid);
-          const userDocSnap = await getDoc(userDocRef);
+      const gestacoesRef = collection(firestore, "usuarios", uid, "gestacoes");
+      const q = query(gestacoesRef, where("status", "==", "ativa"));
+      const gestacoesSnap = await getDocs(q);
 
-          if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            const dumString = userData.dataUltimaMenstruacao;
+      if (!gestacoesSnap.empty) {
+        const dadosGestacao = gestacoesSnap.docs[0].data();
+        const dumString = dadosGestacao?.dataUltimaMenstruacao;
 
-            // Validação de segurança para evitar erro no .split()
-            if (
-              dumString &&
-              typeof dumString === "string" &&
-              dumString.includes("/")
-            ) {
-              const p = dumString.split("/");
+        if (
+          dumString &&
+          typeof dumString === "string" &&
+          dumString.includes("/")
+        ) {
+          const p = dumString.split("/");
+          if (p.length === 3) {
+            const dum = new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0]));
+            dum.setHours(0, 0, 0, 0);
 
-              if (p.length === 3) {
-                const dum = new Date(
-                  Number(p[2]),
-                  Number(p[1]) - 1,
-                  Number(p[0]),
-                );
-                const dias = Math.floor(
-                  (Date.now() - dum.getTime()) / 86400000,
-                );
-                setSemana(Math.max(0, Math.floor(dias / 7)));
-              }
-            }
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+
+            const dias = Math.floor(
+              (hoje.getTime() - dum.getTime()) / 86400000,
+            );
+            setSemana(Math.max(0, Math.floor(dias / 7)));
           }
-        } catch (error) {
-          console.error("Erro ao buscar dados do Firestore:", error);
         }
       }
+    } catch (error) {
+      console.error("Erro ao buscar dados do Firestore:", error);
+    }
+  };
 
+  useFocusEffect(
+    useCallback(() => {
       carregarDadosDoFirestore();
     }, []),
   );
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await carregarDadosDoFirestore();
+    setRefreshing(false);
+  }, []);
+
+  const obterUltimaSemanaDaFase = (titulo: string): number => {
+    const t = titulo.toLowerCase();
+    if (t.includes("1ª e 2ª")) return 2;
+    if (
+      t.includes("3ª semana") ||
+      t.includes("clivagem") ||
+      t.includes("mórula") ||
+      t.includes("blastocisto")
+    )
+      return 3;
+    if (t.includes("nidação")) return 4;
+    if (t.includes("gastrulação") || t.includes("folhetos")) return 5;
+    if (t.includes("neurulação") || t.includes("coração")) return 6;
+    if (
+      t.includes("organogênese") ||
+      t.includes("placenta") ||
+      t.includes("embrião")
+    )
+      return 8;
+    return 42;
+  };
+
+  const cardsOrdenados = [...FASES_EMBRIOLOGIA].sort((a, b) => {
+    const aPassou = obterUltimaSemanaDaFase(a.title) < semana;
+    const bPassou = obterUltimaSemanaDaFase(b.title) < semana;
+
+    if (aPassou && !bPassou) return 1;
+    if (!aPassou && bPassou) return -1;
+    return FASES_EMBRIOLOGIA.indexOf(a) - FASES_EMBRIOLOGIA.indexOf(b);
+  });
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* HEADER */}
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          colors={[theme.colors.primary || staticTheme.colors.primary]}
+          tintColor={theme.colors.primary || staticTheme.colors.primary}
+        />
+      }
+    >
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Embriologia</Text>
         <Text style={styles.headerSubtitle}>
@@ -292,14 +369,14 @@ export default function Embriologia() {
         </View>
       </View>
 
-      {/* RENDERIZAÇÃO DA LISTA DE CARDS MUDOU AQUI */}
-      {FASES_EMBRIOLOGIA.map((fase, index) => (
+      {cardsOrdenados.map((fase, index) => (
         <EmbriologiaCard
           key={index}
           title={fase.title}
           icon={fase.icon}
           color={fase.color}
           topicos={fase.topicos}
+          theme={theme}
         />
       ))}
 
@@ -308,51 +385,70 @@ export default function Embriologia() {
   );
 }
 
-// ... Estilos permanecem exatamente iguais ao seu código original ...
-const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 16, paddingTop: 16 },
-  header: { marginBottom: 24 },
-  headerTitle: {
-    fontSize: 30,
-    fontWeight: "bold",
-    color: theme.colors.primary,
-  },
-  headerSubtitle: { fontSize: 14, color: "#666", marginTop: 6, lineHeight: 22 },
-  weekBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignSelf: "flex-start",
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 30,
-    marginTop: 14,
-  },
-  weekText: { color: "#fff", fontWeight: "600", marginLeft: 8 },
-  card: { borderRadius: 24, padding: 18, marginBottom: 18 },
-  cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 18 },
-  cardTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginLeft: 10,
-    flex: 1,
-  },
-  item: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: "rgba(255,255,255,0.15)",
-    padding: 14,
-    borderRadius: 16,
-    marginBottom: 10,
-  },
-  bullet: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#fff",
-    marginTop: 7,
-    marginRight: 12,
-  },
-  itemText: { flex: 1, color: "#fff", fontSize: 14, lineHeight: 22 },
-});
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    container: { flex: 1, paddingHorizontal: 16, paddingTop: 16 },
+    header: { marginBottom: 24 },
+    headerTitle: {
+      fontSize: theme.texts.title,
+      fontWeight: "bold",
+      color: theme.colors.primary || staticTheme.colors.primary,
+    },
+    headerSubtitle: {
+      fontSize: theme.texts.subtitle,
+      color: "#666",
+      marginTop: 6,
+      lineHeight: 22,
+    },
+    weekBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      alignSelf: "flex-start",
+      backgroundColor: theme.colors.primary || staticTheme.colors.primary,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 30,
+      marginTop: 14,
+    },
+    weekText: {
+      color: "#fff",
+      fontWeight: "600",
+      marginLeft: 8,
+      fontSize: theme.texts.subtitle,
+    },
+    card: { borderRadius: 24, padding: 18, marginBottom: 18 },
+    cardHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 18,
+    },
+    cardTitle: {
+      color: "#fff",
+      fontSize: theme.texts.subtitle,
+      fontWeight: "bold",
+      marginLeft: 10,
+      flex: 1,
+    },
+    item: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      backgroundColor: "rgba(255,255,255,0.15)",
+      padding: 14,
+      borderRadius: 16,
+      marginBottom: 10,
+    },
+    bullet: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      backgroundColor: "#fff",
+      marginTop: 7,
+      marginRight: 12,
+    },
+    itemText: {
+      flex: 1,
+      color: "#fff",
+      fontSize: theme.texts.text,
+      lineHeight: 22,
+    },
+  });

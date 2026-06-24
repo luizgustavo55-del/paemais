@@ -1,4 +1,4 @@
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
 import { auth, firestore } from "@/src/services/firebase";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect } from "expo-router";
@@ -10,11 +10,13 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  RefreshControl,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 
 interface EntradaDiario {
@@ -28,11 +30,15 @@ interface EntradaDiario {
 }
 
 export default function DiarioScreen() {
+  const { theme } = useTheme();
+  const { height } = useWindowDimensions();
+  const isModoCompacto = height < 600;
+  const styles = getStyles(theme, isModoCompacto);
+
   const [entradas, setEntradas] = useState<EntradaDiario[]>([]);
   const [modalVisivel, setModalVisivel] = useState(false);
-
-  // 🔥 Novo estado para controlar se os botões de apagar estão visíveis
   const [modoExclusao, setModoExclusao] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const [idEditando, setIdEditando] = useState<string | number | null>(null);
   const [tituloAtual, setTituloAtual] = useState("");
@@ -61,6 +67,12 @@ export default function DiarioScreen() {
     } catch (e) {
       console.log("Erro ao carregar diário", e);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await carregarDiario();
+    setRefreshing(false);
   };
 
   const abrirNovaEntrada = () => {
@@ -170,7 +182,6 @@ export default function DiarioScreen() {
       );
       setEntradas(novasEntradas);
 
-      // Se apagou tudo, sai do modo de exclusão automaticamente
       if (novasEntradas.length === 0) {
         setModoExclusao(false);
       }
@@ -241,7 +252,7 @@ export default function DiarioScreen() {
           {entradas.length > 0 && modoExclusao && (
             <MaterialCommunityIcons
               name="delete-sweep-outline"
-              size={28}
+              size={isModoCompacto ? 24 : 28}
               color="#e11d48"
             />
           )}
@@ -253,13 +264,21 @@ export default function DiarioScreen() {
           data={entradas}
           keyExtractor={(item) => String(item.id)}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          contentContainerStyle={{ paddingBottom: isModoCompacto ? 20 : 40 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[theme.colors.gestantesPrimary]}
+              tintColor={theme.colors.gestantesPrimary}
+            />
+          }
           ListEmptyComponent={
             <View style={styles.emptyCard}>
               <MaterialCommunityIcons
                 name="book-heart-outline"
-                size={70}
-                color={theme.colors.secondary}
+                size={isModoCompacto ? 50 : 70}
+                color={theme.colors.gestantesSecondary}
               />
               <Text style={styles.emptyText}>O seu diário está vazio.</Text>
             </View>
@@ -303,7 +322,7 @@ export default function DiarioScreen() {
                 >
                   <MaterialCommunityIcons
                     name="trash-can-outline"
-                    size={26}
+                    size={isModoCompacto ? 22 : 26}
                     color="#EF4444"
                   />
                 </TouchableOpacity>
@@ -323,8 +342,8 @@ export default function DiarioScreen() {
 
               <MaterialCommunityIcons
                 name="fountain-pen-tip"
-                size={18}
-                color="#FFF"
+                size={isModoCompacto ? 16 : 18}
+                color={theme.colors.text}
                 style={{ marginLeft: 8 }}
               />
             </TouchableOpacity>
@@ -363,7 +382,7 @@ export default function DiarioScreen() {
 
             <TextInput
               style={styles.inputArea}
-              placeholder="Escreva sobre o seu dia, sentimentos..."
+              placeholder="Escreva sobre o seu dia"
               placeholderTextColor="#94A3B8"
               multiline
               autoFocus={!idEditando}
@@ -388,141 +407,129 @@ export default function DiarioScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8fafc" },
-  header: {
-    width: "100%",
-    height: 50,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  headerLeft: { width: 40, alignItems: "flex-start" },
-
-  apagar: {
-    position: "absolute",
-    right: 20,
-    top: 10,
-  },
-  tituloHeader: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
-  },
-  content: { flex: 1, padding: 20 },
-
-  button: {
-    backgroundColor: theme.colors.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    flexDirection: "row",
-    height: 60,
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-  },
-  buttonText: {
-    color: "#FFF",
-    fontWeight: "bold",
-    fontSize: theme.texts.text,
-  },
-  emptyCard: {
-    backgroundColor: "#FFF",
-    borderRadius: 16,
-    padding: 40,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    marginTop: 20,
-  },
-  emptyText: {
-    marginTop: 15,
-    color: "#64748B",
-    fontSize: 16,
-    textAlign: "center",
-  },
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: "#fff",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  cardInfo: { flex: 1, paddingRight: 15 },
-
-  cardTitulo: {
-    fontWeight: "bold",
-    color: theme.colors.title,
-    fontSize: theme.texts.title,
-    marginBottom: 6,
-  },
-
-  dataContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  cardData: {
-    color: theme.colors.subtitle,
-    fontSize: theme.texts.text,
-  },
-  lixeira: { padding: 5, justifyContent: "center", alignItems: "center" },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    padding: 25,
-    height: "85%",
-  },
-  modalHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-
-  modalTitulo: {
-    fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.title,
-  },
-  inputTitulo: {
-    backgroundColor: "#f8fafc",
-    borderRadius: 12,
-    padding: 15,
-    fontSize: theme.texts.title,
-    color: theme.colors.title,
-    marginBottom: 15,
-    fontWeight: "bold",
-  },
-
-  inputArea: {
-    flex: 1,
-    backgroundColor: "#f8fafc",
-    borderRadius: 16,
-    padding: 20,
-    fontSize: theme.texts.text,
-    color: theme.colors.subtitle,
-    marginBottom: 20,
-  },
-  saveButton: {
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+const getStyles = (theme: any, isModoCompacto: boolean) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: "#f8fafc" },
+    header: {
+      width: "100%",
+      height: isModoCompacto ? 45 : 50,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: isModoCompacto ? 10 : 0,
+    },
+    headerLeft: { width: 40, alignItems: "flex-start" },
+    apagar: {
+      position: "absolute",
+      right: 20,
+      top: isModoCompacto ? 8 : 10,
+    },
+    tituloHeader: {
+      fontSize: theme.texts.title,
+      fontWeight: "bold",
+      color: theme.colors.gestantesPrimary,
+    },
+    content: { flex: 1, padding: isModoCompacto ? 16 : 20 },
+    button: {
+      backgroundColor: theme.colors.gestantesPrimary,
+      justifyContent: "center",
+      alignItems: "center",
+      flexDirection: "row",
+      height: isModoCompacto ? 50 : 60,
+      borderRadius: 12,
+      elevation: 2,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 3,
+    },
+    buttonText: {
+      color: theme.colors.text,
+      fontWeight: "bold",
+      fontSize: theme.texts.text,
+    },
+    emptyCard: {
+      backgroundColor: "#FFF",
+      borderRadius: 16,
+      padding: isModoCompacto ? 25 : 40,
+      alignItems: "center",
+      borderWidth: 1,
+      borderColor: "#e2e8f0",
+      marginTop: isModoCompacto ? 10 : 20,
+    },
+    emptyText: {
+      marginTop: 15,
+      color: theme.colors.title,
+      fontSize: theme.texts.text,
+      textAlign: "center",
+    },
+    card: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      backgroundColor: "#fff",
+      paddingVertical: isModoCompacto ? 10 : 12,
+      paddingHorizontal: 16,
+      marginBottom: 12,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: "#e2e8f0",
+    },
+    cardInfo: { flex: 1, paddingRight: 15 },
+    cardTitulo: {
+      fontWeight: "bold",
+      color: theme.colors.gestantesSecondary,
+      fontSize: theme.texts.subtitle,
+      marginBottom: 6,
+    },
+    dataContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    cardData: {
+      color: theme.colors.subtitle,
+      fontSize: theme.texts.text,
+    },
+    lixeira: { padding: 5, justifyContent: "center", alignItems: "center" },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      justifyContent: "flex-end",
+    },
+    modalContent: {
+      backgroundColor: "#fff",
+      borderTopLeftRadius: 30,
+      borderTopRightRadius: 30,
+      padding: isModoCompacto ? 20 : 25,
+      height: isModoCompacto ? "95%" : "85%",
+    },
+    modalHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: isModoCompacto ? 14 : 20,
+    },
+    modalTitulo: {
+      fontSize: theme.texts.title,
+      fontWeight: "bold",
+      color: theme.colors.gestantesPrimary,
+    },
+    inputTitulo: {
+      backgroundColor: "#f8fafc",
+      borderRadius: 12,
+      padding: isModoCompacto ? 12 : 15,
+      fontSize: theme.texts.title,
+      color: theme.colors.title,
+      marginBottom: isModoCompacto ? 10 : 15,
+      fontWeight: "bold",
+    },
+    inputArea: {
+      flex: 1,
+      backgroundColor: "#f8fafc",
+      borderRadius: 16,
+      padding: isModoCompacto ? 16 : 20,
+      fontSize: theme.texts.text,
+      color: theme.colors.title,
+      marginBottom: isModoCompacto ? 14 : 20,
+    },
+  });

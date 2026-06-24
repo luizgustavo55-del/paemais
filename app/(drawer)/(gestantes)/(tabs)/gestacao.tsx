@@ -7,30 +7,25 @@ import Nomes from "@/src/components/(barra)/Nomes";
 import Planejamentos from "@/src/components/(barra)/Planejamento";
 import VisaoGeral from "@/src/components/(barra)/VisaoGeral";
 import { dadosSemanas } from "@/src/constants/infoGest";
-import { theme } from "@/src/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
+import { useUnit } from "@/src/context/UnitContext";
+import { auth, firestore } from "@/src/services/firebase";
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerActions } from "@react-navigation/native";
-import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation } from "expo-router";
+import { onAuthStateChanged } from "firebase/auth";
+import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
+  Image,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
-
-// 🔥 IMPORTS ATUALIZADOS
-import { auth, firestore } from "@/src/services/firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import {
-  collection,
-  doc,
-  onSnapshot, // Trocado getDoc por onSnapshot para escutar em tempo real
-  query,
-  where,
-} from "firebase/firestore";
 
 const ferra = [
   { id: "1", title: "Visão Geral", icon: "home-outline" },
@@ -44,9 +39,19 @@ const ferra = [
 ];
 
 export default function Inicio() {
+  const { theme } = useTheme();
+  const { unidadeAtual } = useUnit();
+
+  const { height } = useWindowDimensions();
+  const isModoCompacto = height < 650;
+
+  const styles = getStyles(theme, isModoCompacto);
+
   const navigation = useNavigation();
   const [escolha, setEscolha] = useState("1");
   const [nome, setNome] = useState("");
+  const [fotoPerfil, setFotoPerfil] = useState<string | null>(null);
+
   const [semana, setSemana] = useState(0);
   const [dias, setDias] = useState(0);
   const [tamanho, setTamanho] = useState("...");
@@ -54,19 +59,44 @@ export default function Inicio() {
   const [fruta, setFruta] = useState("...");
   const [emoji, setEmoji] = useState("...");
 
+  const formatarTamanho = (valorCmStr: string) => {
+    if (!valorCmStr || valorCmStr === "...") return "...";
+    if (unidadeAtual === "imperial") {
+      const num = parseFloat(valorCmStr.replace(/[^0-9.]/g, ""));
+      if (isNaN(num)) return valorCmStr;
+      return `${(num * 0.393701).toFixed(1)} in`;
+    }
+    return valorCmStr;
+  };
+
+  const formatarPeso = (valorGramasStr: string) => {
+    if (!valorGramasStr || valorGramasStr === "...") return "...";
+    if (unidadeAtual === "imperial") {
+      const isKg = valorGramasStr.toLowerCase().includes("kg");
+      let num = parseFloat(valorGramasStr.replace(/[^0-9.]/g, ""));
+      if (isNaN(num)) return valorGramasStr;
+
+      if (isKg) num = num * 1000;
+      return `${(num * 0.035274).toFixed(1)} oz`;
+    }
+    return valorGramasStr;
+  };
+
   useEffect(() => {
-    // 🔥 1. Escuta mudanças de Login/Logout
+    let unsubUser: (() => void) | null = null;
+    let unsubGestacao: (() => void) | null = null;
+
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // 🔥 2. Escuta os dados do usuário em tempo real
         const docRef = doc(firestore, "usuarios", user.uid);
-        const unsubUser = onSnapshot(docRef, (docSnap) => {
+        unsubUser = onSnapshot(docRef, (docSnap) => {
           if (docSnap.exists()) {
-            setNome(docSnap.data().nome || "");
+            const dadosUser = docSnap.data();
+            setNome(dadosUser.nome || "");
+            setFotoPerfil(dadosUser.fotoPerfil || null);
           }
         });
 
-        // 🔥 3. Escuta a subcoleção "gestacoes" em tempo real
         const gestacoesRef = collection(
           firestore,
           "usuarios",
@@ -75,7 +105,7 @@ export default function Inicio() {
         );
         const q = query(gestacoesRef, where("status", "==", "ativa"));
 
-        const unsubGestacao = onSnapshot(q, (querySnapshot) => {
+        unsubGestacao = onSnapshot(q, (querySnapshot) => {
           if (!querySnapshot.empty) {
             const dadosGestacao = querySnapshot.docs[0].data();
             const dataDUM = dadosGestacao.dataUltimaMenstruacao;
@@ -112,7 +142,6 @@ export default function Inicio() {
               setEmoji(info.emoji || "...");
             }
           } else {
-            // Se não tiver gestação ativa, zera os dados para não ficar com a da conta anterior
             setSemana(0);
             setDias(0);
             setTamanho("...");
@@ -121,15 +150,12 @@ export default function Inicio() {
             setEmoji("...");
           }
         });
-
-        // Limpa as escutas do Firestore ao desmontar
-        return () => {
-          unsubUser();
-          unsubGestacao();
-        };
       } else {
-        // 🔥 4. Se deslogou, zera todos os estados da tela
+        if (unsubUser) unsubUser();
+        if (unsubGestacao) unsubGestacao();
+
         setNome("");
+        setFotoPerfil(null);
         setSemana(0);
         setDias(0);
         setTamanho("...");
@@ -139,8 +165,11 @@ export default function Inicio() {
       }
     });
 
-    // Limpa a escuta de Auth
-    return () => unsubscribeAuth();
+    return () => {
+      if (unsubUser) unsubUser();
+      if (unsubGestacao) unsubGestacao();
+      unsubscribeAuth();
+    };
   }, []);
 
   const render = () => {
@@ -167,305 +196,268 @@ export default function Inicio() {
   };
 
   return (
-  <View style={styles.container}>
-    <View style={styles.topContainer}>
-      <View style={styles.topHeader}>
-        <TouchableOpacity
-          onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
-          activeOpacity={0.7}
-        >
-          <View style={styles.iconBack}>
-            <Ionicons name="person" size={18} color="#FFF" />
-          </View>
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <StatusBar hidden={true} />
 
-        <View>
-          <Text style={styles.title}>
-            {nome ? `Olá, ${nome.split(" ")[0]} ` : "Minha Gestação"}
-          </Text>
+      <View style={styles.topContainer}>
+        <View style={styles.topHeader}>
+          <TouchableOpacity
+            onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+            activeOpacity={0.7}
+          >
+            <View style={styles.iconBack}>
+              {fotoPerfil ? (
+                <Image
+                  source={{ uri: fotoPerfil }}
+                  style={styles.imagemPerfil}
+                />
+              ) : (
+                <Ionicons
+                  name="person"
+                  size={isModoCompacto ? 14 : 18}
+                  color="#FFF"
+                />
+              )}
+            </View>
+          </TouchableOpacity>
 
-          <Text style={styles.subtitle}>
-            Acompanhe sua gravidez
-          </Text>
-        </View>
-      </View>
-
-      <View style={styles.mainCard}>
-        <View style={styles.mainCardIcon}>
-          <Ionicons
-            name="happy-outline"
-            size={28}
-            color={theme.colors.primary}
-          />
-        </View>
-
-        <View style={{ flex: 1 }}>
-          <Text style={styles.weekText}>
-            {semana} semanas • {dias} dias
-          </Text>
-
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>
-              📏 {tamanho}
+          <View>
+            <Text style={styles.title}>
+              {nome ? `Olá, ${nome.split(" ")[0]} ` : "Minha Gestação"}
             </Text>
+            <Text style={styles.subtitle}>Acompanhe sua gravidez</Text>
+          </View>
+        </View>
 
-            <Text style={styles.infoLabel}>
-              ⚖️ {peso}
+        {isModoCompacto ? (
+          <View style={styles.mainCardCompact}>
+            <Text style={styles.compactCardText}>
+              {semana} sem • {dias}d | 📏 {formatarTamanho(tamanho)} | ⚖️{" "}
+              {formatarPeso(peso)} | {emoji} {fruta}
             </Text>
           </View>
-
-          <Text style={styles.mainInfo}>
-            Comparável a(o): {fruta} {emoji}
-          </Text>
-        </View>
-      </View>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.menuContainer}
-      >
-        {ferra.map((item) => {
-          const ativo = escolha === item.id;
-
-          return (
-            <TouchableOpacity
-              key={item.id}
-              activeOpacity={0.85}
-              style={[
-                styles.menuButton,
-                ativo && styles.menuButtonActive,
-              ]}
-              onPress={() => setEscolha(item.id)}
-            >
-              <Ionicons
-                name={item.icon as any}
-                size={17}
-                color={ativo ? "#FFF" : "#8B2F61"}
+        ) : (
+          <View style={styles.mainCard}>
+            <View style={styles.mainCardIcon}>
+              <Image
+                source={require("@/assets/images/logo.png")}
+                style={styles.imagemCardIcon}
+                resizeMode="cover"
               />
+            </View>
 
-              <Text
-                style={[
-                  styles.menuText,
-                  ativo && styles.menuTextActive,
-                ]}
-              >
-                {item.title}
+            <View style={{ flex: 1 }}>
+              <Text style={styles.weekText}>
+                {semana} semanas • {dias} dias
               </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
-    </View>
 
-    <View style={styles.content}>
-      {render()}
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>
+                  📏 {formatarTamanho(tamanho)}
+                </Text>
+                <Text style={styles.infoLabel}>⚖️ {formatarPeso(peso)}</Text>
+              </View>
+
+              <Text style={styles.mainInfo}>
+                Comparável a(o): {fruta} {emoji}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.menuContainer}
+        >
+          {ferra.map((item) => {
+            const ativo = escolha === item.id;
+
+            return (
+              <TouchableOpacity
+                key={item.id}
+                activeOpacity={0.85}
+                style={[styles.menuButton, ativo && styles.menuButtonActive]}
+                onPress={() => setEscolha(item.id)}
+              >
+                <Ionicons
+                  name={item.icon as any}
+                  size={isModoCompacto ? 14 : 17}
+                  color={ativo ? "#FFF" : "#8B2F61"}
+                />
+                <Text style={[styles.menuText, ativo && styles.menuTextActive]}>
+                  {item.title}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+      <View style={styles.content}>{render()}</View>
     </View>
-  </View>
-);
+  );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFF5FA",
-  },
-
-  /* TOPO */
-  topContainer: {
-    paddingTop: 42,
-    paddingBottom: 20,
-    paddingHorizontal: 18,
-
-    backgroundColor: "#C54286",
-
-
-    elevation: 6,
-
-    shadowColor: "#8B2F61",
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-
-    shadowOffset: {
-      width: 0,
-      height: 4,
+const getStyles = (theme: any, isModoCompacto: boolean) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#FFF5FA",
     },
-  },
-
-  topHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-
-    marginBottom: 15,
-  },
-
-  iconBack: {
-    width: 44,
-    height: 44,
-
-    borderRadius: 22,
-
-    backgroundColor: "rgba(255,255,255,0.16)",
-
-    justifyContent: "center",
-    alignItems: "center",
-
-    marginRight: 14,
-  },
-
-  title: {
-    color: "#FFFFFF",
-
-    fontSize: 26,
-
-    fontWeight: "700",
-
-    letterSpacing: 0.3,
-  },
-
-  subtitle: {
-    color: "#FCE1EC",
-
-    marginTop: 3,
-
-    fontSize: 14,
-
-    fontWeight: "500",
-  },
-
-  /* CARD PRINCIPAL */
-  mainCard: {
-    backgroundColor: "#e0a0c0",
-
-    borderRadius: 24,
-
-    padding: 18,
-
-    flexDirection: "row",
-
-    alignItems: "center",
-
-    marginBottom: 18,
-
-    borderWidth: 1,
-    borderColor: "#e0a0c0",
-
-    elevation: 4,
-
-    shadowColor: "#A13D71",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-
-    shadowOffset: {
-      width: 0,
-      height: 4,
+    topContainer: {
+      paddingTop: isModoCompacto ? 24 : 20,
+      paddingBottom: isModoCompacto ? 10 : 20,
+      paddingHorizontal: 18,
+      backgroundColor: theme.colors.gestantesBackground,
+      borderBottomRightRadius: 12,
+      borderBottomLeftRadius: 12,
+      elevation: 6,
+      shadowColor: theme.colors.gestantesPrimary,
+      shadowOpacity: 0.12,
+      shadowRadius: 8,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
     },
-  },
-
-  mainCardIcon: {
-    width: 62,
-    height: 62,
-
-    borderRadius: 31,
-
-    backgroundColor: "#FFD9EC",
-
-    justifyContent: "center",
-    alignItems: "center",
-
-    marginRight: 15,
-  },
-
-  weekText: {
-    color: "#8B2F61",
-
-    fontSize: 18,
-
-    fontWeight: "700",
-
-    marginBottom: 10,
-  },
-
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-
-    gap: 10,
-
-    marginBottom: 8,
-  },
-
-  infoLabel: {
-    color: "#8B2F61",
-
-    fontSize: 13,
-
-    fontWeight: "600",
-
-    backgroundColor: "#FFF5FA",
-
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-
-    borderRadius: 12,
-  },
-
-  mainInfo: {
-    color: "#7A4A63",
-
-    fontSize: 14,
-
-    lineHeight: 22,
-  },
-
-  /* MENU */
-  menuContainer: {
-    paddingBottom: 4,
-    paddingRight: 20,
-  },
-
-  menuButton: {
-    flexDirection: "row",
-    alignItems: "center",
-
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-
-    backgroundColor: "#FFF0F8",
-
-    borderRadius: 16,
-
-    marginRight: 10,
-
-    borderWidth: 1,
-    borderColor: "#F4C7DD",
-  },
-
-  menuButtonActive: {
-    backgroundColor: "#8B2F61",
-
-    borderColor: "#8B2F61",
-  },
-
-  menuText: {
-    marginLeft: 7,
-
-    color: "#8B2F61",
-
-    fontSize: 13,
-
-    fontWeight: "600",
-  },
-
-  menuTextActive: {
-    color: "#FFFFFF",
-  },
-
-  /* CONTEÚDO */
-  content: {
-    flex: 1,
-
-    paddingHorizontal: 14,
-    paddingTop: 16,
-  },
-});
+    topHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: isModoCompacto ? 8 : 15,
+    },
+    iconBack: {
+      width: isModoCompacto ? 34 : 44,
+      height: isModoCompacto ? 34 : 44,
+      borderRadius: isModoCompacto ? 17 : 22,
+      backgroundColor: "rgba(255,255,255,0.16)",
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 14,
+      overflow: "hidden",
+    },
+    imagemPerfil: {
+      width: "100%",
+      height: "100%",
+      borderRadius: isModoCompacto ? 17 : 22,
+    },
+    title: {
+      color: theme.colors.text,
+      fontSize: isModoCompacto ? 18 : theme.texts.title,
+      fontWeight: "700",
+      letterSpacing: 0.3,
+    },
+    subtitle: {
+      color: theme.colors.subtitle,
+      marginTop: isModoCompacto ? 1 : 3,
+      fontSize: isModoCompacto ? 12 : theme.texts.subtitle,
+      fontWeight: "500",
+    },
+    mainCard: {
+      backgroundColor: theme.colors.gestantesSecondary,
+      borderRadius: 24,
+      padding: 18,
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 18,
+      borderWidth: 1,
+      borderColor: "#e0a0c0",
+      elevation: 4,
+      shadowColor: "#A13D71",
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+    },
+    mainCardCompact: {
+      backgroundColor: theme.colors.gestantesSecondary,
+      borderRadius: 14,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      alignItems: "center",
+      justifyContent: "center",
+      marginBottom: 10,
+      borderWidth: 1,
+      borderColor: "#e0a0c0",
+    },
+    compactCardText: {
+      color: theme.colors.gestantesPrimary,
+      fontSize: 13,
+      fontWeight: "600",
+      textAlign: "center",
+    },
+    mainCardIcon: {
+      width: 62,
+      height: 62,
+      borderRadius: 31,
+      backgroundColor: "#FFD9EC",
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 15,
+      overflow: "hidden",
+    },
+    imagemCardIcon: {
+      width: "100%",
+      height: "100%",
+    },
+    weekText: {
+      color: theme.colors.gestantesPrimary,
+      fontSize: theme.texts.subtitle,
+      fontWeight: "700",
+      marginBottom: 10,
+    },
+    infoRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 8,
+    },
+    infoLabel: {
+      color: theme.colors.gestantesPrimary,
+      fontSize: theme.texts.text,
+      fontWeight: "600",
+      backgroundColor: "#FFF5FA",
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 12,
+    },
+    mainInfo: {
+      color: theme.colors.subtitle,
+      fontSize: theme.texts.text,
+      lineHeight: 22,
+    },
+    menuContainer: {
+      paddingBottom: 4,
+      paddingRight: 20,
+    },
+    menuButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: isModoCompacto ? 12 : 16,
+      paddingVertical: isModoCompacto ? 8 : 11,
+      backgroundColor: "#FFF0F8",
+      borderRadius: isModoCompacto ? 12 : 16,
+      marginRight: 10,
+      borderWidth: 1,
+      borderColor: "#F4C7DD",
+    },
+    menuButtonActive: {
+      backgroundColor: "#8B2F61",
+      borderColor: "#8B2F61",
+    },
+    menuText: {
+      marginLeft: 7,
+      color: theme.colors.gestantesPrimary,
+      fontSize: isModoCompacto ? 13 : theme.texts.text,
+      fontWeight: "600",
+    },
+    menuTextActive: {
+      color: theme.colors.text,
+    },
+    content: {
+      flex: 1,
+      paddingHorizontal: 14,
+      paddingTop: isModoCompacto ? 8 : 16,
+    },
+  });

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,7 +14,8 @@ import { useRouter } from "expo-router";
 import { Configuracoes } from "@/src/components/(menu)/Configuracoes";
 import { EditarPerfil } from "@/src/components/(menu)/EditarPerfil";
 
-import { theme } from "@/src/constants/theme";
+// 1. Trocamos o import estático pelo useTheme do seu Context
+import { useTheme } from "@/src/context/ThemeContext";
 import { auth, firestore } from "@/src/services/firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
@@ -21,10 +23,15 @@ import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
 export default function Menulateral() {
   const router = useRouter();
 
+  // 2. Extraímos o tema dinâmico e passamos para a função de estilos
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
   const [userData, setUserData] = useState({
     nome: "Carregando...",
     email: "",
     tipo: "gestante",
+    fotoPerfil: null as string | null,
   });
 
   const [gravidezData, setGravidezData] = useState({
@@ -50,6 +57,7 @@ export default function Menulateral() {
                 nome: dbData.nome || "Usuário",
                 email: user.email || dbData.email || "",
                 tipo: dbData.tipo || "gestante",
+                fotoPerfil: dbData.fotoPerfil || null,
               });
 
               if (dbData.tipo === "pai") {
@@ -120,7 +128,12 @@ export default function Menulateral() {
           (error) => {},
         );
       } else {
-        setUserData({ nome: "Carregando...", email: "", tipo: "" });
+        setUserData({
+          nome: "Carregando...",
+          email: "",
+          tipo: "",
+          fotoPerfil: null,
+        });
         setGravidezData({ semanasText: "Não configurado", dataParto: "..." });
         unsubUser();
         unsubGestacao();
@@ -147,9 +160,16 @@ export default function Menulateral() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>
-            {userData.nome?.charAt(0)?.toUpperCase()}
-          </Text>
+          {userData.fotoPerfil ? (
+            <Image
+              source={{ uri: userData.fotoPerfil }}
+              style={styles.avatarImage}
+            />
+          ) : (
+            <Text style={styles.avatarText}>
+              {userData.nome?.charAt(0)?.toUpperCase()}
+            </Text>
+          )}
         </View>
 
         <View style={styles.headerTextContainer}>
@@ -200,69 +220,80 @@ export default function Menulateral() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  header: {
-    padding: 30,
-    paddingTop: 60,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: theme.colors.gestantesSecondary,
-  },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatarText: { color: "green", fontSize: 24, fontWeight: "600" },
-  headerTextContainer: { marginLeft: 15, flex: 1 },
-  name: {
-    color: theme.colors.text,
-    fontSize: theme.texts.title,
-    fontWeight: "700",
-  },
-  email: {
-    color: theme.colors.text,
-    fontSize: theme.texts.text,
-    marginTop: 2,
-  },
-  content: { paddingTop: 20 },
-  section: { paddingHorizontal: 20, marginBottom: 20 },
-  title: {
-    fontSize: theme.texts.title,
-    color: theme.colors.title,
-    marginBottom: 15,
-    fontWeight: "bold",
-  },
-  card: {
-    backgroundColor: theme.colors.gestantesSecondary,
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 10,
-  },
-  cardSubtitle: {
-    fontSize: theme.texts.subtitle,
-    color: theme.colors.subtitle,
-    marginBottom: 5,
-  },
-  cardValue: {
-    fontSize: theme.texts.text,
-    color: theme.colors.text,
-    fontWeight: "600",
-  },
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  menuItemText: {
-    marginLeft: 15,
-    fontSize: theme.texts.subtitle,
-    color: "#333",
-  },
-});
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    container: { flex: 1 },
+    header: {
+      padding: 20,
+      paddingTop: 50,
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: theme.colors.gestantesSecondary,
+    },
+    avatar: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: "#fff",
+      justifyContent: "center",
+      alignItems: "center",
+      overflow: "hidden",
+    },
+    avatarImage: {
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+    },
+    avatarText: {
+      color: "green",
+      fontSize: theme.texts.title,
+      fontWeight: "600",
+    },
+    headerTextContainer: { marginLeft: 15, flex: 1 },
+    name: {
+      color: theme.colors.text,
+      fontSize: theme.texts.title,
+      fontWeight: "700",
+    },
+    email: {
+      color: theme.colors.text,
+      fontSize: theme.texts.text,
+      marginTop: 2,
+    },
+    content: { paddingTop: 20 },
+    section: { paddingHorizontal: 20, marginBottom: 20 },
+    title: {
+      fontSize: theme.texts.title,
+      color: theme.colors.title,
+      marginBottom: 15,
+      fontWeight: "bold",
+    },
+    card: {
+      backgroundColor: theme.colors.gestantesSecondary,
+      padding: 15,
+      borderRadius: 12,
+      marginBottom: 10,
+    },
+    cardSubtitle: {
+      fontSize: theme.texts.subtitle,
+      color: theme.colors.subtitle,
+      marginBottom: 5,
+    },
+    cardValue: {
+      fontSize: theme.texts.text,
+      color: theme.colors.text,
+      fontWeight: "600",
+    },
+    menuItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: "#f0f0f0",
+    },
+    menuItemText: {
+      marginLeft: 15,
+      fontSize: theme.texts.subtitle,
+      color: "#333",
+    },
+  });
