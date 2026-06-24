@@ -1,6 +1,8 @@
 import { useTheme } from "@/src/context/ThemeContext";
 import { auth, firestore } from "@/src/services/firebase";
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Notifications from "expo-notifications";
+import { useRouter } from "expo-router";
 import {
   arrayRemove,
   arrayUnion,
@@ -14,7 +16,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -30,10 +32,20 @@ import {
   View,
 } from "react-native";
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
 export default function Compartilhar() {
   const { theme } = useTheme();
   const styles = getStyles(theme);
-
+  const router = useRouter();
   const [nomeUser, setNomeUser] = useState("...");
   const [codigo, setCodigo] = useState("------");
   const [tipoUser, setTipoUser] = useState<"gestante" | "pai" | "mae" | "">("");
@@ -51,9 +63,11 @@ export default function Compartilhar() {
   const [modalVisivel, setModalVisivel] = useState(false);
   const [modalSolicitacoesVisivel, setModalSolicitacoesVisivel] =
     useState(false);
-
   const [imagemZoomVisivel, setImagemZoomVisivel] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+
+  const qtdSolicitacoesRef = useRef(0);
+  const primeiraCargaRef = useRef(true);
 
   const corPrimaria =
     tipoUser === "gestante"
@@ -121,6 +135,51 @@ export default function Compartilhar() {
           setNomeUser(dados.nome || "Usuário");
           setCodigo(dados.codigoCompartilhamento || "------");
           setTipoUser(dados.tipo || "");
+
+          const solicitacoesAtuais = dados.solicitacoesRecebidas || [];
+
+          if (
+            !primeiraCargaRef.current &&
+            solicitacoesAtuais.length > qtdSolicitacoesRef.current
+          ) {
+            const config = dados.configuracoes || {};
+            const notificacoesDesligadas = config.notificacoesAtivas === false;
+
+            let emDescanso = false;
+            if (config.descansoAtivo && config.horaInicio && config.horaFim) {
+              const agora = new Date();
+              const minutosAtual = agora.getHours() * 60 + agora.getMinutes();
+
+              const [hI, mI] = config.horaInicio.split(":").map(Number);
+              const minutosInicio = hI * 60 + mI;
+
+              const [hF, mF] = config.horaFim.split(":").map(Number);
+              const minutosFim = hF * 60 + mF;
+
+              if (minutosInicio < minutosFim) {
+                emDescanso =
+                  minutosAtual >= minutosInicio && minutosAtual < minutosFim;
+              } else {
+                emDescanso =
+                  minutosAtual >= minutosInicio || minutosAtual < minutosFim;
+              }
+            }
+
+            if (!notificacoesDesligadas && !emDescanso) {
+              Notifications.scheduleNotificationAsync({
+                content: {
+                  title: "Novo Pedido de Amizade! 🤝",
+                  body: "Alguém adicionou o seu código de compartilhamento.",
+                  sound: true,
+                },
+                trigger: null,
+              });
+            }
+          }
+
+          qtdSolicitacoesRef.current = solicitacoesAtuais.length;
+          primeiraCargaRef.current = false;
+
           await carregarDadosListas(dados);
         }
       },
@@ -273,7 +332,6 @@ export default function Compartilhar() {
     }
   }
 
-  // --- NOVA FUNÇÃO PARA REMOVER AMIZADE ---
   function removerAmizade(amigoId: string, nomeAmigo: string) {
     Alert.alert(
       "Remover Amizade",
@@ -322,11 +380,19 @@ export default function Compartilhar() {
         />
       }
     >
-      {/* CARD DO CÓDIGO */}
       <View style={[styles.card, { borderColor: corPrimaria, borderWidth: 1 }]}>
         <View style={styles.iconCircle}>
           <Ionicons name="qr-code" size={30} color={corPrimaria} />
         </View>
+        <Text
+          style={{
+            fontSize: theme.texts.subtitle,
+            fontWeight: "600",
+            color: theme.colors.text,
+          }}
+        >
+          Olá, {nomeUser}
+        </Text>
         <Text
           style={{
             color: theme.colors.subtitle,
@@ -336,7 +402,7 @@ export default function Compartilhar() {
         >
           {getTipoTexto(tipoUser)}
         </Text>
-        <Text style={styles.title}>Seu Código</Text>
+        <Text style={[styles.title, { marginTop: 10 }]}>Seu Código</Text>
 
         <View style={styles.codeRow}>
           <Text style={[styles.codeText, { color: corPrimaria }]}>
@@ -355,7 +421,6 @@ export default function Compartilhar() {
         </View>
       </View>
 
-      {/* ENVIAR SOLICITAÇÃO */}
       <View style={styles.vincularSection}>
         <Text style={styles.sectionLabel}>Adicionar Amigos</Text>
         <View style={styles.inputRow}>
@@ -379,7 +444,6 @@ export default function Compartilhar() {
         </View>
       </View>
 
-      {/* SEÇÃO DA LISTA */}
       <View style={styles.headerAmigosRow}>
         <Text style={styles.sectionLabelSemMargem}>
           Amigos ({amigos.length})
@@ -430,12 +494,39 @@ export default function Compartilhar() {
               </View>
             </View>
 
-            <TouchableOpacity
-              style={[styles.btnVerPerfil, { backgroundColor: corPrimaria }]}
-              onPress={() => buscarDetalhesAmigo(amigo)}
+            <View
+              style={{
+                flexDirection: "row",
+                width: "100%",
+                paddingTop: 10,
+                justifyContent: "space-between",
+                gap: 10,
+              }}
             >
-              <Text style={styles.btnVerPerfilText}>Ver Perfil</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.btnVerPerfil,
+                  { backgroundColor: corPrimaria, flex: 1 },
+                ]}
+                onPress={() => buscarDetalhesAmigo(amigo)}
+              >
+                <Text style={styles.btnVerPerfilText}>Ver Perfil</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.btnVerPerfil,
+                  { backgroundColor: corPrimaria, flex: 1 },
+                ]}
+                onPress={() =>
+                  router.push({
+                    pathname: "/chat",
+                    params: { id: amigo.id, nomeAmigo: amigo.nome },
+                  })
+                }
+              >
+                <Text style={styles.btnVerPerfilText}>Chat</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ))
       ) : (
@@ -444,7 +535,6 @@ export default function Compartilhar() {
         </View>
       )}
 
-      {/* MODAL SOLICITAÇÕES RECEBIDAS */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -507,7 +597,6 @@ export default function Compartilhar() {
         </View>
       </Modal>
 
-      {/* MODAL DE VISUALIZAÇÃO DO PERFIL */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -860,12 +949,13 @@ const getStyles = (theme: any) =>
     nomeText: { fontWeight: "bold", fontSize: theme.texts.subtitle },
     subText: { fontSize: theme.texts.text, color: "#666" },
     btnVerPerfil: {
-      padding: 10,
+      paddingVertical: 8,
       borderRadius: 10,
       alignItems: "center",
+      justifyContent: "center",
     },
     btnVerPerfilText: {
-      color: "white",
+      color: theme.colors.text,
       fontWeight: "bold",
       fontSize: theme.texts.text,
     },

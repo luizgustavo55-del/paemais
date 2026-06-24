@@ -17,6 +17,14 @@ export default function Layout() {
             <Stack.Screen name="MenuPage" />
             <Stack.Screen name="comentarios" />
             <Stack.Screen name="Compartilhar" />
+            <Stack.Screen
+              name="chat"
+              options={{
+                headerShown: false,
+                title: "Chat",
+                animation: "slide_from_right",
+              }}
+            />
           </Stack>
         </UnitProvider>
       </ThemeProvider>
