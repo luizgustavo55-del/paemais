@@ -1,5 +1,7 @@
 import {
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -25,447 +27,929 @@ import {
 
 import * as Notifications from "expo-notifications";
 
-export default function AgendaModal({ onClose }: any) {
-  const [aba, setAba] = useState<"agenda" | "historico">("agenda");
+// ─── Tipos ────────────────────────────────────────────────────────────────────
 
-  const [selectedDate, setSelectedDate] = useState("");
+type Evento = {
+  id: string;
+  titulo: string;
+  descricao?: string;
+  categoria: string;
+  data: number; // timestamp ms
+  notificationId?: string;
+  _tipo: "evento";
+};
+
+type Lembrete = {
+  id: string;
+  titulo?: string;
+  nome?: string;        // alguns lembretes podem usar "nome"
+  descricao?: string;
+  data: number;
+  hora?: string;        // ex: "08:00" caso venha separado
+  _tipo: "lembrete";
+};
+
+type Item = Evento | Lembrete;
+
+// ─── Utilitários ──────────────────────────────────────────────────────────────
+
+const CATEGORIAS = ["Geral", "Consulta", "Vacinação", "Exame"];
+
+const COR_CATEGORIA: Record<string, string> = {
+  Geral: "#7050b3",
+  Consulta: "#0891b2",
+  Vacinação: "#16a34a",
+  Exame: "#d97706",
+};
+
+function dateToKey(ts: number): string {
+  const d = new Date(ts);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function formatHora(ts: number): string {
+  const d = new Date(ts);
+  return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
+function keyToDate(dateStr: string) {
+  const [y, m, day] = dateStr.split("-").map(Number);
+  return { y, m, day };
+}
+
+// ─── Componente ───────────────────────────────────────────────────────────────
+
+export default function AgendaModal({ onClose }: { onClose: () => void }) {
+  const [selectedDate, setSelectedDate] = useState<string>("");
   const [time, setTime] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
 
   const [titulo, setTitulo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [categoria, setCategoria] = useState("Geral");
-
   const [showCategorias, setShowCategorias] = useState(false);
   const [modoAdicionar, setModoAdicionar] = useState(false);
 
-  const categorias = ["Geral", "Consulta", "Vacinação", "Exame"];
-
-  const [eventos, setEventos] = useState<any[]>([]);
+  const [eventos, setEventos] = useState<Evento[]>([]);
+  const [lembretes, setLembretes] = useState<Lembrete[]>([]);
   const [editandoId, setEditandoId] = useState<string | null>(null);
 
   const user = auth.currentUser;
 
+  // ── Snapshot: Eventos ──────────────────────────────────────────────────────
+
   useEffect(() => {
     if (!user?.uid) return;
-
-    const eventosRef = collection(firestore, "usuarios", user.uid, "eventos");
-
-    const unsubscribe = onSnapshot(eventosRef, (snapshot) => {
-      const lista = snapshot.docs.map((docItem) => ({
-        id: docItem.id,
-        ...docItem.data(),
-      }));
-      setEventos(lista);
+    const ref = collection(firestore, "usuarios", user.uid, "eventos");
+    return onSnapshot(ref, (snap) => {
+      setEventos(
+        snap.docs.map((d) => ({ id: d.id, _tipo: "evento", ...d.data() } as Evento))
+      );
     });
-
-    return () => unsubscribe();
   }, [user]);
 
-  function juntarDataHora() {
-    const [year, month, day] = selectedDate.split("-").map(Number);
+  // ── Snapshot: Lembretes ───────────────────────────────────────────────────
 
-    const d = new Date();
-    d.setFullYear(year);
-    d.setMonth(month - 1);
-    d.setDate(day);
-
-    d.setHours(time.getHours());
-    d.setMinutes(time.getMinutes());
-    d.setSeconds(0);
-    d.setMilliseconds(0);
-
-    return d.getTime();
-  }
-
-  async function notificar(titulo: string, timestamp: number) {
-    if (timestamp <= Date.now()) return null;
-
-    const id = await Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Evento",
-        body: titulo,
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: new Date(timestamp),
-      },
-    });
-
-    return id;
-  }
-
-  async function adicionarEvento() {
-    if (!titulo || !selectedDate || !user?.uid) {
-      Alert.alert("Preencha tudo");
-      return;
-    }
-
-    const dataFinal = juntarDataHora();
-    const notificationId = await notificar(titulo, dataFinal);
-
-    try {
-      if (editandoId) {
-        const eventoRef = doc(
-          firestore,
-          "usuarios",
-          user.uid,
-          "eventos",
-          editandoId,
-        );
-        await updateDoc(eventoRef, {
-          titulo,
-          descricao,
-          categoria,
-          data: dataFinal,
-          notificationId,
-        });
-        setEditandoId(null);
-      } else {
-        const eventosRef = collection(
-          firestore,
-          "usuarios",
-          user.uid,
-          "eventos",
-        );
-        await addDoc(eventosRef, {
-          titulo,
-          descricao,
-          categoria,
-          data: dataFinal,
-          notificationId,
-        });
-      }
-
-      setTitulo("");
-      setDescricao("");
-      setCategoria("Geral");
-      setModoAdicionar(false);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  function editarEvento(evento: any) {
-    const d = new Date(evento.data);
-
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-
-    setTitulo(evento.titulo);
-    setDescricao(evento.descricao || "");
-    setCategoria(evento.categoria || "Geral");
-    setSelectedDate(`${y}-${m}-${day}`);
-    setTime(d);
-    setEditandoId(evento.id);
-    setModoAdicionar(true);
-    setAba("agenda");
-  }
-
-  async function excluirEvento(id: string) {
+  useEffect(() => {
     if (!user?.uid) return;
+    const ref = collection(firestore, "usuarios", user.uid, "lembretes");
+    return onSnapshot(ref, (snap) => {
+      setLembretes(
+        snap.docs.map((d) => {
+          const data = d.data();
+          // Normaliza timestamp: aceita campo "data" (ms), "dataHora" ou constrói a partir de "data"+"hora"
+          let ts: number = data.data;
+          if (!ts && data.dataHora) ts = new Date(data.dataHora).getTime();
+          if (!ts && data.hora) {
+            // "hora" como "HH:mm" + "data" como "YYYY-MM-DD"
+            const [h, min] = (data.hora as string).split(":").map(Number);
+            const base = data.data ? new Date(data.data) : new Date();
+            base.setHours(h, min, 0, 0);
+            ts = base.getTime();
+          }
+          return { id: d.id, _tipo: "lembrete", ...data, data: ts } as Lembrete;
+        })
+      );
+    });
+  }, [user]);
 
-    try {
-      const eventoRef = doc(firestore, "usuarios", user.uid, "eventos", id);
-      await deleteDoc(eventoRef);
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  // ── Marked dates ──────────────────────────────────────────────────────────
 
-  const eventosDoDia = eventos.filter((e) => {
-    const d = new Date(e.data);
+  const marked: Record<string, any> = {};
 
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-
-    return `${y}-${m}-${day}` === selectedDate;
+  [...eventos, ...lembretes].forEach((item) => {
+    if (!item.data) return;
+    const key = dateToKey(item.data);
+    marked[key] = {
+      marked: true,
+      dotColor: item._tipo === "lembrete" ? "#e11d48" : "#7050b3",
+    };
   });
 
-  const marked: any = {};
-
-  eventos.forEach((e) => {
-    const d = new Date(e.data);
-
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-
-    const dateStr = `${y}-${m}-${day}`;
-
-    marked[dateStr] = { marked: true, dotColor: "#7050b3" };
+  // Se há lembretes E eventos no mesmo dia, mostra dois dots (react-native-calendars >= 1.1296)
+  const multiDot: Record<string, any> = {};
+  [...eventos, ...lembretes].forEach((item) => {
+    if (!item.data) return;
+    const key = dateToKey(item.data);
+    if (!multiDot[key]) multiDot[key] = { dots: [] };
+    const already = multiDot[key].dots.find(
+      (d: any) => d.key === item._tipo
+    );
+    if (!already) {
+      multiDot[key].dots.push({
+        key: item._tipo,
+        color: item._tipo === "lembrete" ? "#e11d48" : "#7050b3",
+      });
+    }
   });
 
   if (selectedDate) {
     marked[selectedDate] = {
+      ...(marked[selectedDate] || {}),
       selected: true,
       selectedColor: "#28174c",
     };
   }
 
+  // ── Itens do dia selecionado ──────────────────────────────────────────────
+
+  const itensDoDia: Item[] = [...eventos, ...lembretes]
+    .filter((i) => i.data && dateToKey(i.data) === selectedDate)
+    .sort((a, b) => a.data - b.data);
+
+  // ── Lógica de salvar ─────────────────────────────────────────────────────
+
+  function juntarDataHora(): number {
+    if (!selectedDate) return Date.now();
+    const { y, m, day } = keyToDate(selectedDate);
+    const d = new Date();
+    d.setFullYear(y, m - 1, day);
+    d.setHours(time.getHours(), time.getMinutes(), 0, 0);
+    return d.getTime();
+  }
+
+  async function agendarNotificacao(tit: string, ts: number): Promise<string | null> {
+    if (ts <= Date.now()) return null;
+    return Notifications.scheduleNotificationAsync({
+      content: { title: "📅 Evento", body: tit },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: new Date(ts),
+      },
+    });
+  }
+
+  async function cancelarNotificacao(notificationId?: string) {
+    if (notificationId) {
+      await Notifications.cancelScheduledNotificationAsync(notificationId).catch(() => {});
+    }
+  }
+
+  async function salvarEvento() {
+    if (!titulo.trim() || !selectedDate || !user?.uid) {
+      Alert.alert("Atenção", "Preencha o título e selecione uma data.");
+      return;
+    }
+
+    const ts = juntarDataHora();
+    const notificationId = await agendarNotificacao(titulo, ts) ?? undefined;
+
+    try {
+      if (editandoId) {
+        const ref = doc(firestore, "usuarios", user.uid, "eventos", editandoId);
+        await updateDoc(ref, { titulo, descricao, categoria, data: ts, notificationId });
+        setEditandoId(null);
+      } else {
+        const ref = collection(firestore, "usuarios", user.uid, "eventos");
+        await addDoc(ref, { titulo, descricao, categoria, data: ts, notificationId });
+      }
+      resetForm();
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Erro", "Não foi possível salvar o evento.");
+    }
+  }
+
+  async function excluirEvento(ev: Evento) {
+    if (!user?.uid) return;
+    await cancelarNotificacao(ev.notificationId);
+    await deleteDoc(doc(firestore, "usuarios", user.uid, "eventos", ev.id)).catch(console.error);
+  }
+
+  function editarEvento(ev: Evento) {
+    const d = new Date(ev.data);
+    const y = d.getFullYear();
+    const mo = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+
+    setTitulo(ev.titulo);
+    setDescricao(ev.descricao || "");
+    setCategoria(ev.categoria || "Geral");
+    setSelectedDate(`${y}-${mo}-${day}`);
+    setTime(d);
+    setEditandoId(ev.id);
+    setModoAdicionar(true);
+  }
+
+  function resetForm() {
+    setTitulo("");
+    setDescricao("");
+    setCategoria("Geral");
+    setTime(new Date());
+    setModoAdicionar(false);
+    setEditandoId(null);
+    setShowCategorias(false);
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <View style={styles.overlay}>
-      <TouchableOpacity style={styles.backdrop} onPress={onClose} />
+      <TouchableOpacity style={styles.backdrop} onPress={onClose} activeOpacity={1} />
 
-      <View style={styles.container}>
-        <View style={styles.tabs}>
-          <TouchableOpacity onPress={() => setAba("agenda")}>
-            <Text style={[styles.tab, aba === "agenda" && styles.active]}>
-              Agenda
-            </Text>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <View style={styles.pill} />
+          <Text style={styles.headerTitle}>Agenda</Text>
+          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <Ionicons name="close" size={22} color="#28174c" />
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.content}>
+        <ScrollView
+          style={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Calendário */}
           <Calendar
-            onDayPress={(d) => setSelectedDate(d.dateString)}
+            onDayPress={(d) => {
+              setSelectedDate(d.dateString);
+              setModoAdicionar(false);
+              setEditandoId(null);
+            }}
             markedDates={marked}
+            markingType="multi-dot"
+            theme={{
+              todayTextColor: "#7050b3",
+              selectedDayBackgroundColor: "#28174c",
+              arrowColor: "#7050b3",
+              dotColor: "#7050b3",
+              textDayFontSize: 14,
+            }}
           />
 
           {selectedDate !== "" && (
             <>
-              <Text style={styles.section}>Eventos do dia</Text>
-
-              {eventosDoDia.map((e) => (
-                <View key={e.id} style={styles.card}>
-                  <Text style={styles.title}>{e.titulo}</Text>
-                  <Text>{e.descricao}</Text>
-                  <Text style={styles.category}>{e.categoria}</Text>
-
-                  <View style={styles.actions}>
-                    <TouchableOpacity onPress={() => editarEvento(e)}>
-                      <Ionicons
-                        name="create-outline"
-                        size={20}
-                        color="#7050b3"
-                      />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={() => excluirEvento(e.id)}>
-                      <Ionicons
-                        name="trash-outline"
-                        size={20}
-                        color="#e11d48"
-                      />
-                    </TouchableOpacity>
-                  </View>
+              {/* Título da seção */}
+              <View style={styles.sectionRow}>
+                <Text style={styles.section}>
+                  {new Date(selectedDate + "T12:00:00").toLocaleDateString("pt-BR", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  })}
+                </Text>
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{itensDoDia.length}</Text>
                 </View>
-              ))}
+              </View>
 
+              {/* Lista de itens */}
+              {itensDoDia.length === 0 && (
+                <View style={styles.emptyBox}>
+                  <Ionicons name="calendar-outline" size={32} color="#c4b5e8" />
+                  <Text style={styles.emptyText}>Nenhum evento ou lembrete neste dia.</Text>
+                </View>
+              )}
+
+              {itensDoDia.map((item) => {
+                const isLembrete = item._tipo === "lembrete";
+                const tit = isLembrete
+                  ? (item as Lembrete).titulo || (item as Lembrete).nome || "Lembrete"
+                  : (item as Evento).titulo;
+                const desc = item.descricao || "";
+                const hora = item.data ? formatHora(item.data) : "";
+
+                return (
+                  <View
+                    key={item.id}
+                    style={[styles.card, isLembrete && styles.cardLembrete]}
+                  >
+                    <View style={styles.cardLeft}>
+                      <View
+                        style={[
+                          styles.cardIcon,
+                          { backgroundColor: isLembrete ? "#fce7f3" : "#ede9fe" },
+                        ]}
+                      >
+                        <Ionicons
+                          name={isLembrete ? "notifications-outline" : "calendar-outline"}
+                          size={16}
+                          color={isLembrete ? "#e11d48" : "#7050b3"}
+                        />
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.cardTitle}>{tit}</Text>
+                        {!!desc && <Text style={styles.cardDesc}>{desc}</Text>}
+                        <View style={styles.cardMeta}>
+                          {!!hora && (
+                            <View style={styles.metaChip}>
+                              <Ionicons name="time-outline" size={11} color="#888" />
+                              <Text style={styles.metaText}>{hora}</Text>
+                            </View>
+                          )}
+                          {!isLembrete && (
+                            <View
+                              style={[
+                                styles.metaChip,
+                                {
+                                  backgroundColor:
+                                    COR_CATEGORIA[(item as Evento).categoria] + "22",
+                                },
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.categoryText,
+                                  {
+                                    color:
+                                      COR_CATEGORIA[(item as Evento).categoria] ||
+                                      "#7050b3",
+                                  },
+                                ]}
+                              >
+                                {(item as Evento).categoria}
+                              </Text>
+                            </View>
+                          )}
+                          {isLembrete && (
+                            <View style={[styles.metaChip, { backgroundColor: "#fce7f3" }]}>
+                              <Text style={[styles.categoryText, { color: "#e11d48" }]}>
+                                Lembrete
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+                    </View>
+
+                    {/* Ações apenas para eventos */}
+                    {!isLembrete && (
+                      <View style={styles.cardActions}>
+                        <TouchableOpacity
+                          onPress={() => editarEvento(item as Evento)}
+                          style={styles.actionBtn}
+                        >
+                          <Ionicons name="create-outline" size={18} color="#7050b3" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() =>
+                            Alert.alert("Excluir", "Deseja excluir este evento?", [
+                              { text: "Cancelar", style: "cancel" },
+                              {
+                                text: "Excluir",
+                                style: "destructive",
+                                onPress: () => excluirEvento(item as Evento),
+                              },
+                            ])
+                          }
+                          style={styles.actionBtn}
+                        >
+                          <Ionicons name="trash-outline" size={18} color="#e11d48" />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
+
+              {/* Botão adicionar */}
               {!modoAdicionar && (
                 <TouchableOpacity
-                  style={styles.addButton}
+                  style={styles.addFloating}
                   onPress={() => setModoAdicionar(true)}
+                  activeOpacity={0.85}
                 >
-                  <Ionicons name="add" size={28} color="#fff" />
+                  <Ionicons name="add" size={22} color="#fff" />
+                  <Text style={styles.addFloatingText}>Novo evento</Text>
                 </TouchableOpacity>
               )}
 
+              {/* Formulário */}
               {modoAdicionar && (
-                <>
-                  <View style={styles.timeRow}>
-                    <TextInput
-                      style={styles.timeInput}
-                      value={time.toLocaleTimeString("pt-BR").slice(0, 5)}
-                    />
+                <View style={styles.form}>
+                  <Text style={styles.formTitle}>
+                    {editandoId ? "Editar evento" : "Novo evento"}
+                  </Text>
 
-                    <TouchableOpacity onPress={() => setShowTimePicker(true)}>
-                      <Ionicons name="time-outline" size={22} color="#28174c" />
-                    </TouchableOpacity>
-                  </View>
+                  {/* Hora */}
+                  <Text style={styles.label}>Horário</Text>
+                  <TouchableOpacity
+                    style={styles.timeRow}
+                    onPress={() => setShowTimePicker(true)}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="time-outline" size={18} color="#7050b3" />
+                    <Text style={styles.timeText}>
+                      {time.toLocaleTimeString("pt-BR", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Text>
+                    <Text style={styles.tapText}>Toque para alterar</Text>
+                  </TouchableOpacity>
 
                   {showTimePicker && (
                     <DateTimePicker
                       value={time}
                       mode="time"
                       is24Hour
-                      onChange={(e, s) => {
+                      onChange={(_e, s) => {
                         setShowTimePicker(false);
                         if (s) setTime(s);
                       }}
                     />
                   )}
 
+                  {/* Título */}
+                  <Text style={styles.label}>Título *</Text>
                   <TextInput
-                    placeholder="Título"
+                    placeholder="Ex: Consulta com o veterinário"
+                    placeholderTextColor="#bbb"
                     style={styles.input}
                     value={titulo}
                     onChangeText={setTitulo}
+                    returnKeyType="next"
                   />
 
+                  {/* Descrição */}
+                  <Text style={styles.label}>Descrição</Text>
                   <TextInput
-                    placeholder="Descrição"
-                    style={styles.input}
+                    placeholder="Detalhes opcionais…"
+                    placeholderTextColor="#bbb"
+                    style={[styles.input, styles.inputMulti]}
                     value={descricao}
                     onChangeText={setDescricao}
+                    multiline
+                    numberOfLines={3}
+                    textAlignVertical="top"
                   />
 
+                  {/* Categoria */}
+                  <Text style={styles.label}>Categoria</Text>
                   <TouchableOpacity
-                    style={styles.input}
+                    style={[styles.input, styles.inputSelect]}
                     onPress={() => setShowCategorias(!showCategorias)}
                   >
-                    <Text>{categoria}</Text>
+                    <View
+                      style={[
+                        styles.catDot,
+                        { backgroundColor: COR_CATEGORIA[categoria] || "#7050b3" },
+                      ]}
+                    />
+                    <Text style={{ color: "#28174c", flex: 1 }}>{categoria}</Text>
+                    <Ionicons
+                      name={showCategorias ? "chevron-up" : "chevron-down"}
+                      size={16}
+                      color="#888"
+                    />
                   </TouchableOpacity>
 
                   {showCategorias && (
                     <View style={styles.dropdown}>
-                      {categorias.map((cat) => (
+                      {CATEGORIAS.map((cat) => (
                         <TouchableOpacity
                           key={cat}
+                          style={styles.dropdownItem}
                           onPress={() => {
                             setCategoria(cat);
                             setShowCategorias(false);
                           }}
                         >
-                          <Text style={styles.dropdownItem}>{cat}</Text>
+                          <View
+                            style={[
+                              styles.catDot,
+                              { backgroundColor: COR_CATEGORIA[cat] || "#7050b3" },
+                            ]}
+                          />
+                          <Text
+                            style={[
+                              styles.dropdownText,
+                              cat === categoria && { fontWeight: "bold", color: "#28174c" },
+                            ]}
+                          >
+                            {cat}
+                          </Text>
+                          {cat === categoria && (
+                            <Ionicons name="checkmark" size={16} color="#7050b3" />
+                          )}
                         </TouchableOpacity>
                       ))}
                     </View>
                   )}
 
-                  <View style={styles.actionsButtons}>
-                    <TouchableOpacity
-                      style={styles.cancel}
-                      onPress={() => {
-                        setModoAdicionar(false);
-                        setTitulo("");
-                        setDescricao("");
-                        setCategoria("Geral");
-                        setEditandoId(null);
-                      }}
-                    >
-                      <Text style={{ color: "#fff" }}>Cancelar</Text>
-                    </TouchableOpacity>
+                  {/* Pré-visualização */}
+                  {(titulo || descricao) && (
+                    <>
+                      <Text style={[styles.label, { marginTop: 10 }]}>Pré-visualização</Text>
+                      <View style={[styles.card, { marginBottom: 4 }]}>
+                        <View style={styles.cardLeft}>
+                          <View style={[styles.cardIcon, { backgroundColor: "#ede9fe" }]}>
+                            <Ionicons name="calendar-outline" size={16} color="#7050b3" />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.cardTitle}>{titulo || "Título do evento"}</Text>
+                            {!!descricao && (
+                              <Text style={styles.cardDesc}>{descricao}</Text>
+                            )}
+                            <View style={styles.cardMeta}>
+                              <View style={styles.metaChip}>
+                                <Ionicons name="time-outline" size={11} color="#888" />
+                                <Text style={styles.metaText}>
+                                  {time.toLocaleTimeString("pt-BR", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </Text>
+                              </View>
+                              <View
+                                style={[
+                                  styles.metaChip,
+                                  { backgroundColor: (COR_CATEGORIA[categoria] || "#7050b3") + "22" },
+                                ]}
+                              >
+                                <Text
+                                  style={[
+                                    styles.categoryText,
+                                    { color: COR_CATEGORIA[categoria] || "#7050b3" },
+                                  ]}
+                                >
+                                  {categoria}
+                                </Text>
+                              </View>
+                            </View>
+                          </View>
+                        </View>
+                      </View>
+                    </>
+                  )}
 
-                    <TouchableOpacity
-                      style={styles.add}
-                      onPress={adicionarEvento}
-                    >
-                      <Text style={{ color: "#fff" }}>
+                  {/* Botões */}
+                  <View style={styles.formActions}>
+                    <TouchableOpacity style={styles.btnCancel} onPress={resetForm}>
+                      <Text style={styles.btnCancelText}>Cancelar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.btnSave} onPress={salvarEvento}>
+                      <Ionicons
+                        name={editandoId ? "checkmark-circle-outline" : "add-circle-outline"}
+                        size={18}
+                        color="#fff"
+                      />
+                      <Text style={styles.btnSaveText}>
                         {editandoId ? "Atualizar" : "Adicionar"}
                       </Text>
                     </TouchableOpacity>
                   </View>
-
-                  <Text style={styles.section}>Pré-visualização</Text>
-                  <View style={styles.card}>
-                    <Text style={styles.title}>
-                      {titulo || "Título do evento"}
-                    </Text>
-                    <Text>{descricao || "Descrição do evento"}</Text>
-                    <Text style={styles.category}>{categoria}</Text>
-                  </View>
-                </>
+                </View>
               )}
+
+              <View style={{ height: 40 }} />
             </>
           )}
+
+          {selectedDate === "" && (
+            <View style={styles.emptyBox}>
+              <Ionicons name="hand-left-outline" size={32} color="#c4b5e8" />
+              <Text style={styles.emptyText}>Selecione um dia no calendário.</Text>
+            </View>
+          )}
         </ScrollView>
-      </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
+// ─── Estilos ──────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
-  overlay: { position: "absolute", width: "100%", height: "100%" },
+  overlay: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+  },
   backdrop: {
     position: "absolute",
     width: "100%",
     height: "100%",
-    backgroundColor: "rgba(0,0,0,0.3)",
+    backgroundColor: "rgba(0,0,0,0.4)",
   },
   container: {
     marginTop: "auto",
-    height: "90%",
-    backgroundColor: "#fff",
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
+    height: "92%",
+    backgroundColor: "#faf9ff",
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    overflow: "hidden",
   },
-  tabs: {
+  header: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    padding: 15,
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingTop: 14,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ede9fe",
+    backgroundColor: "#fff",
   },
-  tab: { fontSize: 16, color: "#888" },
-  active: { color: "#28174c", fontWeight: "bold" },
-  content: { padding: 15 },
-  section: { fontWeight: "bold", marginVertical: 10 },
-  input: {
-    borderWidth: 1,
-    borderColor: "#b390d8",
-    padding: 10,
-    borderRadius: 10,
+  pill: {
+    position: "absolute",
+    top: 6,
+    alignSelf: "center",
+    left: "50%",
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#d4c8f0",
+    transform: [{ translateX: -18 }],
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#28174c",
+    textAlign: "center",
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  content: {
+    padding: 16,
+  },
+
+  // Seção
+  sectionRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 16,
     marginBottom: 10,
+    gap: 8,
   },
-  add: {
+  section: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#28174c",
+    textTransform: "capitalize",
+  },
+  badge: {
     backgroundColor: "#7050b3",
-    padding: 12,
-    borderRadius: 10,
-    alignItems: "center",
-    flex: 1,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
   },
-  cancel: {
-    backgroundColor: "#28174c",
-    padding: 12,
-    borderRadius: 10,
-    alignItems: "center",
-    flex: 1,
+  badgeText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "700",
   },
-  actionsButtons: {
+
+  // Card
+  card: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    padding: 12,
+    backgroundColor: "#fff",
+    borderRadius: 14,
+    marginBottom: 8,
+    shadowColor: "#28174c",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.07,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardLembrete: {
+    borderLeftWidth: 3,
+    borderLeftColor: "#e11d48",
+  },
+  cardLeft: {
     flexDirection: "row",
     gap: 10,
-    marginBottom: 10,
+    flex: 1,
   },
-  addButton: {
-    backgroundColor: "#7050b3",
-    padding: 15,
-    borderRadius: 50,
-    alignItems: "center",
-    marginVertical: 10,
-  },
-  card: {
-    padding: 10,
-    backgroundColor: "#f9f7ff",
+  cardIcon: {
+    width: 32,
+    height: 32,
     borderRadius: 10,
-    marginBottom: 8,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  title: {
-    fontWeight: "bold",
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#28174c",
+    marginBottom: 2,
+  },
+  cardDesc: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 4,
+  },
+  cardMeta: {
+    flexDirection: "row",
+    gap: 6,
+    flexWrap: "wrap",
+  },
+  metaChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    backgroundColor: "#f3f0fa",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  metaText: {
+    fontSize: 11,
+    color: "#666",
+  },
+  categoryText: {
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  cardActions: {
+    flexDirection: "row",
+    gap: 4,
+    marginLeft: 8,
+  },
+  actionBtn: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: "#f5f3ff",
+  },
+
+  // Botão adicionar
+  addFloating: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    backgroundColor: "#7050b3",
+    padding: 14,
+    borderRadius: 14,
+    marginVertical: 12,
+  },
+  addFloatingText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 15,
+  },
+
+  // Formulário
+  form: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    marginVertical: 12,
+    shadowColor: "#28174c",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  formTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#28174c",
+    marginBottom: 14,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#7050b3",
+    marginBottom: 4,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  input: {
+    borderWidth: 1.5,
+    borderColor: "#d4c8f0",
+    backgroundColor: "#faf9ff",
+    padding: 11,
+    borderRadius: 12,
+    marginBottom: 12,
+    fontSize: 14,
     color: "#28174c",
   },
-  category: {
-    color: "#7050b3",
-    fontSize: 12,
+  inputMulti: {
+    minHeight: 72,
   },
-  actions: {
+  inputSelect: {
     flexDirection: "row",
-    marginTop: 5,
-    gap: 15,
+    alignItems: "center",
+    gap: 8,
   },
   timeRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 10,
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: "#d4c8f0",
+    backgroundColor: "#faf9ff",
+    padding: 11,
+    borderRadius: 12,
+    marginBottom: 12,
   },
-  timeInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#b390d8",
-    padding: 10,
-    borderRadius: 10,
-    marginRight: 10,
+  timeText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#28174c",
+  },
+  tapText: {
+    marginLeft: "auto",
+    fontSize: 11,
+    color: "#aaa",
+  },
+  catDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   dropdown: {
     backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#b390d8",
-    borderRadius: 10,
-    marginBottom: 10,
+    borderWidth: 1.5,
+    borderColor: "#d4c8f0",
+    borderRadius: 12,
+    marginBottom: 12,
+    overflow: "hidden",
   },
   dropdownItem: {
-    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    borderBottomColor: "#f0ecff",
+  },
+  dropdownText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#555",
+  },
+
+  // Botões do form
+  formActions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 4,
+  },
+  btnCancel: {
+    flex: 1,
+    padding: 13,
+    borderRadius: 12,
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#d4c8f0",
+  },
+  btnCancelText: {
+    color: "#28174c",
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  btnSave: {
+    flex: 2,
+    flexDirection: "row",
+    gap: 6,
+    padding: 13,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#7050b3",
+  },
+  btnSaveText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+
+  // Empty state
+  emptyBox: {
+    alignItems: "center",
+    paddingVertical: 32,
+    gap: 10,
+  },
+  emptyText: {
+    color: "#aaa",
+    fontSize: 14,
+    textAlign: "center",
   },
 });

@@ -56,7 +56,6 @@ export default function TelaExemplo() {
               size={22}
               color="#ff5ea8"
             />
-
             <Text style={styles.cardTitle}>
               Resumo
             </Text>

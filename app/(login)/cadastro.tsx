@@ -14,8 +14,8 @@ import {
   View,
 } from "react-native";
 
-import { theme } from "@/src/constants/theme";
 import { auth, firestore } from "@/src/services/firebase";
+import { LinearGradient } from "expo-linear-gradient";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker, {
   DateTimePickerEvent,
@@ -29,6 +29,40 @@ import { doc, setDoc } from "firebase/firestore";
 import MaskInput from "react-native-mask-input";
 
 import { useAuth } from "@/src/context/AuthContext";
+
+// ──────────────────────────────────────────────
+// PALETA — mesma usada em CadastroColaborador
+// ──────────────────────────────────────────────
+const colors = {
+  paisBackground: "#7050b3",
+  paisPrimary: "#8b64de",
+  paisSecondary: "#9b5de5",
+  background: "#b390d8",
+  primary: "#7b2cff",
+  card: "#5407b8",
+  textMenu: "#28174cca",
+
+  surface: "#FFFFFF",
+  surfaceMuted: "#F3EEFC",
+  border: "#E1D4F7",
+  textDark: "#28174c",
+  textMuted: "#6B5C8F",
+  success: "#1FAA59",
+  successBg: "#E8F8EE",
+  danger: "#E0245E",
+  dangerBg: "#FDEAF0",
+};
+
+type Errors = {
+  nome?: string;
+  email?: string;
+  telefone?: string;
+  cidade?: string;
+  dataTexto?: string;
+  senha?: string;
+  confirmarSenha?: string;
+  tipo?: string;
+};
 
 export default function Cadastro() {
   const router = useRouter();
@@ -58,6 +92,12 @@ export default function Cadastro() {
 
   const [paddingScroll, setPaddingScroll] = useState(60);
 
+  // ── estado puramente visual (foco + validação inline) ──
+  // não substitui nem altera as checagens originais feitas em salvar()
+  const [errors, setErrors] = useState<Errors>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const [focusedField, setFocusedField] = useState<string | null>(null);
+
   const hoje = new Date();
   const dataMinima = new Date();
   dataMinima.setFullYear(hoje.getFullYear() - 100);
@@ -75,6 +115,46 @@ export default function Cadastro() {
       tecladoFechado.remove();
     };
   }, []);
+
+  // ── validação visual por campo (apenas exibição) ──
+  function validarCampoVisual(campo: keyof Errors, valor: string): string | undefined {
+    switch (campo) {
+      case "nome":
+        return valor.trim().length < 3 ? "Informe seu nome completo" : undefined;
+      case "email":
+        return !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor)
+          ? "Informe um e-mail válido"
+          : undefined;
+      case "telefone":
+        return valor.replace(/\D/g, "").length < 10
+          ? "Informe um telefone válido"
+          : undefined;
+      case "cidade":
+        return valor.trim().length < 2 ? "Informe sua cidade" : undefined;
+      case "dataTexto":
+        return !valor || valor.length !== 10
+          ? "Use o formato DD/MM/AAAA"
+          : undefined;
+      case "senha":
+        return valor.length < 6 ? "Mínimo de 6 caracteres" : undefined;
+      case "confirmarSenha":
+        return valor !== senha ? "As senhas não coincidem" : undefined;
+      default:
+        return undefined;
+    }
+  }
+
+  function handleBlur(campo: keyof Errors, valor: string) {
+    setFocusedField(null);
+    setTouched((prev) => ({ ...prev, [campo]: true }));
+    setErrors((prev) => ({ ...prev, [campo]: validarCampoVisual(campo, valor) }));
+  }
+
+  function borderColorFor(campo: string) {
+    if (errors[campo as keyof Errors] && touched[campo]) return colors.danger;
+    if (focusedField === campo) return colors.primary;
+    return colors.border;
+  }
 
   function handleData(text: string) {
     let cleaned = text.replace(/\D/g, "");
@@ -107,6 +187,28 @@ export default function Cadastro() {
   };
 
   async function salvar() {
+    // ── feedback visual (não altera a lógica original abaixo) ──
+    setTouched({
+      nome: true,
+      email: true,
+      telefone: true,
+      cidade: true,
+      dataTexto: true,
+      senha: true,
+      confirmarSenha: true,
+      tipo: true,
+    });
+    setErrors({
+      nome: validarCampoVisual("nome", nome),
+      email: validarCampoVisual("email", email),
+      telefone: validarCampoVisual("telefone", telefone),
+      cidade: validarCampoVisual("cidade", cidade),
+      dataTexto: validarCampoVisual("dataTexto", dataTexto),
+      senha: validarCampoVisual("senha", senha),
+      confirmarSenha: validarCampoVisual("confirmarSenha", confirmarSenha),
+      tipo: tipo ? undefined : "Selecione uma opção de perfil",
+    });
+
     if (!nome || !email || !telefone || !cidade || !senha || !confirmarSenha) {
       Alert.alert("Aviso", "Preencha todos os campos");
       return;
@@ -248,48 +350,84 @@ export default function Cadastro() {
   }
 
   return (
-    <View style={styles.mainContainer}>
+    <View style={styles.root}>
+      {/* ── HERO ───────────────────────────────── */}
+      <LinearGradient
+        colors={[colors.paisBackground, colors.card]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.hero}
+      >
+        <View style={styles.heroBadge}>
+          <MaterialCommunityIcons name="account-plus-outline" size={26} color={colors.surface} />
+        </View>
+        <Text style={styles.heroTitle}>Criar conta</Text>
+        <Text style={styles.heroSubtitle}>
+          Preencha seus dados para começar sua jornada
+        </Text>
+      </LinearGradient>
+
       <KeyboardAvoidingView
         style={styles.keyboardContainer}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 40}
       >
+        {/* ── SHEET ─────────────────────────────── */}
         <ScrollView
-          style={styles.scroll}
+          style={styles.sheet}
           contentContainerStyle={[
-            styles.container,
+            styles.sheetContent,
             { paddingBottom: paddingScroll },
           ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.card}>
-            <Text style={styles.titulo}>Criar Conta</Text>
+          <Text style={styles.sectionTitle}>Seus dados</Text>
 
+          <Text style={styles.label}>Nome completo</Text>
+          <View style={[styles.fieldRow, { borderColor: borderColorFor("nome") }]}>
+            <MaterialCommunityIcons name="account-outline" size={17} color={colors.textMuted} />
             <TextInput
-              style={styles.input}
-              placeholder="Nome Completo"
-              placeholderTextColor={theme.colors.subtitle}
+              style={styles.fieldInput}
+              placeholder="Seu nome completo"
+              placeholderTextColor={colors.textMuted}
               value={nome}
               onChangeText={setNome}
+              onFocus={() => setFocusedField("nome")}
+              onBlur={() => handleBlur("nome", nome)}
             />
+          </View>
+          {touched.nome && errors.nome && <Text style={styles.errorText}>{errors.nome}</Text>}
+
+          <Text style={styles.label}>E-mail</Text>
+          <View style={[styles.fieldRow, { borderColor: borderColorFor("email") }]}>
+            <MaterialCommunityIcons name="email-outline" size={17} color={colors.textMuted} />
             <TextInput
-              style={styles.input}
-              placeholder="E-mail"
-              placeholderTextColor={theme.colors.subtitle}
+              style={styles.fieldInput}
+              placeholder="seu@email.com"
+              placeholderTextColor={colors.textMuted}
               keyboardType="email-address"
               autoCapitalize="none"
               value={email}
               onChangeText={setEmail}
+              onFocus={() => setFocusedField("email")}
+              onBlur={() => handleBlur("email", email)}
             />
+          </View>
+          {touched.email && errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
+          <Text style={styles.label}>Telefone</Text>
+          <View style={[styles.fieldRow, { borderColor: borderColorFor("telefone") }]}>
+            <MaterialCommunityIcons name="phone-outline" size={17} color={colors.textMuted} />
             <MaskInput
-              style={styles.input}
+              style={styles.fieldInput}
               value={telefone}
-              placeholder="Telefone"
+              placeholder="(00) 00000-0000"
               keyboardType="numeric"
-              placeholderTextColor={theme.colors.subtitle}
+              placeholderTextColor={colors.textMuted}
               onChangeText={(masked) => setTelefone(masked)}
+              onFocus={() => setFocusedField("telefone")}
+              onBlur={() => handleBlur("telefone", telefone)}
               mask={[
                 "(",
                 /\d/,
@@ -308,157 +446,194 @@ export default function Cadastro() {
                 /\d/,
               ]}
             />
+          </View>
+          {touched.telefone && errors.telefone && (
+            <Text style={styles.errorText}>{errors.telefone}</Text>
+          )}
 
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.inputInside}
-                placeholder="Data de Nascimento"
-                placeholderTextColor={theme.colors.subtitle}
-                value={dataTexto}
-                onChangeText={handleData}
-                keyboardType="numeric"
-              />
-              <TouchableOpacity
-                onPress={() => setMostrarDate(true)}
-                style={styles.iconArea}
-              >
-                <MaterialCommunityIcons
-                  name="calendar"
-                  size={24}
-                  color={theme.colors.subtitle}
-                />
-              </TouchableOpacity>
-            </View>
-
-            {mostrarDate && (
-              <DateTimePicker
-                value={data}
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                maximumDate={hoje}
-                minimumDate={dataMinima}
-                onChange={(event: DateTimePickerEvent, date?: Date) => {
-                  setMostrarDate(false);
-                  if (date) {
-                    if (!validarDataNascimento(date)) {
-                      return;
-                    }
-                    const dia = String(date.getDate()).padStart(2, "0");
-                    const mes = String(date.getMonth() + 1).padStart(2, "0");
-                    const ano = date.getFullYear();
-                    setDataTexto(`${dia}/${mes}/${ano}`);
-                    setData(date);
-                  }
-                }}
-              />
-            )}
-
+          <Text style={styles.label}>Data de nascimento</Text>
+          <View style={[styles.fieldRow, { borderColor: borderColorFor("dataTexto") }]}>
+            <MaterialCommunityIcons name="cake-variant-outline" size={17} color={colors.textMuted} />
             <TextInput
-              style={styles.input}
-              placeholder="Cidade"
-              placeholderTextColor={theme.colors.subtitle}
-              value={cidade}
-              onChangeText={setCidade}
+              style={styles.fieldInput}
+              placeholder="DD/MM/AAAA"
+              placeholderTextColor={colors.textMuted}
+              value={dataTexto}
+              onChangeText={handleData}
+              onFocus={() => setFocusedField("dataTexto")}
+              onBlur={() => handleBlur("dataTexto", dataTexto)}
+              keyboardType="numeric"
+              maxLength={10}
             />
-
-            <View style={styles.inputContainer}>
-              <TextInput
-                secureTextEntry={!showSenha}
-                style={styles.inputInside}
-                placeholder="Senha"
-                placeholderTextColor={theme.colors.subtitle}
-                value={senha}
-                onChangeText={setSenha}
-              />
-              <TouchableOpacity
-                onPress={() => setShowSenha(!showSenha)}
-                style={styles.iconArea}
-              >
-                <MaterialCommunityIcons
-                  name={showSenha ? "eye-off" : "eye"}
-                  size={24}
-                  color={theme.colors.subtitle}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputContainer}>
-              <TextInput
-                secureTextEntry={!showConfirmSenha}
-                style={styles.inputInside}
-                placeholder="Confirmar senha"
-                placeholderTextColor={theme.colors.subtitle}
-                value={confirmarSenha}
-                onChangeText={setConfirmarSenha}
-              />
-              <TouchableOpacity
-                onPress={() => setShowConfirmSenha(!showConfirmSenha)}
-                style={styles.iconArea}
-              >
-                <MaterialCommunityIcons
-                  name={showConfirmSenha ? "eye-off" : "eye"}
-                  size={24}
-                  color={theme.colors.subtitle}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.opcaoContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.opcao,
-                  tipo === "pai" && {
-                    backgroundColor: theme.colors.paisSecondary,
-                    borderColor: "#a339b8",
-                  },
-                ]}
-                onPress={() => setTipo("pai")}
-              >
-                <Text
-                  style={[
-                    styles.textoOpcao,
-                    tipo === "pai" && { color: "#FFF" },
-                  ]}
-                >
-                  Já tenho filho
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.opcao,
-                  tipo === "gestante" && {
-                    backgroundColor: theme.colors.gestantesSecondary,
-                    borderColor: "#a339b8",
-                  },
-                ]}
-                onPress={() => setTipo("gestante")}
-              >
-                <Text
-                  style={[
-                    styles.textoOpcao,
-                    tipo === "gestante" && { color: "#FFF" },
-                  ]}
-                >
-                  Estou grávida
-                </Text>
-              </TouchableOpacity>
-            </View>
-
             <TouchableOpacity
-              onPress={salvar}
-              activeOpacity={0.8}
-              disabled={loadingCadastro}
+              onPress={() => setMostrarDate(true)}
+              style={styles.iconArea}
             >
-              <View style={[styles.botao, loadingCadastro && { opacity: 0.7 }]}>
-                {loadingCadastro ? (
-                  <ActivityIndicator size="small" color="#FFF" />
-                ) : (
-                  <Text style={styles.textoBotao}>CRIAR CONTA</Text>
-                )}
-              </View>
+              <MaterialCommunityIcons
+                name="calendar"
+                size={20}
+                color={colors.primary}
+              />
             </TouchableOpacity>
           </View>
+          {touched.dataTexto && errors.dataTexto && (
+            <Text style={styles.errorText}>{errors.dataTexto}</Text>
+          )}
+
+          {mostrarDate && (
+            <DateTimePicker
+              value={data}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              maximumDate={hoje}
+              minimumDate={dataMinima}
+              onChange={(event: DateTimePickerEvent, date?: Date) => {
+                setMostrarDate(false);
+                if (date) {
+                  if (!validarDataNascimento(date)) {
+                    return;
+                  }
+                  const dia = String(date.getDate()).padStart(2, "0");
+                  const mes = String(date.getMonth() + 1).padStart(2, "0");
+                  const ano = date.getFullYear();
+                  setDataTexto(`${dia}/${mes}/${ano}`);
+                  setData(date);
+                  setErrors((prev) => ({ ...prev, dataTexto: undefined }));
+                }
+              }}
+            />
+          )}
+
+          <Text style={styles.label}>Cidade</Text>
+          <View style={[styles.fieldRow, { borderColor: borderColorFor("cidade") }]}>
+            <MaterialCommunityIcons name="map-marker-outline" size={17} color={colors.textMuted} />
+            <TextInput
+              style={styles.fieldInput}
+              placeholder="Onde você mora?"
+              placeholderTextColor={colors.textMuted}
+              value={cidade}
+              onChangeText={setCidade}
+              onFocus={() => setFocusedField("cidade")}
+              onBlur={() => handleBlur("cidade", cidade)}
+            />
+          </View>
+          {touched.cidade && errors.cidade && (
+            <Text style={styles.errorText}>{errors.cidade}</Text>
+          )}
+
+          <Text style={styles.sectionTitle}>Crie sua senha</Text>
+
+          <Text style={styles.label}>Senha</Text>
+          <View style={[styles.fieldRow, { borderColor: borderColorFor("senha") }]}>
+            <MaterialCommunityIcons name="lock-outline" size={17} color={colors.textMuted} />
+            <TextInput
+              secureTextEntry={!showSenha}
+              style={styles.fieldInput}
+              placeholder="Mínimo de 6 caracteres"
+              placeholderTextColor={colors.textMuted}
+              value={senha}
+              onChangeText={setSenha}
+              onFocus={() => setFocusedField("senha")}
+              onBlur={() => handleBlur("senha", senha)}
+            />
+            <TouchableOpacity
+              onPress={() => setShowSenha(!showSenha)}
+              style={styles.iconArea}
+            >
+              <MaterialCommunityIcons
+                name={showSenha ? "eye-off" : "eye"}
+                size={19}
+                color={colors.textMuted}
+              />
+            </TouchableOpacity>
+          </View>
+          {touched.senha && errors.senha && <Text style={styles.errorText}>{errors.senha}</Text>}
+
+          <Text style={styles.label}>Confirmar senha</Text>
+          <View style={[styles.fieldRow, { borderColor: borderColorFor("confirmarSenha") }]}>
+            <MaterialCommunityIcons name="lock-check-outline" size={17} color={colors.textMuted} />
+            <TextInput
+              secureTextEntry={!showConfirmSenha}
+              style={styles.fieldInput}
+              placeholder="Repita a senha"
+              placeholderTextColor={colors.textMuted}
+              value={confirmarSenha}
+              onChangeText={setConfirmarSenha}
+              onFocus={() => setFocusedField("confirmarSenha")}
+              onBlur={() => handleBlur("confirmarSenha", confirmarSenha)}
+            />
+            <TouchableOpacity
+              onPress={() => setShowConfirmSenha(!showConfirmSenha)}
+              style={styles.iconArea}
+            >
+              <MaterialCommunityIcons
+                name={showConfirmSenha ? "eye-off" : "eye"}
+                size={19}
+                color={colors.textMuted}
+              />
+            </TouchableOpacity>
+          </View>
+          {touched.confirmarSenha && errors.confirmarSenha && (
+            <Text style={styles.errorText}>{errors.confirmarSenha}</Text>
+          )}
+
+          <Text style={styles.sectionTitle}>Qual é o seu momento?</Text>
+
+          <View style={styles.opcaoContainer}>
+            <TouchableOpacity
+              style={[styles.opcao, tipo === "pai" && styles.opcaoSelecionada]}
+              onPress={() => {
+                setTipo("pai");
+                setErrors((prev) => ({ ...prev, tipo: undefined }));
+              }}
+            >
+              <MaterialCommunityIcons
+                name="human-male-child"
+                size={22}
+                color={tipo === "pai" ? colors.surface : colors.paisPrimary}
+              />
+              <Text style={[styles.textoOpcao, tipo === "pai" && { color: colors.surface }]}>
+                Já tenho filho
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.opcao, tipo === "gestante" && styles.opcaoSelecionada]}
+              onPress={() => {
+                setTipo("gestante");
+                setErrors((prev) => ({ ...prev, tipo: undefined }));
+              }}
+            >
+              <MaterialCommunityIcons
+                name="human-pregnant"
+                size={22}
+                color={tipo === "gestante" ? colors.surface : colors.paisPrimary}
+              />
+              <Text style={[styles.textoOpcao, tipo === "gestante" && { color: colors.surface }]}>
+                Estou grávida
+              </Text>
+            </TouchableOpacity>
+          </View>
+          {touched.tipo && errors.tipo && <Text style={styles.errorText}>{errors.tipo}</Text>}
+
+          {/* ── SUBMIT ───────────────────────────── */}
+          <TouchableOpacity onPress={salvar} disabled={loadingCadastro} activeOpacity={0.85}>
+            <LinearGradient
+              colors={[colors.paisPrimary, colors.primary, colors.paisSecondary]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.button, loadingCadastro && { opacity: 0.7 }]}
+            >
+              {loadingCadastro ? (
+                <ActivityIndicator color={colors.surface} />
+              ) : (
+                <>
+                  <MaterialCommunityIcons name="account-check-outline" size={16} color={colors.surface} />
+                  <Text style={styles.buttonText}>Criar conta</Text>
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -471,16 +646,19 @@ export default function Cadastro() {
             >
               <MaterialCommunityIcons
                 name="close"
-                size={24}
-                color={theme.colors.subtitle}
+                size={22}
+                color={colors.textMuted}
               />
             </TouchableOpacity>
 
-            <MaterialCommunityIcons
-              name="email-check"
-              size={60}
-              color="#a339b8"
-            />
+            <View style={styles.modalIconWrap}>
+              <MaterialCommunityIcons
+                name="email-check-outline"
+                size={44}
+                color={colors.primary}
+              />
+            </View>
+
             <Text style={styles.modalTitulo}>Verifique seu email</Text>
             <Text style={styles.modalTexto}>
               Enviamos um link de confirmação para:{"\n"}
@@ -488,30 +666,24 @@ export default function Cadastro() {
             </Text>
 
             <TouchableOpacity
-              style={[
-                styles.botaoModal,
-                loadingVerificacao && { opacity: 0.7 },
-              ]}
+              style={[styles.botaoModal, loadingVerificacao && { opacity: 0.7 }]}
               onPress={verificarSeEmailFoiConfirmado}
               disabled={loadingVerificacao}
             >
               {loadingVerificacao ? (
-                <ActivityIndicator size="small" color="#FFF" />
+                <ActivityIndicator size="small" color={colors.surface} />
               ) : (
                 <Text style={styles.textoBotaoModal}>Já cliquei no link</Text>
               )}
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.botaoReenviar,
-                loadingReenviar && { opacity: 0.7 },
-              ]}
+              style={[styles.botaoReenviar, loadingReenviar && { opacity: 0.7 }]}
               onPress={reenviarEmail}
               disabled={loadingReenviar}
             >
               {loadingReenviar ? (
-                <ActivityIndicator size="small" color="#a339b8" />
+                <ActivityIndicator size="small" color={colors.primary} />
               ) : (
                 <Text style={styles.textoBotaoReenviar}>Reenviar email</Text>
               )}
@@ -524,16 +696,153 @@ export default function Cadastro() {
 }
 
 const styles = StyleSheet.create({
-  mainContainer: {
+  root: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.background,
   },
+
+  // ── HERO ──
+  hero: {
+    paddingTop: Platform.select({ ios: 64, android: 48, default: 48 }),
+    paddingBottom: 56,
+    paddingHorizontal: 24,
+    alignItems: "center",
+  },
+  heroBadge: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#FFFFFF26",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#FFFFFF40",
+  },
+  heroTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: colors.surface,
+    letterSpacing: 0.2,
+  },
+  heroSubtitle: {
+    fontSize: 13.5,
+    color: "#EAE0FB",
+    textAlign: "center",
+    marginTop: 6,
+    paddingHorizontal: 12,
+    lineHeight: 19,
+  },
+
+  // ── SHEET (cartão elevado sobre o hero) ──
   keyboardContainer: {
     flex: 1,
   },
-  scroll: {
+  sheet: {
     flex: 1,
+    backgroundColor: colors.surfaceMuted,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    marginTop: -32,
   },
+  sheetContent: {
+    padding: 22,
+  },
+
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: colors.paisPrimary,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    marginBottom: 12,
+    marginTop: 4,
+  },
+
+  label: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: colors.textMenu,
+    marginBottom: 6,
+    marginTop: 2,
+  },
+
+  fieldRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    paddingHorizontal: 14,
+    height: 50,
+  },
+  fieldInput: {
+    flex: 1,
+    fontSize: 14.5,
+    color: colors.textDark,
+    height: "100%",
+  },
+  iconArea: {
+    padding: 5,
+  },
+
+  errorText: {
+    color: colors.danger,
+    fontSize: 12,
+    marginTop: 5,
+    marginLeft: 2,
+  },
+
+  opcaoContainer: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 4,
+  },
+  opcao: {
+    flex: 1,
+    paddingVertical: 16,
+    paddingHorizontal: 10,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    borderRadius: 14,
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: colors.surface,
+  },
+  opcaoSelecionada: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  textoOpcao: {
+    color: colors.textDark,
+    fontWeight: "600",
+    fontSize: 13.5,
+    textAlign: "center",
+  },
+
+  // ── SUBMIT ──
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    paddingVertical: 16,
+    borderRadius: 14,
+    marginTop: 28,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 5,
+  },
+  buttonText: {
+    color: colors.surface,
+    fontSize: 15.5,
+    fontWeight: "700",
+  },
+
+  // ── MODAL ──
   botaoFechar: {
     position: "absolute",
     top: 15,
@@ -541,119 +850,45 @@ const styles = StyleSheet.create({
     zIndex: 10,
     padding: 5,
   },
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    paddingTop: 60,
-  },
-  card: {
-    backgroundColor: theme.colors.primary,
-    padding: 22,
-    borderRadius: 25,
-    elevation: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-  },
-  titulo: {
-    fontSize: theme.texts.title,
-    textAlign: "center",
-    fontWeight: "bold",
-    color: theme.colors.title,
-    marginBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#d25fe9",
-    marginTop: 12,
-    paddingHorizontal: 14,
-    height: 55,
-    borderRadius: 12,
-    backgroundColor: "#FFF",
-    fontSize: theme.texts.text,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#d25fe9",
-    marginTop: 12,
-    paddingHorizontal: 14,
-    height: 55,
-    borderRadius: 12,
-    backgroundColor: "#FFF",
-  },
-  inputInside: {
-    flex: 1,
-    height: "100%",
-    fontSize: theme.texts.text,
-    color: theme.colors.title,
-  },
-  iconArea: {
-    padding: 5,
-  },
-  opcaoContainer: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 25,
-  },
-  opcao: {
-    flex: 1,
-    padding: 14,
-    borderWidth: 1,
-    borderColor: theme.colors.subtitle,
-    borderRadius: 14,
-    alignItems: "center",
-    backgroundColor: "#FFF",
-  },
-  textoOpcao: {
-    color: theme.colors.title,
-    fontWeight: "600",
-    fontSize: theme.texts.text,
-  },
-  botao: {
-    marginTop: 30,
-    padding: 18,
-    borderRadius: 14,
-    alignItems: "center",
-    backgroundColor: "#5407b8",
-  },
-  textoBotao: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: theme.texts.text,
-  },
   modalFundo: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(40,23,76,0.65)",
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
   },
   modalCard: {
-    backgroundColor: "#FFF",
+    backgroundColor: colors.surface,
     width: "100%",
     padding: 25,
     borderRadius: 20,
     alignItems: "center",
   },
+  modalIconWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
   modalTitulo: {
-    fontSize: theme.texts.title,
+    fontSize: 19,
     fontWeight: "bold",
-    color: theme.colors.title,
-    marginTop: 15,
+    color: colors.textDark,
+    marginTop: 5,
     marginBottom: 10,
   },
   modalTexto: {
-    fontSize: theme.texts.text,
-    color: theme.colors.subtitle,
+    fontSize: 14,
+    color: colors.textMuted,
     textAlign: "center",
     marginBottom: 25,
     lineHeight: 22,
   },
   botaoModal: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: colors.card,
     paddingVertical: 15,
     paddingHorizontal: 30,
     borderRadius: 12,
@@ -662,9 +897,9 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   textoBotaoModal: {
-    color: "#FFF",
+    color: colors.surface,
     fontWeight: "bold",
-    fontSize: theme.texts.text,
+    fontSize: 14.5,
   },
   botaoReenviar: {
     paddingVertical: 10,
@@ -672,7 +907,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   textoBotaoReenviar: {
-    color: "#a339b8",
+    color: colors.primary,
     fontWeight: "bold",
     fontSize: 16,
   },

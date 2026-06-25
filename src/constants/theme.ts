@@ -4,9 +4,9 @@ export const theme = {
     paisPrimary: "#8b64de",
     paisSecondary: "#9b5de5",
 
-    gestantesBackground: "#C54286",
+    gestantesBackground: "#851f57",
     gestantesPrimary: "#8B2F61",
-    gestantesSecondary: "#ff6b9d",
+    gestantesSecondary: "#e05d8fe8",
     gestantesCard: "#e05d8fe8",
 
     background: "#b390d8",
@@ -20,8 +20,8 @@ export const theme = {
   },
 
   texts: {
-    text: 18,
-    subtitle: 24,
-    title: 30,
+    text: 16,
+    subtitle: 18,
+    title: 26,
   },
 };

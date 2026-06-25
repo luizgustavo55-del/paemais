@@ -1,352 +1,94 @@
 import React from "react";
-import {
-  Image,
-  Linking,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  StatusBar,
-} from "react-native";
+import BemEstarTemplate from "@/src/components/bemEstarTemplate";
 
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-
-export default function TelaExemplo() {
-  const router = useRouter();
-
+export default function MudancaRotina() {
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}
-      >
-        {/* HEADER (DENTRO DO SCROLLVIEW COMO PEDIDO) */}
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() =>
-                router.push("/(pais)/(tabs)/dicas" as any)
-              }
-            >
-              <Ionicons name="arrow-back" size={18} color="#fff" />
-            </TouchableOpacity>
-
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                aqui seu texto (badge)
-              </Text>
-            </View>
-          </View>
-
-          <Text style={styles.title}>
-            aqui seu texto (título principal)
-          </Text>
-        </View>
-
-        {/* CARD 1 */}
-        <View style={styles.card}>
-          <View style={styles.cardTitleRow}>
-            <Ionicons
-              name="document-text-outline"
-              size={22}
-              color="#ff5ea8"
-            />
-            <Text style={styles.cardTitle}>
-              aqui seu texto (título card)
-            </Text>
-          </View>
-
-          <Text style={styles.cardText}>
-            aqui seu texto (conteúdo do card)
-          </Text>
-        </View>
-
-        {/* CARD 2 */}
-        <View style={styles.card}>
-          <View style={styles.cardTitleRow}>
-            <Ionicons
-              name="library-outline"
-              size={22}
-              color="#7050b3"
-            />
-            <Text style={styles.cardTitle}>
-              aqui seu texto (título card)
-            </Text>
-          </View>
-
-          <Text style={styles.cardText}>
-            aqui seu texto (conteúdo do card)
-          </Text>
-        </View>
-
-        {/* LISTA */}
-        <View style={styles.card}>
-          <View style={styles.cardTitleRow}>
-            <Ionicons
-              name="list-outline"
-              size={22}
-              color="#00c48c"
-            />
-            <Text style={styles.cardTitle}>
-              aqui seu texto (lista)
-            </Text>
-          </View>
-
-          {["item 1", "item 2", "item 3"].map((item, index) => (
-            <View key={index} style={styles.listItem}>
-              <View style={styles.bullet} />
-              <Text style={styles.listText}>
-                aqui seu texto: {item}
-              </Text>
-            </View>
-          ))}
-        </View>
-
-        {/* LINK */}
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() =>
-            Linking.openURL("https://seu-link-aqui.com")
-          }
-        >
-          <View style={styles.cardTitleRow}>
-            <Ionicons
-              name="globe-outline"
-              size={22}
-              color="#7050b3"
-            />
-            <Text style={styles.cardTitle}>
-              aqui seu texto (link)
-            </Text>
-          </View>
-
-          <Text style={styles.cardText}>
-            aqui seu texto (descrição do link)
-          </Text>
-        </TouchableOpacity>
-
-        {/* VÍDEO */}
-        <View style={styles.card}>
-          <TouchableOpacity
-            style={styles.youtubeCard}
-            onPress={() =>
-              Linking.openURL("https://youtube.com")
-            }
-          >
-            <Image
-              source={{ uri: "https://via.placeholder.com/105" }}
-              style={styles.thumbnail}
-            />
-
-            <View style={styles.videoInfo}>
-              <View style={styles.cardTitleRow}>
-                <Ionicons
-                  name="logo-youtube"
-                  size={20}
-                  color="red"
-                />
-                <Text style={styles.videoTitle}>
-                  aqui seu texto (vídeo)
-                </Text>
-              </View>
-
-              <Text style={styles.videoText}>
-                aqui seu texto (descrição do vídeo)
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </View>
+    <BemEstarTemplate
+      badge="Adaptação Familiar"
+      titulo="Mudanças de Rotina e Identidade"
+      secoes={[
+        {
+          titulo: "Resumo",
+          icone: "refresh-outline",
+          cor: "#7050b3",
+          texto:
+            "A chegada de um filho transforma a rotina e também a forma como pais e mães se enxergam. A vida passa a ter novos horários, novas prioridades e novas responsabilidades.",
+        },
+        {
+          titulo: "O que muda na rotina?",
+          icone: "time-outline",
+          cor: "#ff5ea8",
+          lista: [
+            "Sono e descanso ficam mais interrompidos.",
+            "Os horários passam a depender das necessidades da criança.",
+            "Tarefas simples podem demorar mais.",
+            "A casa pode ficar mais desorganizada.",
+            "Planos precisam ser adaptados com mais frequência.",
+            "O tempo para si mesmo pode diminuir bastante.",
+          ],
+        },
+        {
+          titulo: "O que muda por dentro?",
+          icone: "person-outline",
+          cor: "#7050b3",
+          texto:
+            "Muitas pessoas sentem que não são mais as mesmas depois da maternidade ou paternidade. Isso pode trazer alegria, mas também estranhamento, saudade da vida anterior e dúvidas sobre a própria identidade.",
+        },
+        {
+          titulo: "Sentimentos comuns",
+          icone: "heart-circle-outline",
+          cor: "#ffb300",
+          lista: [
+            "Saudade da antiga rotina.",
+            "Culpa por sentir falta da liberdade anterior.",
+            "Medo de não se reconhecer mais.",
+            "Orgulho por cuidar de uma nova vida.",
+            "Cansaço por estar sempre disponível.",
+            "Vontade de retomar sonhos e projetos pessoais.",
+          ],
+        },
+        {
+          titulo: "Isso é normal?",
+          icone: "help-circle-outline",
+          cor: "#00c48c",
+          texto:
+            "Sim. Amar um filho não impede que você sinta falta de partes da sua vida antiga. A adaptação à nova identidade de mãe ou pai pode levar tempo e não acontece igual para todo mundo.",
+        },
+        {
+          titulo: "Como se adaptar melhor",
+          icone: "leaf-outline",
+          cor: "#7050b3",
+          lista: [
+            "Crie uma rotina flexível, não perfeita.",
+            "Aceite que algumas fases são temporárias.",
+            "Converse sobre o que mudou para você.",
+            "Mantenha pequenos hábitos que lembram quem você é.",
+            "Inclua momentos simples de autocuidado.",
+            "Divida responsabilidades sempre que possível.",
+          ],
+        },
+        {
+          titulo: "Identidade além da maternidade ou paternidade",
+          icone: "sparkles-outline",
+          cor: "#ff5ea8",
+          texto:
+            "Ser mãe ou pai passa a fazer parte da sua identidade, mas não precisa apagar todo o resto. Você continua tendo gostos, sonhos, limites, necessidades e história própria.",
+        },
+        {
+          titulo: "Quando a mudança pesa demais",
+          icone: "medkit-outline",
+          cor: "#ffb300",
+          texto:
+            "Se a sensação de perda de identidade vier com tristeza profunda, irritação intensa, isolamento, ansiedade constante ou vontade de sumir, procure apoio profissional.",
+        },
+        {
+          titulo: "Lembrete importante",
+          icone: "bulb-outline",
+          cor: "#7050b3",
+          texto:
+            "Você não precisa voltar a ser exatamente quem era antes. Também não precisa se perder completamente. Aos poucos, uma nova versão sua pode ser construída com mais cuidado e acolhimento.",
+        },
+      ]}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#cfb8ff",
-  },
-
-  /* HEADER FIXO */
-  header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-
-    zIndex: 999,
-
-    backgroundColor: "#8a68d3",
-
-    paddingTop: 42,
-    paddingHorizontal: 22,
-    paddingBottom: 22,
-
-    elevation: 10,
-    shadowColor: "#28174c",
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-  },
-
-  headerTop: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "#ae89e9",
-
-    justifyContent: "center",
-    alignItems: "center",
-
-    marginRight: 12,
-  },
-
-  badge: {
-    backgroundColor: "#ae89e9",
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 18,
-  },
-
-  badgeText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.3,
-  },
-
-  title: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 16,
-    lineHeight: 32,
-  },
-
-  /* CONTENT */
-  content: {
-    padding: 20,
-    paddingTop: 180,
-    paddingBottom: 40,
-  },
-
-  /* CARDS */
-  card: {
-    backgroundColor: "#eae1fd",
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 18,
-
-    shadowColor: "#28174c",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-
-    elevation: 4,
-  },
-
-  cardTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-
-  cardTitle: {
-    fontSize: 21,
-    fontWeight: "700",
-    color: "#28174c",
-    marginLeft: 10,
-    flex: 1,
-  },
-
-  cardText: {
-    fontSize: 16,
-    color: "#4a4a4a",
-    lineHeight: 28,
-  },
-
-  /* LISTA */
-  listItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 14,
-  },
-
-  bullet: {
-    width: 8,
-    height: 8,
-    borderRadius: 10,
-    backgroundColor: "#ff5ea8",
-    marginTop: 10,
-    marginRight: 12,
-  },
-
-  listText: {
-    flex: 1,
-    fontSize: 16,
-    color: "#4a4a4a",
-    lineHeight: 27,
-  },
-
-  /* VÍDEO */
-  youtubeCard: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  thumbnailContainer: {
-    position: "relative",
-  },
-
-  thumbnail: {
-    width: 105,
-    height: 105,
-    borderRadius: 18,
-  },
-
-  playButton: {
-    position: "absolute",
-    top: "38%",
-    left: "38%",
-
-    backgroundColor: "rgba(0,0,0,0.65)",
-    padding: 8,
-    borderRadius: 50,
-  },
-
-  videoInfo: {
-    flex: 1,
-    paddingLeft: 16,
-    justifyContent: "center",
-  },
-
-  videoTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: "#28174c",
-    marginLeft: 8,
-  },
-
-  videoText: {
-    fontSize: 15,
-    color: "#666",
-    lineHeight: 24,
-    marginTop: 4,
-  },
-});
