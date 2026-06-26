@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 import { Calendar } from "react-native-calendars";
 
 import { auth, firestore } from "@/src/services/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   addDoc,
   collection,
@@ -97,25 +98,33 @@ export default function AgendaModal({ onClose }: { onClose: () => void }) {
   const [lembretes, setLembretes] = useState<Lembrete[]>([]);
   const [editandoId, setEditandoId] = useState<string | null>(null);
 
-  const user = auth.currentUser;
+  const [userId, setUserId] = useState<string | null>(auth.currentUser?.uid ?? null);
+
+  // Reagir a mudanças de autenticação
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUserId(u?.uid ?? null);
+    });
+    return () => unsub();
+  }, []);
 
   // ── Snapshot: Eventos ──────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!user?.uid) return;
-    const ref = collection(firestore, "usuarios", user.uid, "eventos");
+    if (!userId) return;
+    const ref = collection(firestore, "usuarios", userId, "eventos");
     return onSnapshot(ref, (snap) => {
       setEventos(
         snap.docs.map((d) => ({ id: d.id, _tipo: "evento", ...d.data() } as Evento))
       );
     });
-  }, [user]);
+  }, [userId]);
 
   // ── Snapshot: Lembretes ───────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!user?.uid) return;
-    const ref = collection(firestore, "usuarios", user.uid, "lembretes");
+    if (!userId) return;
+    const ref = collection(firestore, "usuarios", userId, "lembretes");
     return onSnapshot(ref, (snap) => {
       setLembretes(
         snap.docs.map((d) => {
@@ -134,7 +143,7 @@ export default function AgendaModal({ onClose }: { onClose: () => void }) {
         })
       );
     });
-  }, [user]);
+  }, [userId]);
 
   // ── Marked dates ──────────────────────────────────────────────────────────
 
@@ -209,7 +218,7 @@ export default function AgendaModal({ onClose }: { onClose: () => void }) {
   }
 
   async function salvarEvento() {
-    if (!titulo.trim() || !selectedDate || !user?.uid) {
+    if (!titulo.trim() || !selectedDate || !userId) {
       Alert.alert("Atenção", "Preencha o título e selecione uma data.");
       return;
     }
@@ -219,11 +228,11 @@ export default function AgendaModal({ onClose }: { onClose: () => void }) {
 
     try {
       if (editandoId) {
-        const ref = doc(firestore, "usuarios", user.uid, "eventos", editandoId);
+        const ref = doc(firestore, "usuarios", userId, "eventos", editandoId);
         await updateDoc(ref, { titulo, descricao, categoria, data: ts, notificationId });
         setEditandoId(null);
       } else {
-        const ref = collection(firestore, "usuarios", user.uid, "eventos");
+        const ref = collection(firestore, "usuarios", userId, "eventos");
         await addDoc(ref, { titulo, descricao, categoria, data: ts, notificationId });
       }
       resetForm();
@@ -234,9 +243,9 @@ export default function AgendaModal({ onClose }: { onClose: () => void }) {
   }
 
   async function excluirEvento(ev: Evento) {
-    if (!user?.uid) return;
+    if (!userId) return;
     await cancelarNotificacao(ev.notificationId);
-    await deleteDoc(doc(firestore, "usuarios", user.uid, "eventos", ev.id)).catch(console.error);
+    await deleteDoc(doc(firestore, "usuarios", userId, "eventos", ev.id)).catch(console.error);
   }
 
   function editarEvento(ev: Evento) {

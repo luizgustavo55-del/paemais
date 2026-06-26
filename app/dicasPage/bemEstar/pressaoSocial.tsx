@@ -1,93 +1,89 @@
-import BemEstarTemplate from "@/src/components/BemEstarTemplate";
+import BemEstarTemplate from "@/src/components/bemEstarTemplate";
 import React from "react";
 
-export default function AnsiedadeMedo() {
+export default function PressaoSocial() {
   return (
     <BemEstarTemplate
-      badge="Bem-estar Emocional"
-      titulo="Ansiedade e Medo na Maternidade"
+      badge="Bem-estar Familiar"
+      titulo="Pressão Social na Maternidade"
       secoes={[
         {
           titulo: "Resumo",
-          icone: "heart-outline",
+          icone: "megaphone-outline",
           cor: "#7050b3",
           texto:
-            "A maternidade pode trazer muito amor, mas também inseguranças, dúvidas e medos. É comum sentir ansiedade diante das novas responsabilidades, principalmente quando tudo parece depender de você.",
+            "A pressão social aparece quando mães e pais sentem que precisam seguir padrões impostos por familiares, redes sociais, conhecidos ou pela sociedade sobre como criar, cuidar, trabalhar e se comportar.",
         },
         {
-          titulo: "Por que isso acontece?",
-          icone: "help-circle-outline",
+          titulo: "De onde vem a pressão?",
+          icone: "people-outline",
           cor: "#ff5ea8",
-          texto:
-            "A chegada de um bebê muda o corpo, a rotina, o sono, as relações e a forma como a mãe se enxerga. Além disso, existe uma cobrança social muito forte para que a mãe saiba tudo, dê conta de tudo e esteja sempre bem.",
+          lista: [
+            "Comentários de familiares.",
+            "Comparações com outras mães e pais.",
+            "Redes sociais mostrando rotinas perfeitas.",
+            "Opiniões sobre amamentação, parto, sono e alimentação.",
+            "Cobrança para dar conta da casa, trabalho e criança.",
+            "Frases que diminuem o cansaço dos pais.",
+          ],
         },
         {
-          titulo: "Medos comuns",
-          icone: "alert-circle-outline",
+          titulo: "Frases comuns",
+          icone: "chatbubble-ellipses-outline",
           cor: "#ffb300",
           lista: [
-            "Medo de não ser uma boa mãe.",
-            "Medo de o bebê adoecer.",
-            "Medo de fazer algo errado nos cuidados.",
-            "Medo de não conseguir descansar nunca mais.",
-            "Medo de perder sua própria identidade.",
-            "Medo de ser julgada por outras pessoas.",
+            "Na minha época era diferente.",
+            "Você está acostumando mal.",
+            "Mãe de verdade dá conta.",
+            "Você deveria estar feliz o tempo todo.",
+            "Esse bebê chora porque você pega demais.",
+            "Você trabalha demais ou trabalha de menos.",
           ],
         },
         {
-          titulo: "Sinais de ansiedade",
-          icone: "pulse-outline",
+          titulo: "Como isso afeta?",
+          icone: "sad-outline",
           cor: "#7050b3",
-          lista: [
-            "Pensamentos acelerados.",
-            "Dificuldade para relaxar.",
-            "Sensação de aperto no peito.",
-            "Choro frequente ou sem motivo claro.",
-            "Preocupação constante com o bebê.",
-            "Irritabilidade ou sensação de estar no limite.",
-            "Dificuldade para dormir mesmo quando o bebê dorme.",
-          ],
+          texto:
+            "A pressão social pode gerar culpa, ansiedade, insegurança e sensação de fracasso. Muitas pessoas passam a duvidar das próprias escolhas mesmo quando estão fazendo o melhor dentro da própria realidade.",
         },
         {
-          titulo: "O que pode ajudar?",
-          icone: "leaf-outline",
+          titulo: "Como se proteger",
+          icone: "shield-checkmark-outline",
           cor: "#00c48c",
           lista: [
-            "Falar sobre o que sente com alguém de confiança.",
-            "Evitar se comparar com outras mães.",
-            "Diminuir a cobrança por perfeição.",
-            "Aceitar ajuda prática, como comida, limpeza ou cuidado com o bebê.",
-            "Criar pequenos momentos de pausa durante o dia.",
-            "Respirar devagar quando sentir que está entrando em crise.",
+            "Filtre conselhos que não respeitam sua realidade.",
+            "Evite comparar sua rotina com imagens perfeitas da internet.",
+            "Confie mais em profissionais do que em palpites aleatórios.",
+            "Converse com pessoas que acolhem em vez de julgar.",
+            "Defina limites para comentários invasivos.",
           ],
         },
         {
-          titulo: "Respiração simples",
-          icone: "flower-outline",
+          titulo: "Limites saudáveis",
+          icone: "hand-left-outline",
           cor: "#ff5ea8",
           texto:
-            "Quando a ansiedade vier forte, tente inspirar pelo nariz contando até 4, segurar por 2 segundos e soltar o ar lentamente contando até 6. Repita algumas vezes. Isso não resolve tudo, mas pode ajudar o corpo a sair do estado de alerta.",
+            "Você pode agradecer uma opinião sem seguir o que foi dito. Cuidar da sua família também envolve proteger sua saúde emocional de julgamentos constantes.",
         },
         {
-          titulo: "Você não precisa dar conta de tudo",
-          icone: "people-outline",
+          titulo: "Redes sociais",
+          icone: "phone-portrait-outline",
           cor: "#7050b3",
-          texto:
-            "Cuidar de uma criança deve ser uma responsabilidade compartilhada. Sempre que possível, converse com o parceiro, familiares ou pessoas próximas para dividir tarefas e aliviar a carga emocional.",
+          lista: [
+            "Lembre que muitos conteúdos mostram apenas recortes.",
+            "Pare de seguir perfis que aumentam sua culpa.",
+            "Busque conteúdos realistas e acolhedores.",
+            "Evite medir sua maternidade ou paternidade por curtidas.",
+            "Descanse da internet quando ela pesar demais.",
+          ],
         },
         {
-          titulo: "Quando procurar ajuda?",
-          icone: "medkit-outline",
-          cor: "#ff5ea8",
+          titulo: "Lembrete final",
+          icone: "heart-outline",
+          cor: "#00c48c",
           texto:
-            "Procure apoio profissional se a ansiedade estiver muito intensa, atrapalhando seu sono, sua alimentação, sua relação com o bebê ou sua vontade de viver. Pedir ajuda é um ato de cuidado, não de fraqueza.",
-        },
-        {
-          titulo: "Lembrete importante",
-          icone: "bulb-outline",
-          cor: "#ffb300",
-          texto:
-            "Sentir medo não significa que você não ama seu filho. Muitas vezes, o medo aparece justamente porque você se importa muito. O importante é não enfrentar tudo sozinha.",
+            "Não existe uma família perfeita. Existe uma família real, com limites, tentativas, erros, aprendizados e amor possível dentro da própria realidade.",
         },
       ]}
     />

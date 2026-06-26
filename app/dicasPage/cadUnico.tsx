@@ -1,299 +1,207 @@
-import { Image, Linking, View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import React from "react";
+import BemEstarTemplate from "@/src/components/bemEstarTemplate";
 
-export default function CadastroUnico() {
-  const router = useRouter();
-
+export default function CadUnico() {
   return (
-    <View style={styles.container}>
+    <BemEstarTemplate
+      badge="Auxílios e Direitos"
+      titulo="Cadastro Único"
+      secoes={[
+        {
+          titulo: "Resumo",
+          icone: "id-card-outline",
+          cor: "#7050b3",
+          texto:
+            "O Cadastro Único, também chamado de CadÚnico, é uma ferramenta usada pelo Governo Federal para identificar e conhecer melhor as famílias de baixa renda no Brasil. Ele reúne informações sobre moradia, renda, composição familiar, escolaridade, trabalho e outras condições importantes.",
+        },
 
-      {/* 🔝 HEADER */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.push("/(pais)/(tabs)/dicas" as any)}
-        >
-          <Ionicons name="arrow-back" size={24} color="#ba11f2" />
-        </TouchableOpacity>
+        {
+          titulo: "Para que serve?",
+          icone: "help-circle-outline",
+          cor: "#ff5ea8",
+          texto:
+            "O CadÚnico não é um benefício em dinheiro. Ele é uma porta de entrada para vários programas sociais. Estar inscrito não garante automaticamente o recebimento de todos os auxílios, mas permite que a família seja analisada conforme as regras de cada programa.",
+        },
 
-        <Text style={styles.headerTitle}>
-          Cadastro Único (CadÚnico)
-        </Text>
-      </View>
+        {
+          titulo: "Por que é importante para famílias?",
+          icone: "people-outline",
+          cor: "#00c48c",
+          texto:
+            "Para famílias com crianças pequenas, gestantes ou pessoas em situação de vulnerabilidade, o CadÚnico ajuda o poder público a entender a realidade familiar e direcionar políticas públicas, benefícios e acompanhamentos sociais.",
+        },
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
-      >
+        {
+          titulo: "Quem pode se cadastrar?",
+          icone: "person-add-outline",
+          cor: "#7050b3",
+          lista: [
+            "Famílias de baixa renda.",
+            "Famílias que precisam acessar programas sociais.",
+            "Famílias com crianças, gestantes, idosos ou pessoas com deficiência.",
+            "Pessoas que moram sozinhas e se enquadram nos critérios sociais.",
+            "Famílias em situação de vulnerabilidade social.",
+            "Famílias acompanhadas por serviços da assistência social.",
+          ],
+        },
 
-        {/* 📌 O QUE É */}
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>O que é</Text>
-          <Text style={styles.text}>
-            O Cadastro Único é um sistema do Governo Federal que reúne informações sobre famílias de baixa renda no Brasil. 
-            Ele permite identificar a realidade social dessas famílias, incluindo renda, moradia, escolaridade e trabalho. 
-            Funciona como uma base de dados nacional utilizada por diversos programas sociais. 
-            Com ele, o governo consegue planejar melhor políticas públicas. 
-            O cadastro é gratuito e acessível à população. 
-            Ele evita que as famílias precisem fazer vários cadastros diferentes. 
-            Também facilita o acesso a benefícios sociais. 
-            É administrado em parceria com os municípios. 
-            Está presente em todo o país. 
-            É essencial para promover inclusão social.
-          </Text>
-        </View>
+        {
+          titulo: "Onde fazer o cadastro?",
+          icone: "location-outline",
+          cor: "#ffb300",
+          texto:
+            "O cadastro geralmente é feito presencialmente em um posto de atendimento do Cadastro Único ou no CRAS do município. A prefeitura é responsável por organizar esse atendimento local.",
+        },
 
-        {/* 🎯 PARA QUE SERVE */}
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>Para que serve</Text>
-          <Text style={styles.text}>
-            O Cadastro Único serve como porta de entrada para programas sociais do governo. 
-            Através dele, é possível acessar benefícios como Bolsa Família, Auxílio Gás e Tarifa Social de Energia. 
-            Ele organiza as informações das famílias em um único sistema. 
-            Isso facilita a seleção dos beneficiários. 
-            Cada programa utiliza esses dados para definir quem tem direito. 
-            Também ajuda o governo a identificar quem mais precisa. 
-            Permite acompanhar a situação das famílias ao longo do tempo. 
-            Auxilia na criação de novas políticas públicas. 
-            Torna o processo mais justo e transparente. 
-            Conecta a população aos seus direitos.
-          </Text>
-        </View>
+        {
+          titulo: "CRAS",
+          icone: "home-outline",
+          cor: "#00c48c",
+          texto:
+            "O CRAS é o Centro de Referência de Assistência Social. Ele costuma ser o principal local para orientação sobre CadÚnico, Bolsa Família e outros serviços socioassistenciais.",
+        },
 
-        {/* 👨‍👩‍👧 QUEM PODE */}
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>Quem pode se cadastrar</Text>
-          <Text style={styles.text}>
-            Podem se cadastrar famílias de baixa renda. 
-            Em geral, aquelas com renda de até meio salário mínimo por pessoa. 
-            Famílias com renda maior também podem participar em casos específicos. 
-            Pessoas que vivem sozinhas podem se cadastrar. 
-            Comunidades tradicionais também têm direito. 
-            O cadastro é gratuito para todos. 
-            Não é necessário pagar em nenhuma etapa. 
-            O importante é estar em situação de vulnerabilidade social. 
-            Os dados são analisados pelo governo. 
-            Assim, mais pessoas podem acessar benefícios.
-          </Text>
-        </View>
+        {
+          titulo: "Documentos importantes",
+          icone: "document-text-outline",
+          cor: "#7050b3",
+          lista: [
+            "CPF do responsável familiar.",
+            "Documento de identificação dos membros da família.",
+            "Comprovante de residência, quando houver.",
+            "Certidão de nascimento ou casamento, quando houver.",
+            "Carteira de trabalho, se houver.",
+            "Comprovante de matrícula escolar das crianças, se solicitado.",
+            "Documentos que ajudem a comprovar a composição da família.",
+          ],
+        },
 
-        {/* 📝 COMO SE CADASTRAR */}
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>Como se cadastrar</Text>
-          <Text style={styles.text}>
-            O cadastro deve ser feito presencialmente em um CRAS ou posto de atendimento. 
-            Um responsável pela família deve comparecer ao local. 
-            É necessário levar documentos de todos os membros da família. 
-            Entre eles estão CPF, RG e comprovante de residência. 
-            Será realizada uma entrevista social. 
-            Nela, serão coletadas informações sobre a família. 
-            Nem todos precisam estar presentes. 
-            O processo é gratuito. 
-            Após o cadastro, os dados são analisados. 
-            É importante fornecer informações corretas.
-          </Text>
-        </View>
+        {
+          titulo: "Responsável familiar",
+          icone: "person-circle-outline",
+          cor: "#ff5ea8",
+          texto:
+            "Normalmente uma pessoa da família fica responsável por prestar as informações. É importante que ela conheça bem a rotina, os moradores da casa, a renda familiar e as despesas principais.",
+        },
 
-        {/* 👥 COMO FUNCIONA */}
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>Como funciona</Text>
-          <Text style={styles.text}>
-            O Cadastro Único funciona por meio de um sistema nacional de dados. 
-            Um entrevistador registra as informações da família. 
-            Esses dados ficam disponíveis para programas sociais. 
-            O cadastro não garante benefícios automaticamente. 
-            Cada programa possui suas próprias regras. 
-            O sistema permite acompanhar mudanças na família. 
-            As informações devem ser sempre verdadeiras. 
-            Isso evita problemas no acesso aos benefícios. 
-            O governo utiliza esses dados para decisões. 
-            É uma ferramenta de apoio social.
-          </Text>
-        </View>
+        {
+          titulo: "Informações registradas",
+          icone: "clipboard-outline",
+          cor: "#00c48c",
+          lista: [
+            "Endereço da família.",
+            "Quantidade de pessoas na casa.",
+            "Dados de cada membro da família.",
+            "Renda familiar.",
+            "Escolaridade.",
+            "Situação de trabalho.",
+            "Características da moradia.",
+            "Existência de pessoas com deficiência.",
+            "Outras informações sociais relevantes.",
+          ],
+        },
 
-        {/* 🔄 ATUALIZAÇÃO */}
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>Atualização dos dados</Text>
-          <Text style={styles.text}>
-            Os dados devem ser atualizados a cada dois anos. 
-            Também sempre que houver mudanças na família. 
-            Como mudança de endereço ou renda. 
-            Nascimento ou saída de membros deve ser informado. 
-            A atualização evita bloqueio de benefícios. 
-            Garante que as informações estejam corretas. 
-            O processo é feito no mesmo local do cadastro. 
-            Também é gratuito. 
-            Dados desatualizados podem causar problemas. 
-            Manter tudo atualizado é essencial.
-          </Text>
-        </View>
+        {
+          titulo: "Atualização do cadastro",
+          icone: "sync-outline",
+          cor: "#7050b3",
+          texto:
+            "Manter o CadÚnico atualizado é essencial. Mudanças de endereço, renda, escola, nascimento de criança, falecimento, separação, casamento ou alteração na composição familiar devem ser informadas.",
+        },
 
-        {/* ⚠️ IMPORTANTE */}
-        <View style={styles.card}>
-          <Text style={styles.subtitle}>Importante</Text>
-          <Text style={styles.text}>
-            Estar no Cadastro Único não garante benefícios automaticamente. 
-            Cada programa tem critérios próprios. 
-            Todas as informações devem ser verdadeiras. 
-            Dados incorretos podem bloquear benefícios. 
-            O cadastro é totalmente gratuito. 
-            Nunca pague para se cadastrar. 
-            É importante guardar documentos. 
-            O acompanhamento pode ser feito pelo app ou CRAS. 
-            Manter contato com o atendimento ajuda. 
-            O sistema exige responsabilidade.
-          </Text>
-        </View>
+        {
+          titulo: "Quando atualizar?",
+          icone: "calendar-outline",
+          cor: "#ffb300",
+          lista: [
+            "Quando nascer um bebê.",
+            "Quando alguém sair ou entrar na casa.",
+            "Quando mudar de endereço.",
+            "Quando mudar a renda da família.",
+            "Quando a criança trocar de escola.",
+            "Quando houver alteração de telefone.",
+            "Quando solicitado pelo município ou pelo governo.",
+          ],
+        },
 
-        {/* 🎬 VÍDEO */}
-        <View style={styles.card}>
-          <TouchableOpacity
-            style={styles.youtubeCard}
-            onPress={() =>
-              Linking.openURL("https://youtu.be/UNI1xYeEjjI?si=dzweKRVMYuTYbjqH")
-            }
-          >
-            <View style={styles.thumbnailContainer}>
-              <Image
-                source={require("../../assets/images/cadUnico.png")}
-                style={styles.thumbnail}
-              />
-              <View style={styles.playButton}>
-                <Text style={styles.playText}>▶</Text>
-              </View>
-            </View>
+        {
+          titulo: "CadÚnico e Bolsa Família",
+          icone: "cash-outline",
+          cor: "#00c48c",
+          texto:
+            "O Bolsa Família usa informações do CadÚnico para avaliar famílias que podem receber o benefício. Por isso, dados incorretos ou desatualizados podem dificultar o acesso ao programa.",
+        },
 
-            <View style={styles.info}>
-              <Text style={styles.subtitle}>Vídeo explicativo</Text>
-              <Text style={styles.text}>
-                Cadastro Único explicado de forma simples
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
+        {
+          titulo: "CadÚnico e gestantes",
+          icone: "heart-outline",
+          cor: "#ff5ea8",
+          texto:
+            "Gestantes em famílias de baixa renda devem manter seus dados atualizados, pois alguns programas consideram a presença de gestante na família para acompanhamento social, saúde e benefícios específicos.",
+        },
 
-        {/* 🌐 SITE */}
-        <View>
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() =>
-              Linking.openURL("https://www.gov.br/pt-br/servicos/inscrever-se-no-cadastro-unico-para-programas-sociais-do-governo-federal")
-            }
-          >
-            <Text style={styles.subtitle}>Veja mais na web</Text>
-            <Text style={styles.text}>
-              Clique e acesse o site oficial do Governo
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {
+          titulo: "CadÚnico e crianças",
+          icone: "happy-outline",
+          cor: "#7050b3",
+          texto:
+            "Crianças pequenas precisam estar corretamente registradas na composição familiar. Isso ajuda no acesso a políticas de proteção, renda, saúde, educação e assistência social.",
+        },
 
-      </ScrollView>
-    </View>
+        {
+          titulo: "Cuidados importantes",
+          icone: "warning-outline",
+          cor: "#ffb300",
+          lista: [
+            "Não omita informações sobre renda.",
+            "Não informe endereço falso.",
+            "Não deixe de incluir membros da família que moram na casa.",
+            "Guarde comprovantes e documentos importantes.",
+            "Atualize o cadastro sempre que houver mudança.",
+            "Procure o CRAS em caso de dúvida.",
+          ],
+        },
+
+        {
+          titulo: "O que o CadÚnico não faz?",
+          icone: "close-circle-outline",
+          cor: "#ff5ea8",
+          lista: [
+            "Não garante automaticamente qualquer benefício.",
+            "Não substitui análise de cada programa social.",
+            "Não elimina a necessidade de manter dados atualizados.",
+            "Não deve ser feito com informações falsas.",
+            "Não é um cartão de pagamento.",
+          ],
+        },
+
+        {
+          titulo: "Como consultar?",
+          icone: "phone-portrait-outline",
+          cor: "#7050b3",
+          texto:
+            "Quem já está inscrito pode consultar informações como NIS, código familiar, situação cadastral e data da última atualização por canais oficiais do Cadastro Único.",
+        },
+
+        {
+          titulo: "Dica para famílias",
+          icone: "bulb-outline",
+          cor: "#00c48c",
+          texto:
+            "Antes de ir ao atendimento, organize os documentos da família e anote informações importantes, como renda, escola das crianças, endereço completo e telefone atualizado.",
+        },
+
+        {
+          titulo: "Mensagem final",
+          icone: "shield-checkmark-outline",
+          cor: "#7050b3",
+          texto:
+            "O Cadastro Único é uma forma de tornar a realidade da família visível para as políticas públicas. Para quem cuida de crianças, manter esse cadastro correto pode ser um passo importante de proteção e acesso a direitos.",
+        },
+      ]}
+      linkTitulo="Consultar fonte oficial"
+      linkTexto="Acesse informações oficiais do Governo Federal sobre o Cadastro Único."
+      linkUrl="https://www.gov.br/pt-br/servicos/inscrever-se-no-cadastro-unico-para-programas-sociais-do-governo-federal"
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F6EDFB",
-  },
-
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 15,
-    backgroundColor: "#fff",
-
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-  },
-
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#ba11f2",
-  },
-
-  scroll: {
-    padding: 20,
-    paddingBottom: 30,
-  },
-
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: "#ba11f2",
-
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-  },
-
-  subtitle: {
-    fontSize: 15,
-    fontWeight: "bold",
-    color: "#ba11f2",
-    marginBottom: 6,
-  },
-
-  text: {
-    fontSize: 14,
-    color: "#555",
-    lineHeight: 20,
-  },
-
-  youtubeCard: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    marginBottom: 8,
-    overflow: "hidden",
-    flexDirection: "row",
-
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-  },
-
-  thumbnailContainer: {
-    position: "relative",
-  },
-
-  thumbnail: {
-    width: 80,
-    height: 80,
-    borderRadius: 10,
-  },
-
-  playButton: {
-    position: "absolute",
-    top: "5%",
-    left: "5%",
-    backgroundColor: "rgba(0,0,0,0.6)",
-    padding: 6,
-    borderRadius: 50,
-  },
-
-  playText: {
-    color: "#fff",
-    fontSize: 14,
-  },
-
-  info: {
-    flex: 1,
-    padding: 10,
-    justifyContent: "center",
-  },
-});
