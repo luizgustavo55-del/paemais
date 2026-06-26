@@ -1,4 +1,4 @@
-import BemEstarTemplate from "@/src/components/BemEstarTemplate";
+import BemEstarTemplate from "@/src/components/bemEstarTemplate";
 import React from "react";
 
 export default function Conjuntivite() {

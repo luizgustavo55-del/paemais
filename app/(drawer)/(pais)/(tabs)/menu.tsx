@@ -425,7 +425,12 @@ export default function Home() {
               <Ionicons name="person-outline" size={24} color="#fff" />
             </TouchableOpacity>
 
-            <Ionicons name="notifications-outline" size={24} color="#fff" />
+   <TouchableOpacity
+  activeOpacity={0.7}
+  onPress={() => router.push("/notificacoes" as any)}
+>
+  <Ionicons name="notifications-outline" size={24} color="#fff" />
+</TouchableOpacity>
           </View>
 
           <Text style={styles.hello}>Olá,</Text>

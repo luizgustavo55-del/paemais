@@ -1,8 +1,13 @@
 import { theme } from "@/src/constants/theme";
+import { auth, firestore } from "@/src/services/firebase";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
   Image,
   StyleSheet,
@@ -12,44 +17,132 @@ import {
   View,
 } from "react-native";
 
+const colors = {
+  background: "#ECE3FF",
+  backgroundDeep: "#D9C8FF",
+  primary: "#7050B3",
+  primarySoft: "#8B64DE",
+  primaryLight: "#c2a4f5",
+  dark: "#28174C",
+  muted: "#6F5A98",
+  white: "#b499e9",
+  border: "#c0a2f5",
+};
+
 const DATA = [
   {
     id: "1",
     titulo: "Pãe+",
+    icone: "heart-outline" as const,
     descricao:
-      "Aplicativo assistencial para mães e pais desde a gestação até os 3 anos de idade, de forma organizada, pratica e interativa",
+      "Acompanhe a gestação, a rotina da criança e os cuidados da família em um só lugar, de forma simples e organizada.",
   },
   {
     id: "2",
     titulo: "Dicas práticas",
+    icone: "bulb-outline" as const,
     descricao:
-      "Aprenda sobre saúde, leis, auxilios, organização de rotina com dicas interativas e de linguagem acessivel, sem perder a credibilidade.",
+      "Encontre conteúdos sobre saúde, direitos, auxílios e rotina familiar com linguagem clara, acessível e confiável.",
   },
   {
     id: "3",
     titulo: "Apoio completo",
+    icone: "people-outline" as const,
     descricao:
-      "Tenha acesso a conteúdos confiáveis, possiveis soluções e uma rede de apoio que abrange pais e profissionais de diversas áreas.",
+      "Tenha acesso a orientações, lembretes, comunidade e ferramentas para apoiar pais, mães, gestantes e profissionais.",
   },
 ];
 
 export default function IndhomeLAG() {
   const { width } = useWindowDimensions();
   const router = useRouter();
+
   const scrollX = useRef(new Animated.Value(0)).current;
+
   const [paginaAtual, setPaginaAtual] = useState(0);
+  const [verificandoLogin, setVerificandoLogin] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      try {
+        if (!user) {
+          setVerificandoLogin(false);
+          return;
+        }
+
+        const userRef = doc(firestore, "usuarios", user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (!userSnap.exists()) {
+          setVerificandoLogin(false);
+          return;
+        }
+
+        const dados = userSnap.data();
+        const tipo = dados.tipo;
+
+        if (tipo === "pai") {
+          router.replace("/(drawer)/(pais)/(tabs)/menu");
+          return;
+        }
+
+        if (tipo === "gestante") {
+          router.replace("/(drawer)/(gestantes)/(tabs)/gestacao");
+          return;
+        }
+
+        setVerificandoLogin(false);
+      } catch (error) {
+        console.log("Erro ao verificar usuário logado:", error);
+        setVerificandoLogin(false);
+      }
+    });
+
+    return unsubscribe;
+  }, [router]);
+
+  if (verificandoLogin) {
+    return (
+      <View style={styles.loadingContainer}>
+        <View style={styles.loadingLogoBox}>
+          <Image
+            source={require("../assets/images/logo3.png")}
+            style={styles.logoLoading}
+          />
+        </View>
+
+        <ActivityIndicator size="large" color={colors.primary} />
+
+        <Text style={styles.loadingText}>Preparando sua experiência...</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("../assets/images/logo2removebg.png")}
-        style={styles.logo}
-      />
+    <LinearGradient
+      colors={[colors.background, colors.backgroundDeep]}
+      style={styles.container}
+    >
+      <View style={styles.topArea}>
+        <View style={styles.logoBox}>
+          <Image
+            source={require("../assets/images/logo3.png")}
+            style={styles.logo}
+          />
+        </View>
+
+        <Text style={styles.appName}>Pãe+</Text>
+
+        <Text style={styles.appSubtitle}>
+          Cuidado, organização e apoio para sua família
+        </Text>
+      </View>
 
       <Animated.FlatList
         data={DATA}
         horizontal
         pagingEnabled
+        bounces={false}
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.id}
         onMomentumScrollEnd={(event) => {
@@ -61,116 +154,268 @@ export default function IndhomeLAG() {
           { useNativeDriver: false },
         )}
         renderItem={({ item }) => (
-          <View style={[styles.content, { width }]}>
-            <Text style={styles.titulo}>{item.titulo}</Text>
-            <Text style={styles.descricao}>{item.descricao}</Text>
+          <View style={[styles.slide, { width }]}>
+            <View style={styles.card}>
+              <View style={styles.iconCircle}>
+                <Ionicons name={item.icone} size={30} color={colors.primary} />
+              </View>
+
+              <Text style={styles.titulo}>{item.titulo}</Text>
+
+              <Text style={styles.descricao}>{item.descricao}</Text>
+            </View>
           </View>
         )}
       />
 
-      <View style={styles.dotsContainer}>
-        {DATA.map((_, i) => {
-          const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
+      <View style={styles.bottomArea}>
+        <View style={styles.dotsContainer}>
+          {DATA.map((_, i) => {
+            const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
 
-          const scale = scrollX.interpolate({
-            inputRange,
-            outputRange: [1, 1.5, 1],
-            extrapolate: "clamp",
-          });
+            const dotWidth = scrollX.interpolate({
+              inputRange,
+              outputRange: [9, 26, 9],
+              extrapolate: "clamp",
+            });
 
-          const opacity = scrollX.interpolate({
-            inputRange,
-            outputRange: [0.3, 1, 0.3],
-            extrapolate: "clamp",
-          });
+            const opacity = scrollX.interpolate({
+              inputRange,
+              outputRange: [0.35, 1, 0.35],
+              extrapolate: "clamp",
+            });
 
-          return (
-            <Animated.View
-              key={i}
-              style={[
-                styles.dot,
-                {
-                  transform: [{ scale }],
-                  opacity,
-                },
-              ]}
-            />
-          );
-        })}
-      </View>
+            return (
+              <Animated.View
+                key={i}
+                style={[
+                  styles.dot,
+                  {
+                    width: dotWidth,
+                    opacity,
+                  },
+                ]}
+              />
+            );
+          })}
+        </View>
 
-      {paginaAtual === DATA.length - 1 && (
         <TouchableOpacity
-          style={styles.botaoContainer}
+          style={[
+            styles.botaoContainer,
+            paginaAtual !== DATA.length - 1 && styles.botaoOculto,
+          ]}
           onPress={() => router.replace("/login")}
+          activeOpacity={0.86}
+          disabled={paginaAtual !== DATA.length - 1}
         >
           <LinearGradient
-            colors={["#7050b3", "#b390d8"]}
+            colors={[colors.primary, colors.primarySoft]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.botao}
           >
-            <Text style={styles.textoBotao}>Continuar</Text>
+            <Text style={styles.textoBotao}>Começar</Text>
+
+            <Ionicons name="arrow-forward" size={19} color={colors.white} />
           </LinearGradient>
         </TouchableOpacity>
-      )}
-    </View>
+      </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: colors.background,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 30,
+  },
+
+  loadingLogoBox: {
+    width: 132,
+    height: 132,
+    borderRadius: 38,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 26,
+    shadowColor: colors.dark,
+    shadowOpacity: 0.1,
+    shadowRadius: 14,
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    elevation: 4,
+  },
+
+  logoLoading: {
+    width: 104,
+    height: 104,
+    resizeMode: "contain",
+  },
+
+  loadingText: {
+    marginTop: 16,
+    fontSize: theme.texts.text,
+    color: colors.dark,
+    fontWeight: "400",
+  },
+
   container: {
     flex: 1,
-    backgroundColor: "#ece3ff",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 30,
   },
+
+  topArea: {
+    width: "100%",
+    alignItems: "center",
+    paddingTop: 58,
+    paddingHorizontal: 24,
+  },
+
+  logoBox: {
+    width: 128,
+    height: 128,
+    borderRadius: 40,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: colors.dark,
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    elevation: 5,
+  },
+
   logo: {
-    width: 120,
-    height: 120,
+    width: 104,
+    height: 104,
     resizeMode: "contain",
-    marginTop: 40,
   },
-  content: {
+
+  appName: {
+    marginTop: 18,
+    fontSize: 30,
+    color: colors.dark,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+
+  appSubtitle: {
+    marginTop: 6,
+    fontSize: 15,
+    color: colors.muted,
+    textAlign: "center",
+    fontWeight: "400",
+  },
+
+  slide: {
     alignItems: "center",
-    paddingHorizontal: 30,
-    gap: 20,
+    justifyContent: "center",
+    paddingHorizontal: 24,
   },
+
+  card: {
+    width: "100%",
+    backgroundColor: colors.white,
+    borderRadius: 30,
+    paddingHorizontal: 24,
+    paddingVertical: 30,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: colors.border,
+    shadowColor: colors.dark,
+    shadowOpacity: 0.09,
+    shadowRadius: 18,
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    elevation: 5,
+  },
+
+  iconCircle: {
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    backgroundColor: colors.primaryLight,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 18,
+  },
+
   titulo: {
     fontSize: theme.texts.title,
-    fontWeight: "bold",
-    color: theme.colors.paisBackground,
-  },
-  descricao: {
-    fontSize: theme.texts.subtitle,
+    fontWeight: "600",
+    color: colors.dark,
     textAlign: "center",
-    color: theme.colors.subtitle,
-    lineHeight: 24,
+    marginBottom: 12,
   },
+
+  descricao: {
+    fontSize: theme.texts.text,
+    textAlign: "center",
+    color: colors.muted,
+    lineHeight: 25,
+    fontWeight: "400",
+  },
+
+  bottomArea: {
+    width: "100%",
+    paddingHorizontal: 24,
+    paddingBottom: 36,
+  },
+
   dotsContainer: {
     flexDirection: "row",
-    marginBottom: 10,
+    alignSelf: "center",
+    alignItems: "center",
+    height: 22,
+    marginBottom: 22,
   },
+
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#7050b3",
-    margin: 6,
+    height: 9,
+    borderRadius: 10,
+    backgroundColor: colors.primary,
+    marginHorizontal: 4,
   },
+
   botaoContainer: {
-    width: "90%",
-    marginBottom: 30,
+    width: "100%",
   },
+
+  botaoOculto: {
+    opacity: 0,
+  },
+
   botao: {
     paddingVertical: 16,
-    borderRadius: 12,
+    borderRadius: 18,
     alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 8,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    shadowOffset: {
+      width: 0,
+      height: 6,
+    },
+    elevation: 4,
   },
+
   textoBotao: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
+    color: colors.white,
+    fontSize: theme.texts.subtitle,
+    fontWeight: "600",
   },
 });

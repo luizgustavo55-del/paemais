@@ -33,40 +33,45 @@ import {
 } from "react-native";
 
 const colors = {
-  background: "#851f57",
-  backgroundSoft: "#F9DDEA",
-  primary: "#C54C86",
-  primarySoft: "#D982AF",
-  primaryDark: "#9A3E6D",
-  card: "#F8D3E4",
-  cardWhite: "#FFF8FB",
-  cardSoft: "#FFF0F6",
-  border: "#EDB5CF",
-  borderSoft: "#F8D3E4",
-  title: "#FFF1F7",
-  subtitle: "#F9DDEA",
-  textDark: "#5E3750",
-  textMuted: "#8A3D66",
-  textSoft: "#92677E",
+  background: "#7050b3",
+  backgroundSoft: "#F3EEFC",
+
+  primary: "#7050B3",
+  primarySoft: "#8b64de",
+  primaryDark: "#28174C",
+
+  card: "#ECE3FF",
+  cardWhite: "#FFFFFF",
+  cardSoft: "#F7F1FF",
+
+  border: "#D8C7F2",
+  borderSoft: "#ECE3FF",
+
+  title: "#FFFFFF",
+  subtitle: "#EEE6FF",
+
+  textDark: "#28174C",
+  textMuted: "#665B7E",
+  textSoft: "#8A7BA6",
+
   white: "#FFFFFF",
   black: "#000000",
-  success: "#4FA66A",
-  successSoft: "#EAF8EF",
+
+  success: "#1FAA59",
+  successSoft: "#E8F8EE",
+
+
   danger: "#D94A64",
   dangerSoft: "#FDEAF0",
   warning: "#D8893A",
   warningSoft: "#FFF2E8",
-  pink: "#C54C86",
-  pinkSoft: "#F8D3E4",
-  overlay: "rgba(94, 55, 80, 0.58)",
-  softWhite: "rgba(255, 242, 248, 0.22)",
-  tabBackground: "#C86A9B",
-  tabActive: "#FFF2F8",
-  input: "#FFF8FB",
-  item: "#FFF0F6",
-  tipBorder: "#C54C86",
-  iconCircle: "#EDB5CF",
-  shadow: "#7C3158",
+
+  pink: "#C85A9C",
+  pinkSoft: "#FDEAF5",
+
+  overlay: "rgba(40, 23, 76, 0.58)",
+  softWhite: "rgba(255,255,255,0.18)",
+
 };
 
 function tipoLabel(tipo: string, relacao?: string): string {
