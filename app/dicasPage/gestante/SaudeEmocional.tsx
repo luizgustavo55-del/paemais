@@ -1,162 +1,165 @@
+import { useTheme } from "@/src/context/ThemeContext";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
   Image,
   Linking,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   ScrollView,
   StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+export default function TelaSaudeEmocional() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
 
-export default function TelaExemplo() {
   const router = useRouter();
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
 
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={18} color="#fff" />
+          </TouchableOpacity>
+
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>Psicologia Maternal</Text>
+          </View>
+        </View>
+
+        <Text style={styles.title}>Saúde Emocional e Apoio Perinatal</Text>
+      </View>
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        {/* HEADER (DENTRO DO SCROLLVIEW COMO PEDIDO) */}
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() =>
-                router.push("/(gestantes/(tabs)/dicas" as any)
-              }
-            >
-              <Ionicons name="arrow-back" size={18} color="#fff" />
-            </TouchableOpacity>
-
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                aqui seu texto (badge)
-              </Text>
-            </View>
-          </View>
-
-          <Text style={styles.title}>
-            aqui seu texto (título principal)
-          </Text>
-        </View>
-
-        {/* CARD 1 */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
-            <Ionicons
-              name="document-text-outline"
-              size={22}
-              color="#ff5ea8"
-            />
-            <Text style={styles.cardTitle}>
-              aqui seu texto (título card)
-            </Text>
+            <Ionicons name="heart-outline" size={22} color="#ff5ea8" />
+            <Text style={styles.cardTitle}>O equilíbrio da mente</Text>
           </View>
 
           <Text style={styles.cardText}>
-            aqui seu texto (conteúdo do card)
+            A gestação é um período de intensa vulnerabilidade psíquica devido
+            às flutuações hormonais e à transição para a maternidade. Cuidar das
+            emoções é tão vital quanto os exames físicos, pois o estresse
+            crônico e a ansiedade não gerenciados podem repercutir no bem-estar
+            da mãe e no desenvolvimento neurobiológico do bebê.
           </Text>
         </View>
 
-        {/* CARD 2 */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
-            <Ionicons
-              name="library-outline"
-              size={22}
-              color="#7050b3"
-            />
-            <Text style={styles.cardTitle}>
-              aqui seu texto (título card)
-            </Text>
+            <Ionicons name="people-outline" size={22} color="#7050b3" />
+            <Text style={styles.cardTitle}>Como fortalecer as emoções?</Text>
           </View>
 
           <Text style={styles.cardText}>
-            aqui seu texto (conteúdo do card)
+            O acompanhamento terapêutico e o chamado{" "}
+            <Text style={styles.boldText}>pré-natal psicológico</Text> oferecem
+            um espaço seguro para expressar medos, ambivalências e expectativas
+            sobre o parto e o pós-parto. Cultivar uma{" "}
+            <Text style={styles.boldText}>rede de apoio ativa</Text> (parceiro,
+            família e amigos) e participar de rodas de conversa com outras
+            gestantes reduzem o isolamento e validam os sentimentos maternos.
           </Text>
         </View>
 
-        {/* LISTA */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
-            <Ionicons
-              name="list-outline"
-              size={22}
-              color="#00c48c"
-            />
+            <Ionicons name="alert-circle-outline" size={22} color="#E53935" />
             <Text style={styles.cardTitle}>
-              aqui seu texto (lista)
+              Sinais de alerta para buscar ajuda
             </Text>
           </View>
 
-          {["item 1", "item 2", "item 3"].map((item, index) => (
-            <View key={index} style={styles.listItem}>
-              <View style={styles.bullet} />
-              <Text style={styles.listText}>
-                aqui seu texto: {item}
-              </Text>
-            </View>
-          ))}
+          <View style={styles.listItem}>
+            <View style={styles.bullet} />
+            <Text style={styles.listText}>
+              Tristeza persistente, crises de choro frequentes, desânimo
+              profundo ou perda de interesse por atividades habituais por mais
+              de duas semanas.
+            </Text>
+          </View>
+          <View style={styles.listItem}>
+            <View style={styles.bullet} />
+            <Text style={styles.listText}>
+              Ansiedade paralisante, pensamentos obsessivos de catástrofe ou
+              medos extremos e irracionais ligados à saúde do bebê ou ao momento
+              do nascimento.
+            </Text>
+          </View>
+          <View style={styles.listItem}>
+            <View style={styles.bullet} />
+            <Text style={styles.listText}>
+              Sentimentos severos de culpa, insuficiência, distúrbios graves de
+              sono (não relacionados ao desconforto físico da gravidez) ou
+              desejo de isolamento social.
+            </Text>
+          </View>
         </View>
 
-        {/* LINK */}
         <TouchableOpacity
           style={styles.card}
           onPress={() =>
-            Linking.openURL("https://seu-link-aqui.com")
+            Linking.openURL(
+              "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-z/s/saude-mental",
+            )
           }
         >
           <View style={styles.cardTitleRow}>
-            <Ionicons
-              name="globe-outline"
-              size={22}
-              color="#7050b3"
-            />
-            <Text style={styles.cardTitle}>
-              aqui seu texto (link)
-            </Text>
+            <Ionicons name="globe-outline" size={22} color="#7050b3" />
+            <Text style={styles.cardTitle}>Cuidado Integral no SUS</Text>
           </View>
 
           <Text style={styles.cardText}>
-            aqui seu texto (descrição do link)
+            Toque aqui para acessar as diretrizes gerais de atenção e apoio à
+            saúde mental disponibilizadas pelo Ministério da Saúde, reforçando a
+            importância do acolhimento integral.
           </Text>
         </TouchableOpacity>
 
-        {/* VÍDEO */}
         <View style={styles.card}>
           <TouchableOpacity
             style={styles.youtubeCard}
             onPress={() =>
-              Linking.openURL("https://youtube.com")
+              Linking.openURL(
+                "https://www.youtube.com/results?search_query=saude+mental+na+gestacao+pre+natal+psicologico",
+              )
             }
           >
-            <Image
-              source={{ uri: "https://via.placeholder.com/105" }}
-              style={styles.thumbnail}
-            />
+            <View style={styles.thumbnailContainer}>
+              <Image
+                source={{
+                  uri: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=105&q=80",
+                }}
+                style={styles.thumbnail}
+              />
+              <View style={styles.playButton}>
+                <Ionicons name="play" size={16} color="#fff" />
+              </View>
+            </View>
 
             <View style={styles.videoInfo}>
               <View style={styles.cardTitleRow}>
-                <Ionicons
-                  name="logo-youtube"
-                  size={20}
-                  color="red"
-                />
-                <Text style={styles.videoTitle}>
-                  aqui seu texto (vídeo)
-                </Text>
+                <Ionicons name="logo-youtube" size={20} color="red" />
+                <Text style={styles.videoTitle}>Saúde Mental Materna</Text>
               </View>
 
               <Text style={styles.videoText}>
-                aqui seu texto (descrição do vídeo)
+                Assista a reflexões de psicólogos e obstetras sobre como lidar
+                com a ansiedade gestacional.
               </Text>
             </View>
           </TouchableOpacity>
@@ -166,187 +169,157 @@ export default function TelaExemplo() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#cfb8ff",
-  },
-
-  /* HEADER FIXO */
-  header: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-
-    zIndex: 999,
-
-    backgroundColor: "#8a68d3",
-
-    paddingTop: 42,
-    paddingHorizontal: 22,
-    paddingBottom: 22,
-
-    elevation: 10,
-    shadowColor: "#28174c",
-    shadowOpacity: 0.22,
-    shadowRadius: 8,
-    shadowOffset: {
-      width: 0,
-      height: 4,
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.gestantesBackground,
     },
-  },
-
-  headerTop: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  backButton: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: "#ae89e9",
-
-    justifyContent: "center",
-    alignItems: "center",
-
-    marginRight: 12,
-  },
-
-  badge: {
-    backgroundColor: "#ae89e9",
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 18,
-  },
-
-  badgeText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "700",
-    letterSpacing: 0.3,
-  },
-
-  title: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 16,
-    lineHeight: 32,
-  },
-
-  /* CONTENT */
-  content: {
-    padding: 20,
-    paddingTop: 180,
-    paddingBottom: 40,
-  },
-
-  /* CARDS */
-  card: {
-    backgroundColor: "#eae1fd",
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 18,
-
-    shadowColor: "#28174c",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: {
-      width: 0,
-      height: 4,
+    header: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 999,
+      backgroundColor: theme.colors.gestantesSecondary,
+      paddingTop: 42,
+      paddingHorizontal: 22,
+      paddingBottom: 22,
+      elevation: 10,
+      shadowColor: "#6E2C50",
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
     },
-
-    elevation: 4,
-  },
-
-  cardTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-
-  cardTitle: {
-    fontSize: 21,
-    fontWeight: "700",
-    color: "#28174c",
-    marginLeft: 10,
-    flex: 1,
-  },
-
-  cardText: {
-    fontSize: 16,
-    color: "#4a4a4a",
-    lineHeight: 28,
-  },
-
-  /* LISTA */
-  listItem: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 14,
-  },
-
-  bullet: {
-    width: 8,
-    height: 8,
-    borderRadius: 10,
-    backgroundColor: "#ff5ea8",
-    marginTop: 10,
-    marginRight: 12,
-  },
-
-  listText: {
-    flex: 1,
-    fontSize: 16,
-    color: "#4a4a4a",
-    lineHeight: 27,
-  },
-
-  /* VÍDEO */
-  youtubeCard: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-
-  thumbnailContainer: {
-    position: "relative",
-  },
-
-  thumbnail: {
-    width: 105,
-    height: 105,
-    borderRadius: 18,
-  },
-
-  playButton: {
-    position: "absolute",
-    top: "38%",
-    left: "38%",
-
-    backgroundColor: "rgba(0,0,0,0.65)",
-    padding: 8,
-    borderRadius: 50,
-  },
-
-  videoInfo: {
-    flex: 1,
-    paddingLeft: 16,
-    justifyContent: "center",
-  },
-
-  videoTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: "#28174c",
-    marginLeft: 8,
-  },
-
-  videoText: {
-    fontSize: 15,
-    color: "#666",
-    lineHeight: 24,
-    marginTop: 4,
-  },
-});
+    headerTop: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    backButton: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: "#D97AA8",
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 12,
+    },
+    badge: {
+      backgroundColor: "#D97AA8",
+      paddingHorizontal: 14,
+      paddingVertical: 7,
+      borderRadius: 18,
+    },
+    badgeText: {
+      color: theme.colors.text,
+      fontSize: theme.texts.text,
+      fontWeight: "700",
+      letterSpacing: 0.3,
+    },
+    boldText: {
+      fontWeight: "bold",
+      color: "#8B2F61",
+    },
+    title: {
+      color: theme.colors.text,
+      fontSize: theme.texts.title,
+      fontWeight: "bold",
+      marginTop: 16,
+      lineHeight: 32,
+    },
+    content: {
+      padding: 20,
+      paddingTop: 190,
+      paddingBottom: 40,
+    },
+    card: {
+      backgroundColor: "#FCE1EC",
+      borderRadius: 24,
+      padding: 20,
+      marginBottom: 18,
+      shadowColor: "#7B3057",
+      shadowOpacity: 0.12,
+      shadowRadius: 10,
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      elevation: 4,
+    },
+    cardTitleRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: 16,
+    },
+    cardTitle: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "700",
+      color: "#8B2F61",
+      marginLeft: 10,
+      flex: 1,
+    },
+    cardText: {
+      fontSize: theme.texts.text,
+      color: "#694257",
+      lineHeight: 28,
+    },
+    listItem: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      marginBottom: 14,
+    },
+    bullet: {
+      width: 8,
+      height: 8,
+      borderRadius: 10,
+      backgroundColor: "#C54286",
+      marginTop: 10,
+      marginRight: 12,
+    },
+    listText: {
+      flex: 1,
+      fontSize: theme.texts.text,
+      color: "#694257",
+      lineHeight: 27,
+    },
+    youtubeCard: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    thumbnailContainer: {
+      position: "relative",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    thumbnail: {
+      width: 105,
+      height: 105,
+      borderRadius: 18,
+    },
+    playButton: {
+      position: "absolute",
+      backgroundColor: "rgba(139, 47, 97, 0.85)",
+      padding: 10,
+      borderRadius: 50,
+    },
+    videoInfo: {
+      flex: 1,
+      paddingLeft: 16,
+      justifyContent: "center",
+    },
+    videoTitle: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "700",
+      color: "#8B2F61",
+      marginLeft: 8,
+    },
+    videoText: {
+      fontSize: theme.texts.text,
+      color: "#694257",
+      lineHeight: 24,
+      marginTop: 4,
+    },
+  });

@@ -8,6 +8,7 @@ export default function DrawerLayout() {
 
   return (
     <Drawer
+      backBehavior="none"
       drawerContent={(props) => {
         if (user?.tipo === "pai") {
           return <CustomDrawer {...(props as any)} />;

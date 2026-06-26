@@ -1,9 +1,11 @@
-import { Configuracoes } from "@/src/components/(menu)/Configuracoes";
+import { Configuracoes } from "@/src/components/(menu)/configuracoesPais";
+import { useTheme } from "@/src/context/ThemeContext"; // 1. Importado o ThemeContext
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
+  Image, // 2. Importado o Image
   Platform,
   ScrollView,
   StyleSheet,
@@ -28,6 +30,8 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 
 export default function CustomDrawer() {
   const router = useRouter();
+  const { theme } = useTheme(); // 3. Puxando o tema do contexto
+  const styles = getStyles(theme); // 4. Instanciando os estilos dinâmicos
 
   const [user, setUser] = useState<any>(null);
   const [userData, setUserData] = useState<any>(null);
@@ -205,7 +209,15 @@ export default function CustomDrawer() {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{userData?.nome?.[0] || "U"}</Text>
+          {/* 5. Renderização condicional da foto de perfil */}
+          {userData?.fotoPerfil ? (
+            <Image
+              source={{ uri: userData.fotoPerfil }}
+              style={styles.avatarImage}
+            />
+          ) : (
+            <Text style={styles.avatarText}>{userData?.nome?.[0] || "U"}</Text>
+          )}
         </View>
 
         <Text style={styles.name}>{userData?.nome || "Usuário"}</Text>
@@ -237,7 +249,13 @@ export default function CustomDrawer() {
             />
 
             <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-              <Text style={{ color: "#a855f7", marginTop: 5 }}>
+              <Text
+                style={{
+                  color: "#a855f7",
+                  marginTop: 5,
+                  fontSize: theme.texts.text,
+                }}
+              >
                 Abrir calendário
               </Text>
             </TouchableOpacity>
@@ -308,7 +326,13 @@ export default function CustomDrawer() {
                 />
 
                 <TouchableOpacity onPress={() => setShowEditDatePicker(true)}>
-                  <Text style={{ color: "#a855f7", marginTop: 5 }}>
+                  <Text
+                    style={{
+                      color: "#a855f7",
+                      marginTop: 5,
+                      fontSize: theme.texts.text,
+                    }}
+                  >
                     Abrir calendário
                   </Text>
                 </TouchableOpacity>
@@ -382,7 +406,15 @@ export default function CustomDrawer() {
                 )}
 
                 <TouchableOpacity onPress={() => iniciarEdicao(filho)}>
-                  <Text style={{ color: "#a855f7", marginTop: 5 }}>Editar</Text>
+                  <Text
+                    style={{
+                      color: "#a855f7",
+                      marginTop: 5,
+                      fontSize: theme.texts.text,
+                    }}
+                  >
+                    Editar
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => excluirFilho(filho.id)}>
@@ -434,114 +466,150 @@ export default function CustomDrawer() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#8b64de", padding: 20 },
+// 6. Transformado em uma função para receber o 'theme' dinâmico
+const getStyles = (theme: any) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: "#8b64de", padding: 20 },
 
-  header: {
-    backgroundColor: "#7b5ac4b7",
-    padding: 20,
-    borderRadius: 12,
-  },
+    header: {
+      backgroundColor: "#7b5ac4b7",
+      padding: 20,
+      borderRadius: 12,
+    },
 
-  avatar: {
-    width: 45,
-    height: 45,
-    borderRadius: 25,
-    backgroundColor: "#8569c199",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+    avatar: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      backgroundColor: "#8569c199",
+      justifyContent: "center",
+      alignItems: "center",
+      overflow: "hidden", // Importante para arredondar a imagem
+    },
 
-  avatarText: { color: "#fff", fontWeight: "bold" },
+    avatarImage: {
+      width: "100%",
+      height: "100%",
+    },
 
-  name: { color: "#f9d3ff", fontSize: 18, marginTop: 10 },
-  email: { color: "#f9d3ff", fontSize: 12 },
+    avatarText: {
+      color: "#fff",
+      fontWeight: "bold",
+      fontSize: theme.texts.subtitle,
+    },
 
-  section: { marginTop: 20 },
+    name: {
+      color: "#f9d3ff",
+      fontSize: theme.texts.subtitle,
+      marginTop: 10,
+      fontWeight: "bold",
+    },
+    email: { color: "#f9d3ff", fontSize: theme.texts.text },
 
-  title: { fontSize: 16, fontWeight: "bold", color: "#f9d3ff" },
-  add: { color: "#f9d3ff", marginTop: 5, fontWeight: "bold" },
+    section: { marginTop: 20 },
 
-  inputBox: {
-    marginTop: 10,
-    backgroundColor: "#7f5acf",
-    padding: 10,
-    borderRadius: 10,
-  },
+    title: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "bold",
+      color: "#f9d3ff",
+    },
+    add: {
+      color: "#f9d3ff",
+      marginTop: 5,
+      fontWeight: "bold",
+      fontSize: theme.texts.text,
+    },
 
-  childBox: {
-    backgroundColor: "#7f5acf",
-    padding: 12,
-    borderRadius: 10,
-    marginTop: 10,
-  },
+    inputBox: {
+      marginTop: 10,
+      backgroundColor: "#7f5acf",
+      padding: 10,
+      borderRadius: 10,
+    },
 
-  childName: { fontWeight: "bold", fontSize: 15, color: "#f9d3ff" },
-  info: { color: "#d6b5e0" },
+    childBox: {
+      backgroundColor: "#7f5acf",
+      padding: 12,
+      borderRadius: 10,
+      marginTop: 10,
+    },
 
-  input: {
-    backgroundColor: "#fafafa",
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 10,
-  },
+    childName: {
+      fontWeight: "bold",
+      fontSize: theme.texts.subtitle,
+      color: "#f9d3ff",
+    },
+    info: { color: "#d6b5e0", fontSize: theme.texts.text },
 
-  saveButton: {
-    backgroundColor: "#a855f7",
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 10,
-    alignItems: "center",
-  },
+    input: {
+      backgroundColor: "#fafafa",
+      padding: 10,
+      borderRadius: 8,
+      marginTop: 10,
+      fontSize: theme.texts.text,
+    },
 
-  saveText: { color: "#fff", fontWeight: "bold" },
+    saveButton: {
+      backgroundColor: "#a855f7",
+      padding: 10,
+      borderRadius: 8,
+      marginTop: 10,
+      alignItems: "center",
+    },
 
-  cancelButton: {
-    backgroundColor: "#ccc",
-    padding: 10,
-    borderRadius: 8,
-    marginTop: 8,
-    alignItems: "center",
-  },
+    saveText: { color: "#fff", fontWeight: "bold", fontSize: theme.texts.text },
 
-  cancelText: { fontWeight: "bold", color: "#333" },
+    cancelButton: {
+      backgroundColor: "#ccc",
+      padding: 10,
+      borderRadius: 8,
+      marginTop: 8,
+      alignItems: "center",
+    },
 
-  deleteText: {
-    color: "#ff4d4d",
-    marginTop: 8,
-    fontWeight: "bold",
-  },
+    cancelText: {
+      fontWeight: "bold",
+      color: "#333",
+      fontSize: theme.texts.text,
+    },
 
-  menuGeral: {
-    marginTop: 30,
-    borderTopWidth: 1,
-    borderColor: "#7b5ac4b7",
-    paddingTop: 15,
-    paddingBottom: 40,
-  },
+    deleteText: {
+      color: "#ff4d4d",
+      marginTop: 8,
+      fontWeight: "bold",
+      fontSize: theme.texts.text,
+    },
 
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
+    menuGeral: {
+      marginTop: 30,
+      borderTopWidth: 1,
+      borderColor: "#7b5ac4b7",
+      paddingTop: 15,
+      paddingBottom: 40,
+    },
 
-  menuItemText: {
-    fontSize: 22,
-    color: "#333",
-    marginLeft: 15,
-  },
+    menuItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: "#f0f0f0",
+    },
 
-  logoutButton: {
-    marginTop: 15,
-  },
+    menuItemText: {
+      fontSize: theme.texts.subtitle, // Aplicando a tipografia dinâmica aqui também
+      color: "#333",
+      marginLeft: 15,
+    },
 
-  logoutText: {
-    color: "#ff4d4d",
-    fontWeight: "bold",
-    marginLeft: 15,
-    fontSize: 16,
-  },
-});
+    logoutButton: {
+      marginTop: 15,
+    },
+
+    logoutText: {
+      color: "#ff4d4d",
+      fontWeight: "bold",
+      marginLeft: 15,
+      fontSize: theme.texts.subtitle,
+    },
+  });

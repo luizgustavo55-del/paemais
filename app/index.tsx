@@ -42,7 +42,7 @@ export default function IndhomeLAG() {
   return (
     <View style={styles.container}>
       <Image
-        source={require("../assets/images/logo.png")}
+        source={require("../assets/images/logo2removebg.png")}
         style={styles.logo}
       />
 

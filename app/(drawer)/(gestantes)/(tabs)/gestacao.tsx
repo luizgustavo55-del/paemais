@@ -12,12 +12,25 @@ import { useUnit } from "@/src/context/UnitContext";
 import { auth, firestore } from "@/src/services/firebase";
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerActions } from "@react-navigation/native";
-import { useNavigation } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, doc, onSnapshot, query, where } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
 import {
+  collection,
+  doc,
+  documentId,
+  getDocs,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  Animated,
+  FlatList,
   Image,
+  Modal,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -42,22 +55,49 @@ export default function Inicio() {
   const { theme } = useTheme();
   const { unidadeAtual } = useUnit();
 
-  const { height } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
   const isModoCompacto = height < 650;
 
   const styles = getStyles(theme, isModoCompacto);
 
   const navigation = useNavigation();
+  const router = useRouter();
+
   const [escolha, setEscolha] = useState("1");
   const [nome, setNome] = useState("");
   const [fotoPerfil, setFotoPerfil] = useState<string | null>(null);
-
   const [semana, setSemana] = useState(0);
   const [dias, setDias] = useState(0);
   const [tamanho, setTamanho] = useState("...");
   const [peso, setPeso] = useState("...");
   const [fruta, setFruta] = useState("...");
   const [emoji, setEmoji] = useState("...");
+  const [modalChatVisivel, setModalChatVisivel] = useState(false);
+  const animacaoLateral = useRef(new Animated.Value(width)).current;
+  const [temMensagemNaoLida, setTemMensagemNaoLida] = useState(false);
+  const [chatsRecentes, setChatsRecentes] = useState<any[]>([]);
+
+  const abrirModalChat = () => {
+    setModalChatVisivel(true);
+    Animated.timing(animacaoLateral, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const fecharModalChat = () => {
+    Animated.timing(animacaoLateral, {
+      toValue: width,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => setModalChatVisivel(false));
+  };
+
+  const irParaChat = (id: string, nomeAmigo: string) => {
+    fecharModalChat();
+    router.push({ pathname: "/chat", params: { id, nomeAmigo } });
+  };
 
   const formatarTamanho = (valorCmStr: string) => {
     if (!valorCmStr || valorCmStr === "...") return "...";
@@ -89,11 +129,69 @@ export default function Inicio() {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         const docRef = doc(firestore, "usuarios", user.uid);
-        unsubUser = onSnapshot(docRef, (docSnap) => {
+        unsubUser = onSnapshot(docRef, async (docSnap) => {
           if (docSnap.exists()) {
             const dadosUser = docSnap.data();
             setNome(dadosUser.nome || "");
             setFotoPerfil(dadosUser.fotoPerfil || null);
+
+            const amigosArray = dadosUser.amigos || [];
+            if (amigosArray.length > 0) {
+              const qAmigos = query(
+                collection(firestore, "usuarios"),
+                where(documentId(), "in", amigosArray.slice(0, 30)),
+              );
+              const snapAmigos = await getDocs(qAmigos);
+
+              const listaAmigos = await Promise.all(
+                snapAmigos.docs.map(async (d) => {
+                  const amigoId = d.id;
+                  const chatId =
+                    user.uid > amigoId
+                      ? `${user.uid}_${amigoId}`
+                      : `${amigoId}_${user.uid}`;
+
+                  const mensagensRef = collection(
+                    firestore,
+                    "chats",
+                    chatId,
+                    "messages",
+                  );
+                  const qMsg = query(
+                    mensagensRef,
+                    orderBy("createdAt", "desc"),
+                    limit(1),
+                  );
+                  const msgSnap = await getDocs(qMsg);
+
+                  let ultimaMensagem = "Toque para conversar";
+                  let lida = true;
+
+                  if (!msgSnap.empty) {
+                    const msgData = msgSnap.docs[0].data();
+                    ultimaMensagem = msgData.text || ultimaMensagem;
+
+                    if (msgData.senderId !== user.uid) {
+                      lida = msgData.lido === true;
+                    }
+                  }
+
+                  return {
+                    id: amigoId,
+                    nomeAmigo: d.data().nome || "Amigo",
+                    fotoPerfil: d.data().fotoPerfil || null,
+                    ultimaMensagem,
+                    lida,
+                  };
+                }),
+              );
+
+              setChatsRecentes(listaAmigos);
+              setTemMensagemNaoLida(listaAmigos.some((a) => !a.lida));
+            } else {
+              setChatsRecentes([]);
+              setTemMensagemNaoLida(false);
+            }
           }
         });
 
@@ -153,7 +251,6 @@ export default function Inicio() {
       } else {
         if (unsubUser) unsubUser();
         if (unsubGestacao) unsubGestacao();
-
         setNome("");
         setFotoPerfil(null);
         setSemana(0);
@@ -162,6 +259,7 @@ export default function Inicio() {
         setPeso("...");
         setFruta("...");
         setEmoji("...");
+        setChatsRecentes([]);
       }
     });
 
@@ -221,12 +319,25 @@ export default function Inicio() {
             </View>
           </TouchableOpacity>
 
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.title}>
               {nome ? `Olá, ${nome.split(" ")[0]} ` : "Minha Gestação"}
             </Text>
             <Text style={styles.subtitle}>Acompanhe sua gravidez</Text>
           </View>
+
+          <TouchableOpacity
+            onPress={abrirModalChat}
+            style={styles.btnChatHeader}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="chatbubble-ellipses-outline"
+              size={26}
+              color={theme.colors.text || theme.colors.subtitle}
+            />
+            {temMensagemNaoLida && <View style={styles.bolinhaNotificacao} />}
+          </TouchableOpacity>
         </View>
 
         {isModoCompacto ? (
@@ -240,24 +351,21 @@ export default function Inicio() {
           <View style={styles.mainCard}>
             <View style={styles.mainCardIcon}>
               <Image
-                source={require("@/assets/images/logo.png")}
+                source={require("@/assets/images/logo3.png")}
                 style={styles.imagemCardIcon}
                 resizeMode="cover"
               />
             </View>
-
             <View style={{ flex: 1 }}>
               <Text style={styles.weekText}>
                 {semana} semanas • {dias} dias
               </Text>
-
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>
                   📏 {formatarTamanho(tamanho)}
                 </Text>
                 <Text style={styles.infoLabel}>⚖️ {formatarPeso(peso)}</Text>
               </View>
-
               <Text style={styles.mainInfo}>
                 Comparável a(o): {fruta} {emoji}
               </Text>
@@ -272,7 +380,6 @@ export default function Inicio() {
         >
           {ferra.map((item) => {
             const ativo = escolha === item.id;
-
             return (
               <TouchableOpacity
                 key={item.id}
@@ -283,7 +390,7 @@ export default function Inicio() {
                 <Ionicons
                   name={item.icon as any}
                   size={isModoCompacto ? 14 : 17}
-                  color={ativo ? "#FFF" : "#8B2F61"}
+                  color={ativo ? "#FFF" : theme.colors.gestantesPrimary}
                 />
                 <Text style={[styles.menuText, ativo && styles.menuTextActive]}>
                   {item.title}
@@ -294,6 +401,85 @@ export default function Inicio() {
         </ScrollView>
       </View>
       <View style={styles.content}>{render()}</View>
+
+      <Modal
+        visible={modalChatVisivel}
+        transparent
+        animationType="none"
+        statusBarTranslucent={true}
+      >
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.areaDispensavel}
+            onPress={fecharModalChat}
+            activeOpacity={1}
+          />
+
+          <Animated.View
+            style={[
+              styles.drawerLateral,
+              { transform: [{ translateX: animacaoLateral }] },
+            ]}
+          >
+            <View style={styles.drawerHeader}>
+              <Text style={styles.drawerTitle}>Mensagens</Text>
+              <TouchableOpacity onPress={fecharModalChat}>
+                <Ionicons
+                  name="close"
+                  size={28}
+                  color={theme.colors.gestantesPrimary}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={chatsRecentes}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ padding: 15 }}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.chatCard}
+                  activeOpacity={0.7}
+                  onPress={() => irParaChat(item.id, item.nomeAmigo)}
+                >
+                  {item.fotoPerfil ? (
+                    <Image
+                      source={{ uri: item.fotoPerfil }}
+                      style={styles.chatAvatar}
+                    />
+                  ) : (
+                    <View
+                      style={[styles.chatAvatar, styles.chatAvatarPlaceholder]}
+                    >
+                      <Ionicons name="person" size={24} color="#FFF" />
+                    </View>
+                  )}
+                  <View style={styles.chatInfo}>
+                    <Text style={styles.chatNome} numberOfLines={1}>
+                      {item.nomeAmigo}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.chatUltimaMsg,
+                        !item.lida && styles.chatUltimaMsgUnread,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {item.ultimaMensagem}
+                    </Text>
+                  </View>
+                  {!item.lida && <View style={styles.chatBadgeUnread} />}
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={
+                <Text style={styles.emptyChatText}>
+                  Nenhuma conversa recente.
+                </Text>
+              }
+            />
+          </Animated.View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -315,14 +501,12 @@ const getStyles = (theme: any, isModoCompacto: boolean) =>
       shadowColor: theme.colors.gestantesPrimary,
       shadowOpacity: 0.12,
       shadowRadius: 8,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
+      shadowOffset: { width: 0, height: 4 },
     },
     topHeader: {
       flexDirection: "row",
       alignItems: "center",
+      justifyContent: "space-between",
       marginBottom: isModoCompacto ? 8 : 15,
     },
     iconBack: {
@@ -352,6 +536,22 @@ const getStyles = (theme: any, isModoCompacto: boolean) =>
       fontSize: isModoCompacto ? 12 : theme.texts.subtitle,
       fontWeight: "500",
     },
+    btnChatHeader: {
+      position: "relative",
+      padding: 6,
+      marginLeft: 10,
+    },
+    bolinhaNotificacao: {
+      position: "absolute",
+      top: 5,
+      right: 5,
+      width: 12,
+      height: 12,
+      backgroundColor: "#FF3B30",
+      borderRadius: 6,
+      borderWidth: 2,
+      borderColor: theme.colors.gestantesBackground,
+    },
     mainCard: {
       backgroundColor: theme.colors.gestantesSecondary,
       borderRadius: 24,
@@ -365,10 +565,7 @@ const getStyles = (theme: any, isModoCompacto: boolean) =>
       shadowColor: "#A13D71",
       shadowOpacity: 0.08,
       shadowRadius: 8,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
+      shadowOffset: { width: 0, height: 4 },
     },
     mainCardCompact: {
       backgroundColor: theme.colors.gestantesSecondary,
@@ -453,11 +650,98 @@ const getStyles = (theme: any, isModoCompacto: boolean) =>
       fontWeight: "600",
     },
     menuTextActive: {
-      color: theme.colors.text,
+      color: "#FFF",
     },
     content: {
       flex: 1,
       paddingHorizontal: 14,
       paddingTop: isModoCompacto ? 8 : 16,
+    },
+
+    /* MUDANÇAS APLICANDO O THEME CONTEXT NO MODAL */
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.4)",
+    },
+    areaDispensavel: {
+      ...StyleSheet.absoluteFillObject,
+    },
+    drawerLateral: {
+      position: "absolute",
+      right: 0,
+      width: "80%",
+      maxWidth: 340,
+      height: "100%",
+      backgroundColor: "#FFF", // Mantém o fundo limpo ou altere para theme.colors.background se houver
+      shadowColor: "#000",
+      shadowOffset: { width: -4, height: 0 },
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 10,
+    },
+    drawerHeader: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingTop: 50,
+      paddingBottom: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: "#EEE",
+      backgroundColor: theme.colors.gestantesBackground, // Sincronizado com o cabeçalho superior
+    },
+    drawerTitle: {
+      fontSize: theme.texts.subtitle, // Pega dinamicamente o tamanho do subtítulo/título adaptável
+      fontWeight: "bold",
+      color: theme.colors.text, // Adapta à cor padrão de texto ativa
+    },
+    chatCard: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: "#F4F4F4",
+    },
+    chatAvatar: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      marginRight: 12,
+    },
+    chatAvatarPlaceholder: {
+      backgroundColor: theme.colors.gestantesPrimary, // Sincronizado com o tom principal
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    chatInfo: {
+      flex: 1,
+      justifyContent: "center",
+    },
+    chatNome: {
+      fontSize: theme.texts.text, // Tamanho dinâmico vindo do Contexto de fontes
+      fontWeight: "600",
+      color: theme.colors.title || "#333", // Cor de título principal
+      marginBottom: 4,
+    },
+    chatUltimaMsg: {
+      fontSize: theme.texts.text - 2, // Ajusta ligeiramente menor que o texto principal
+      color: theme.colors.subtitle || "#888",
+    },
+    chatUltimaMsgUnread: {
+      fontWeight: "bold",
+      color: theme.colors.text,
+    },
+    chatBadgeUnread: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: "#FF3B30",
+      marginLeft: 10,
+    },
+    emptyChatText: {
+      textAlign: "center",
+      color: theme.colors.subtitle || "#999",
+      marginTop: 30,
+      fontSize: theme.texts.text,
     },
   });

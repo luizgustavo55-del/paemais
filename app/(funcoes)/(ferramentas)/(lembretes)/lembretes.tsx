@@ -134,6 +134,7 @@ export default function Lembretes() {
 
     try {
       const ehImportante = tipo === "importante";
+      const nomeSomPersonalizado = "notificacao.mp3";
 
       if (Platform.OS === "android") {
         const canalId = ehImportante
@@ -155,8 +156,8 @@ export default function Lembretes() {
               : [0],
           sound:
             configuracoes.somSelecionado === "padrao_app"
-              ? "default"
-              : undefined,
+              ? nomeSomPersonalizado
+              : "default",
           bypassDnd: ehImportante,
         });
       }
@@ -172,8 +173,11 @@ export default function Lembretes() {
           body: ehImportante
             ? "Aviso de alta importância! Verifique os detalhes imediatamente."
             : "Está na hora do seu lembrete agendado!",
+          // ALTERAÇÃO 2: Em vez de `true`, passa o nome do ficheiro (essencial para o iOS)
           sound:
-            configuracoes.somSelecionado === "padrao_app" ? true : undefined,
+            configuracoes.somSelecionado === "padrao_app"
+              ? nomeSomPersonalizado
+              : "default",
           priority: ehImportante
             ? Notifications.AndroidNotificationPriority.MAX
             : Notifications.AndroidNotificationPriority.HIGH,

@@ -5,14 +5,14 @@ import * as Notifications from "expo-notifications";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
-  Modal,
-  SectionList,
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Modal,
+    SectionList,
+    StyleSheet,
+    Switch,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 import { AlterarEmail } from "@/src/components/(menu)/(config)/altEmail";
@@ -23,7 +23,6 @@ import { TamanhoFonte } from "@/src/components/(menu)/(config)/fonte";
 import { HoraDescanso } from "@/src/components/(menu)/(config)/horaDescanso";
 import { SonsVibracao } from "@/src/components/(menu)/(config)/sons&vibra";
 import { TrocarConta } from "@/src/components/(menu)/(config)/trocarConta";
-import { TrocarDum } from "@/src/components/(menu)/(config)/trocarDum";
 import { EscolhaUnidades } from "@/src/components/(menu)/(config)/unidades";
 import { useTheme } from "@/src/context/ThemeContext";
 
@@ -43,8 +42,6 @@ export function Configuracoes() {
 
   const [visivel, setVisivel] = useState(false);
   const [notificacoesAtivas, setNotificacoesAtivas] = useState(true);
-
-  const [modalDumVisivel, setModalDumVisivel] = useState(false);
   const [modalSonsVisivel, setModalSonsVisivel] = useState(false);
   const [modalDescansoVisivel, setModalDescansoVisivel] = useState(false);
   const [modalSenhaVisivel, setModalSenhaVisivel] = useState(false);
@@ -106,7 +103,6 @@ export function Configuracoes() {
       return;
     }
 
-    if (id === "dum") setModalDumVisivel(true);
     if (id === "sons_vib") setModalSonsVisivel(true);
     if (id === "descanso") setModalDescansoVisivel(true);
     if (id === "senha") setModalSenhaVisivel(true);
@@ -119,12 +115,6 @@ export function Configuracoes() {
   };
 
   const SECTIONS = [
-    {
-      title: "Gestação",
-      data: [
-        { id: "dum", title: "Trocar DUM", type: "link", icon: "calendar" },
-      ] as ItemProps[],
-    },
     {
       title: "Notificações",
       data: [
@@ -213,7 +203,7 @@ export function Configuracoes() {
             value={notificacoesAtivas}
             onValueChange={handleToggleNotificacoes}
             trackColor={{
-              true: theme.colors.gestantesPrimary,
+              true: theme.colors.paisPrimary,
               false: theme.colors.subtitle,
             }}
             thumbColor={
@@ -258,7 +248,7 @@ export function Configuracoes() {
             size={20}
             color={
               item.id === "excluir"
-                ? theme.colors.gestantesBackground
+                ? theme.colors.paisBackground
                 : itemDesativado
                   ? theme.colors.subtitle
                   : theme.colors.textMenu
@@ -270,7 +260,7 @@ export function Configuracoes() {
             style={[
               styles.settingItemMain,
               item.id === "excluir" && {
-                color: theme.colors.gestantesBackground,
+                color: theme.colors.paisBackground,
               },
               itemDesativado && { color: theme.colors.subtitle },
             ]}
@@ -333,10 +323,6 @@ export function Configuracoes() {
         </View>
       </Modal>
 
-      <TrocarDum
-        visivel={modalDumVisivel}
-        fechar={() => setModalDumVisivel(false)}
-      />
       <SonsVibracao
         visivel={modalSonsVisivel}
         fechar={() => setModalSonsVisivel(false)}
@@ -429,7 +415,7 @@ const getStyles = (theme: any) =>
     sectionTitle: {
       fontSize: theme.texts.text,
       fontWeight: "700",
-      color: theme.colors.gestantesPrimary,
+      color: theme.colors.paisPrimary, // <-- Alterado para paisPrimary
       textTransform: "uppercase",
       letterSpacing: 1,
     },

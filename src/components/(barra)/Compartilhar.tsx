@@ -171,8 +171,12 @@ export default function Compartilhar() {
                   title: "Novo Pedido de Amizade! 🤝",
                   body: "Alguém adicionou o seu código de compartilhamento.",
                   sound: true,
+                  autoDismiss: false,
                 },
-                trigger: null,
+                trigger: {
+                  seconds: 1,
+                  channelId: "lembretes-dia-a-dia",
+                },
               });
             }
           }
@@ -203,7 +207,7 @@ export default function Compartilhar() {
         await carregarDadosListas(dados);
       }
     } catch (error) {
-      console.log("Erro ao atualizar dados:", error);
+      console.log(error);
     } finally {
       setRefreshing(false);
     }
@@ -243,7 +247,7 @@ export default function Compartilhar() {
         }
       }
     } catch (error) {
-      console.log("Erro ao buscar detalhes:", error);
+      console.log(error);
     } finally {
       setCarregandoDetalhes(false);
     }

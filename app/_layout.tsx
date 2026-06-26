@@ -1,9 +1,24 @@
 import { AuthProvider } from "@/src/context/AuthContext";
 import { ThemeProvider } from "@/src/context/ThemeContext";
 import { UnitProvider } from "@/src/context/UnitContext";
+import * as Notifications from "expo-notifications";
 import { Stack } from "expo-router";
+import { useEffect } from "react";
+import { Platform } from "react-native";
 
 export default function Layout() {
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      Notifications.setNotificationChannelAsync("canal_padrao_app", {
+        name: "Notificações do Pãe+",
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 400, 200, 400],
+        lightColor: "#FF231F7C",
+        sound: "notificacao.mp3",
+      });
+    }
+  }, []);
+
   return (
     <AuthProvider>
       <ThemeProvider>

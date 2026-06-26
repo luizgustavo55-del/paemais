@@ -55,13 +55,19 @@ export default function Chat() {
   const [mensagens, setMensagens] = useState<any[]>([]);
   const [fotoAmigo, setFotoAmigo] = useState<string | null>(null);
   const [amigoDigitando, setAmigoDigitando] = useState(false);
+  const [tipoUser, setTipoUser] = useState<"gestante" | "pai" | "mae" | "">("");
 
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const primeiraCargaRef = useRef(true);
   const userConfigRef = useRef<any>({});
 
-  const corPrimaria = theme.colors.gestantesPrimary || "#a339b8";
   const meuId = auth.currentUser?.uid;
+
+  // Lógica para definir a cor dinamicamente com base no tipo de usuário
+  const corPrimaria =
+    tipoUser === "pai" || tipoUser === "mae"
+      ? theme.colors.paisSecondary || "#7050b3"
+      : theme.colors.gestantesPrimary || "#a339b8";
 
   const chatId =
     meuId && amigoId
@@ -74,7 +80,9 @@ export default function Chat() {
     if (!meuId) return;
     const unsub = onSnapshot(doc(firestore, "usuarios", meuId), (docSnap) => {
       if (docSnap.exists()) {
-        userConfigRef.current = docSnap.data().configuracoes || {};
+        const data = docSnap.data();
+        userConfigRef.current = data.configuracoes || {};
+        setTipoUser(data.tipo || ""); // Puxa o tipo do banco de dados
       }
     });
     return () => unsub();
@@ -150,7 +158,10 @@ export default function Chat() {
                     body: data.text,
                     sound: true,
                   },
-                  trigger: null,
+                  trigger: {
+                    seconds: 1,
+                    channelId: "lembretes-dia-a-dia",
+                  },
                 });
               }
             }

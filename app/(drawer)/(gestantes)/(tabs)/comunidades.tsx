@@ -20,6 +20,7 @@ import {
   Alert,
   Animated,
   FlatList,
+  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -32,69 +33,50 @@ import {
 } from "react-native";
 
 const colors = {
-  background: "#D46B9D",
+  background: "#851f57",
   backgroundSoft: "#F9DDEA",
-
   primary: "#C54C86",
   primarySoft: "#D982AF",
   primaryDark: "#9A3E6D",
-
   card: "#F8D3E4",
   cardWhite: "#FFF8FB",
   cardSoft: "#FFF0F6",
-
   border: "#EDB5CF",
   borderSoft: "#F8D3E4",
-
   title: "#FFF1F7",
   subtitle: "#F9DDEA",
-
   textDark: "#5E3750",
   textMuted: "#8A3D66",
   textSoft: "#92677E",
-
   white: "#FFFFFF",
   black: "#000000",
-
   success: "#4FA66A",
   successSoft: "#EAF8EF",
-
   danger: "#D94A64",
   dangerSoft: "#FDEAF0",
-
   warning: "#D8893A",
   warningSoft: "#FFF2E8",
-
   pink: "#C54C86",
   pinkSoft: "#F8D3E4",
-
   overlay: "rgba(94, 55, 80, 0.58)",
   softWhite: "rgba(255, 242, 248, 0.22)",
-
   tabBackground: "#C86A9B",
   tabActive: "#FFF2F8",
-
   input: "#FFF8FB",
-
   item: "#FFF0F6",
-
   tipBorder: "#C54C86",
-
   iconCircle: "#EDB5CF",
-
   shadow: "#7C3158",
 };
+
 function tipoLabel(tipo: string, relacao?: string): string {
   if (tipo === "gestante") return "Gestante";
-
   if (tipo === "pai" || tipo === "pais") {
     if (relacao === "mae") return "Mãe";
     if (relacao === "pai") return "Pai";
     return "Pai/Mãe";
   }
-
   if (tipo === "profissional") return "Profissional";
-
   return tipo || "Membro";
 }
 
@@ -103,20 +85,17 @@ function tipoIcon(tipo: string, relacao?: string) {
   if (tipo === "profissional") return "stethoscope";
   if (relacao === "mae") return "human-female";
   if (relacao === "pai") return "human-male";
-
   return "account";
 }
 
 function tipoColor(tipo: string): string {
   if (tipo === "gestante") return colors.pink;
   if (tipo === "profissional") return colors.success;
-
   return colors.primary;
 }
 
 function formatarData(valor: any) {
   if (!valor) return "";
-
   try {
     return new Date(valor).toLocaleString("pt-BR");
   } catch {
@@ -124,15 +103,32 @@ function formatarData(valor: any) {
   }
 }
 
-function AvatarInitials({
+function Avatar({
   nome,
+  foto,
   size = 40,
   color,
 }: {
   nome: string;
+  foto?: string | null;
   size?: number;
   color?: string;
 }) {
+  if (foto) {
+    return (
+      <Image
+        source={{ uri: foto }}
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          borderWidth: 1.5,
+          borderColor: colors.white,
+        }}
+      />
+    );
+  }
+
   const initials = nome
     ? nome
         .split(" ")
@@ -283,7 +279,12 @@ function PerfilCardModal({
   const corTipo = tipoColor(tipo);
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
       <View style={pc.overlay}>
         <View style={pc.card}>
           <TouchableOpacity style={pc.closeBtn} onPress={onClose}>
@@ -299,8 +300,9 @@ function PerfilCardModal({
               <View style={pc.headerDecor} />
 
               <View style={pc.avatarArea}>
-                <AvatarInitials
+                <Avatar
                   nome={perfil.nome || "Membro"}
+                  foto={perfil.fotoPerfil}
                   size={84}
                   color={corTipo}
                 />
@@ -327,8 +329,11 @@ function PerfilCardModal({
               <View style={pc.infoGrid}>
                 {perfil.email ? (
                   <View style={pc.infoItem}>
-                    <Ionicons name="mail-outline" size={16} color={colors.primary} />
-
+                    <Ionicons
+                      name="mail-outline"
+                      size={16}
+                      color={colors.primary}
+                    />
                     <Text style={pc.infoText} numberOfLines={1}>
                       {perfil.email}
                     </Text>
@@ -342,15 +347,17 @@ function PerfilCardModal({
                       size={16}
                       color={colors.primary}
                     />
-
                     <Text style={pc.infoText}>{perfil.cidade}</Text>
                   </View>
                 ) : null}
 
                 {perfil.telefone ? (
                   <View style={pc.infoItem}>
-                    <Ionicons name="call-outline" size={16} color={colors.primary} />
-
+                    <Ionicons
+                      name="call-outline"
+                      size={16}
+                      color={colors.primary}
+                    />
                     <Text style={pc.infoText}>{perfil.telefone}</Text>
                   </View>
                 ) : null}
@@ -362,7 +369,6 @@ function PerfilCardModal({
                       size={16}
                       color={colors.primary}
                     />
-
                     <Text style={pc.infoText}>{perfil.especialidade}</Text>
                   </View>
                 ) : null}
@@ -374,7 +380,6 @@ function PerfilCardModal({
                       size={16}
                       color={colors.primary}
                     />
-
                     <Text style={pc.infoText}>CRM {perfil.crm}</Text>
                   </View>
                 ) : null}
@@ -395,10 +400,10 @@ function PerfilCardModal({
                         size={22}
                         color={colors.primary}
                       />
-
                       <View style={{ flex: 1 }}>
-                        <Text style={pc.filhoNome}>{filho.nome || "Criança"}</Text>
-
+                        <Text style={pc.filhoNome}>
+                          {filho.nome || "Criança"}
+                        </Text>
                         <Text style={pc.filhoInfo}>
                           {filho.dataNascimento
                             ? `Nascimento: ${filho.dataNascimento}`
@@ -421,9 +426,7 @@ function PerfilCardModal({
                 size={34}
                 color={colors.textMuted}
               />
-
               <Text style={pc.loadingText}>Perfil não encontrado.</Text>
-
               <TouchableOpacity style={pc.okBtn} onPress={onClose}>
                 <Text style={pc.okBtnText}>Fechar</Text>
               </TouchableOpacity>
@@ -443,7 +446,6 @@ const pc = StyleSheet.create({
     justifyContent: "center",
     padding: 22,
   },
-
   card: {
     width: "100%",
     maxHeight: "84%",
@@ -452,7 +454,6 @@ const pc = StyleSheet.create({
     padding: 20,
     elevation: 4,
   },
-
   closeBtn: {
     position: "absolute",
     right: 16,
@@ -465,26 +466,22 @@ const pc = StyleSheet.create({
     justifyContent: "center",
     zIndex: 2,
   },
-
   headerDecor: {
     height: 70,
     backgroundColor: colors.card,
     borderRadius: 18,
     marginBottom: -40,
   },
-
   avatarArea: {
     alignItems: "center",
     marginBottom: 12,
   },
-
   badgeCentral: {
     marginTop: -8,
     backgroundColor: colors.cardWhite,
     borderRadius: 999,
     padding: 3,
   },
-
   nome: {
     fontSize: 22,
     fontWeight: "700",
@@ -492,7 +489,6 @@ const pc = StyleSheet.create({
     textAlign: "center",
     marginTop: 4,
   },
-
   username: {
     fontSize: 13,
     color: colors.textSoft,
@@ -500,7 +496,6 @@ const pc = StyleSheet.create({
     marginTop: 2,
     fontWeight: "500",
   },
-
   relacaoCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -512,7 +507,6 @@ const pc = StyleSheet.create({
     borderColor: colors.border,
     gap: 10,
   },
-
   relacaoIconBox: {
     width: 44,
     height: 44,
@@ -520,50 +514,42 @@ const pc = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   relacaoTitulo: {
     fontSize: 15,
     fontWeight: "700",
     color: colors.textDark,
   },
-
   relacaoDescricao: {
     fontSize: 12,
     color: colors.textMuted,
     marginTop: 2,
     fontWeight: "400",
   },
-
   relacaoMiniBadge: {
     paddingHorizontal: 9,
     paddingVertical: 5,
     borderRadius: 999,
   },
-
   relacaoMiniBadgeText: {
     fontSize: 10,
     fontWeight: "600",
   },
-
   bioBox: {
     backgroundColor: colors.card,
     borderRadius: 15,
     padding: 13,
     marginTop: 15,
   },
-
   bioText: {
     color: colors.textMuted,
     textAlign: "center",
     lineHeight: 20,
     fontWeight: "400",
   },
-
   infoGrid: {
     marginTop: 16,
     gap: 9,
   },
-
   infoItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -575,25 +561,21 @@ const pc = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-
   infoText: {
     flex: 1,
     color: colors.textDark,
     fontSize: 13,
     fontWeight: "500",
   },
-
   section: {
     marginTop: 18,
   },
-
   sectionTitle: {
     fontSize: 14,
     fontWeight: "700",
     color: colors.textDark,
     marginBottom: 9,
   },
-
   filhoItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -605,20 +587,17 @@ const pc = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-
   filhoNome: {
     fontSize: 14,
     fontWeight: "600",
     color: colors.textDark,
   },
-
   filhoInfo: {
     fontSize: 12,
     color: colors.textMuted,
     marginTop: 2,
     fontWeight: "400",
   },
-
   okBtn: {
     backgroundColor: colors.primary,
     padding: 14,
@@ -626,20 +605,17 @@ const pc = StyleSheet.create({
     alignItems: "center",
     marginTop: 20,
   },
-
   okBtnText: {
     color: colors.white,
     fontSize: 14,
     fontWeight: "600",
   },
-
   loadingArea: {
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 50,
     gap: 12,
   },
-
   loadingText: {
     color: colors.textMuted,
     fontWeight: "500",
@@ -651,6 +627,7 @@ function ModalComentarios({
   post,
   userIdLogado,
   nomeLogado,
+  fotoLogado,
   visible,
   onClose,
   onOpenPerfil,
@@ -658,6 +635,7 @@ function ModalComentarios({
   post: any;
   userIdLogado: string;
   nomeLogado: string;
+  fotoLogado: string | null;
   visible: boolean;
   onClose: () => void;
   onOpenPerfil: (userId: string) => void;
@@ -692,12 +670,16 @@ function ModalComentarios({
     setLoading(true);
 
     try {
-      await addDoc(collection(firestore, "comunidade", post.id, "comentarios"), {
-        userId: userIdLogado,
-        nome: nomeLogado,
-        texto: texto.trim(),
-        createdAt: Date.now(),
-      });
+      await addDoc(
+        collection(firestore, "comunidade", post.id, "comentarios"),
+        {
+          userId: userIdLogado,
+          nome: nomeLogado,
+          fotoAutor: fotoLogado,
+          texto: texto.trim(),
+          createdAt: Date.now(),
+        },
+      );
 
       await updateDoc(doc(firestore, "comunidade", post.id), {
         totalComentarios: (post.totalComentarios || 0) + 1,
@@ -721,7 +703,6 @@ function ModalComentarios({
           <TouchableOpacity onPress={onClose} style={cm.backBtn}>
             <Ionicons name="arrow-back" size={20} color={colors.textDark} />
           </TouchableOpacity>
-
           <Text style={cm.titulo}>Comentários</Text>
         </View>
 
@@ -743,7 +724,6 @@ function ModalComentarios({
                 size={36}
                 color={colors.subtitle}
               />
-
               <Text style={cm.emptyText}>Seja o primeiro a comentar!</Text>
             </View>
           }
@@ -753,22 +733,21 @@ function ModalComentarios({
                 onPress={() => onOpenPerfil(item.userId)}
                 style={cm.comentHeader}
               >
-                <AvatarInitials nome={item.nome} size={34} />
-
+                <Avatar nome={item.nome} foto={item.fotoAutor} size={34} />
                 <View style={cm.comentInfo}>
                   <Text style={cm.comentNome}>{item.nome}</Text>
-                  <Text style={cm.comentData}>{formatarData(item.createdAt)}</Text>
+                  <Text style={cm.comentData}>
+                    {formatarData(item.createdAt)}
+                  </Text>
                 </View>
               </TouchableOpacity>
-
               <Text style={cm.comentTexto}>{item.texto}</Text>
             </View>
           )}
         />
 
         <View style={cm.inputArea}>
-          <AvatarInitials nome={nomeLogado} size={36} />
-
+          <Avatar nome={nomeLogado} foto={fotoLogado} size={36} />
           <TextInput
             style={cm.input}
             value={texto}
@@ -777,11 +756,13 @@ function ModalComentarios({
             placeholderTextColor={colors.textSoft}
             multiline
           />
-
           <TouchableOpacity
             onPress={enviar}
             disabled={!texto.trim() || loading}
-            style={[cm.sendBtn, (!texto.trim() || loading) && { opacity: 0.45 }]}
+            style={[
+              cm.sendBtn,
+              (!texto.trim() || loading) && { opacity: 0.45 },
+            ]}
           >
             <Ionicons name="send" size={18} color={colors.white} />
           </TouchableOpacity>
@@ -796,7 +777,6 @@ const cm = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.backgroundSoft,
   },
-
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -806,7 +786,6 @@ const cm = StyleSheet.create({
     backgroundColor: colors.cardWhite,
     gap: 12,
   },
-
   backBtn: {
     width: 38,
     height: 38,
@@ -815,43 +794,36 @@ const cm = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   titulo: {
     fontSize: 19,
     fontWeight: "700",
     color: colors.textDark,
   },
-
   postOriginal: {
     margin: 16,
     backgroundColor: colors.card,
     borderRadius: 16,
     padding: 14,
   },
-
   postOriginalText: {
     color: colors.textDark,
     fontSize: 13,
     lineHeight: 19,
     fontWeight: "400",
   },
-
   lista: {
     padding: 16,
     paddingBottom: 8,
   },
-
   empty: {
     alignItems: "center",
     paddingVertical: 40,
   },
-
   emptyText: {
     color: colors.textSoft,
     marginTop: 10,
     fontWeight: "500",
   },
-
   comentCard: {
     backgroundColor: colors.cardWhite,
     borderRadius: 15,
@@ -860,37 +832,31 @@ const cm = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderSoft,
   },
-
   comentHeader: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 8,
   },
-
   comentInfo: {
     marginLeft: 10,
     flex: 1,
   },
-
   comentNome: {
     fontSize: 14,
     fontWeight: "600",
     color: colors.textDark,
   },
-
   comentData: {
     fontSize: 11,
     color: colors.textSoft,
     marginTop: 2,
   },
-
   comentTexto: {
     fontSize: 14,
     color: colors.textDark,
     lineHeight: 20,
     fontWeight: "400",
   },
-
   inputArea: {
     flexDirection: "row",
     alignItems: "flex-end",
@@ -899,7 +865,6 @@ const cm = StyleSheet.create({
     paddingBottom: Platform.OS === "ios" ? 28 : 16,
     backgroundColor: colors.cardWhite,
   },
-
   input: {
     flex: 1,
     backgroundColor: colors.cardSoft,
@@ -910,7 +875,6 @@ const cm = StyleSheet.create({
     fontSize: 14,
     maxHeight: 100,
   },
-
   sendBtn: {
     width: 40,
     height: 40,
@@ -971,18 +935,16 @@ function PostCard({
           onPress={() => onOpenPerfil(item.userId)}
           activeOpacity={0.75}
         >
-          <AvatarInitials
+          <Avatar
             nome={item.nome}
+            foto={item.fotoAutor}
             size={42}
             color={tipoColor(item.tipoAutor)}
           />
-
           <View style={p.autorInfo}>
             <Text style={p.autorNome}>{item.nome}</Text>
-
             <View style={p.badgesRow}>
               <TipoBadge tipo={item.tipoAutor} relacao={item.relacaoAutor} />
-
               {item.visibilidade === "grupo" && (
                 <View style={p.grupoBadge}>
                   <Ionicons
@@ -990,7 +952,6 @@ function PostCard({
                     size={9}
                     color={colors.textSoft}
                   />
-
                   <Text style={p.grupoText}>Grupo</Text>
                 </View>
               )}
@@ -1003,7 +964,11 @@ function PostCard({
           style={p.optionsBtn}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Ionicons name="ellipsis-vertical" size={18} color={colors.textSoft} />
+          <Ionicons
+            name="ellipsis-vertical"
+            size={18}
+            color={colors.textSoft}
+          />
         </TouchableOpacity>
       </View>
 
@@ -1011,15 +976,16 @@ function PostCard({
 
       <View style={p.footer}>
         <Text style={p.data}>{formatarData(item.createdAt)}</Text>
-
         <View style={p.actions}>
-          <TouchableOpacity onPress={() => onComentarios(item)} style={p.actionBtn}>
+          <TouchableOpacity
+            onPress={() => onComentarios(item)}
+            style={p.actionBtn}
+          >
             <Ionicons
               name="chatbubble-outline"
               size={17}
               color={colors.textSoft}
             />
-
             {totalComments > 0 ? (
               <Text style={p.actionCount}>{totalComments}</Text>
             ) : null}
@@ -1033,7 +999,6 @@ function PostCard({
                 color={liked ? colors.primary : colors.textSoft}
               />
             </Animated.View>
-
             <Text
               style={[
                 p.actionCount,
@@ -1062,31 +1027,26 @@ const p = StyleSheet.create({
     borderColor: colors.borderSoft,
     elevation: 1,
   },
-
   cardHeader: {
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
     marginBottom: 12,
   },
-
   userRow: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
   },
-
   autorInfo: {
     marginLeft: 10,
     flex: 1,
   },
-
   autorNome: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.textDark,
   },
-
   badgesRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -1094,7 +1054,6 @@ const p = StyleSheet.create({
     marginTop: 3,
     flexWrap: "wrap",
   },
-
   grupoBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -1104,13 +1063,11 @@ const p = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 3,
   },
-
   grupoText: {
     fontSize: 10,
     color: colors.textSoft,
     fontWeight: "500",
   },
-
   optionsBtn: {
     width: 32,
     height: 32,
@@ -1119,7 +1076,6 @@ const p = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: colors.cardSoft,
   },
-
   texto: {
     marginVertical: 10,
     color: colors.textDark,
@@ -1127,7 +1083,6 @@ const p = StyleSheet.create({
     lineHeight: 21,
     fontWeight: "400",
   },
-
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -1136,26 +1091,22 @@ const p = StyleSheet.create({
     borderTopColor: colors.borderSoft,
     paddingTop: 10,
   },
-
   data: {
     fontSize: 11,
     color: colors.textSoft,
     fontWeight: "400",
     flex: 1,
   },
-
   actions: {
     flexDirection: "row",
     gap: 18,
     alignItems: "center",
   },
-
   actionBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 5,
   },
-
   actionCount: {
     fontSize: 13,
     color: colors.textSoft,
@@ -1170,6 +1121,7 @@ export default function Comunidade() {
   const [nomeLogado, setNomeLogado] = useState<string>("Membro");
   const [tipoLogado, setTipoLogado] = useState<string>("pai");
   const [relacaoLogado, setRelacaoLogado] = useState<string>("");
+  const [fotoLogado, setFotoLogado] = useState<string | null>(null);
 
   const [posts, setPosts] = useState<any[]>([]);
   const [profissionais, setProfissionais] = useState<any[]>([]);
@@ -1198,6 +1150,7 @@ export default function Comunidade() {
         setNomeLogado(dados.nome || "Membro");
         setTipoLogado(dados.tipo || "pai");
         setRelacaoLogado(dados.relacao || "");
+        setFotoLogado(dados.fotoPerfil || null);
       }
     });
   }, []);
@@ -1220,7 +1173,6 @@ export default function Comunidade() {
           if (post.visibilidade === "grupo") {
             return post.tipoAutor === tipoLogado;
           }
-
           return true;
         });
 
@@ -1253,6 +1205,7 @@ export default function Comunidade() {
       await addDoc(collection(firestore, "comunidade"), {
         userId: userIdLogado,
         nome: nomeLogado,
+        fotoAutor: fotoLogado,
         tipoAutor: tipoLogado,
         relacaoAutor: relacaoLogado,
         texto: textoPost.trim(),
@@ -1315,7 +1268,6 @@ export default function Comunidade() {
       <View style={styles.topBar}>
         <View style={{ flex: 1 }}>
           <Text style={styles.titulo}>Comunidade</Text>
-
           <Text style={styles.subtitulo}>
             Conecte-se com mães, pais e profissionais
           </Text>
@@ -1326,8 +1278,12 @@ export default function Comunidade() {
           onPress={() => abrirPerfilCard(userIdLogado)}
           activeOpacity={0.8}
         >
-          <AvatarInitials nome={nomeLogado} size={34} color={tipoColor(tipoLogado)} />
-
+          <Avatar
+            nome={nomeLogado}
+            foto={fotoLogado}
+            size={34}
+            color={tipoColor(tipoLogado)}
+          />
           <TipoBadge tipo={tipoLogado} relacao={relacaoLogado} />
         </TouchableOpacity>
       </View>
@@ -1344,7 +1300,6 @@ export default function Comunidade() {
               size={15}
               color={aba === tab ? colors.primaryDark : colors.white}
             />
-
             <Text style={aba === tab ? styles.tabTextActive : styles.tabText}>
               {tab === "feed" ? "Feed" : "Profissionais"}
             </Text>
@@ -1359,12 +1314,15 @@ export default function Comunidade() {
             onPress={() => setModalPost(true)}
             activeOpacity={0.8}
           >
-            <AvatarInitials nome={nomeLogado} size={36} color={tipoColor(tipoLogado)} />
-
+            <Avatar
+              nome={nomeLogado}
+              foto={fotoLogado}
+              size={36}
+              color={tipoColor(tipoLogado)}
+            />
             <Text style={styles.inputFakeText}>
               Compartilhe algo com a comunidade...
             </Text>
-
             <View style={styles.inputFakeBtn}>
               <Ionicons name="add" size={16} color={colors.white} />
             </View>
@@ -1382,9 +1340,7 @@ export default function Comunidade() {
                   size={44}
                   color={colors.subtitle}
                 />
-
                 <Text style={styles.emptyTitle}>Nenhuma publicação ainda</Text>
-
                 <Text style={styles.emptySubtitle}>
                   Seja o primeiro a compartilhar!
                 </Text>
@@ -1414,9 +1370,14 @@ export default function Comunidade() {
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Ionicons name="medkit-outline" size={44} color={colors.subtitle} />
-
-              <Text style={styles.emptyTitle}>Nenhum profissional cadastrado</Text>
+              <Ionicons
+                name="medkit-outline"
+                size={44}
+                color={colors.subtitle}
+              />
+              <Text style={styles.emptyTitle}>
+                Nenhum profissional cadastrado
+              </Text>
             </View>
           }
           renderItem={({ item }) => (
@@ -1425,19 +1386,26 @@ export default function Comunidade() {
               onPress={() => abrirPerfilCard(item.id)}
               activeOpacity={0.8}
             >
-              <AvatarInitials nome={item.nome} size={48} color={colors.success} />
-
+              <Avatar
+                nome={item.nome}
+                foto={item.fotoPerfil}
+                size={48}
+                color={colors.success}
+              />
               <View style={styles.profInfo}>
                 <Text style={styles.profNome}>{item.nome}</Text>
-
                 <Text style={styles.profEsp}>
                   {item.especialidade || "Profissional de saúde"}
                 </Text>
-
-                {item.crm ? <Text style={styles.profCrm}>CRM {item.crm}</Text> : null}
+                {item.crm ? (
+                  <Text style={styles.profCrm}>CRM {item.crm}</Text>
+                ) : null}
               </View>
-
-              <Ionicons name="id-card-outline" size={20} color={colors.textSoft} />
+              <Ionicons
+                name="id-card-outline"
+                size={20}
+                color={colors.textSoft}
+              />
             </TouchableOpacity>
           )}
         />
@@ -1457,11 +1425,14 @@ export default function Comunidade() {
             <Text style={styles.modalTitulo}>Criar publicação</Text>
 
             <View style={styles.autorPreview}>
-              <AvatarInitials nome={nomeLogado} size={40} color={tipoColor(tipoLogado)} />
-
+              <Avatar
+                nome={nomeLogado}
+                foto={fotoLogado}
+                size={40}
+                color={tipoColor(tipoLogado)}
+              />
               <View style={styles.autorPreviewInfo}>
                 <Text style={styles.autorPreviewNome}>{nomeLogado}</Text>
-
                 <TipoBadge tipo={tipoLogado} relacao={relacaoLogado} />
               </View>
             </View>
@@ -1562,6 +1533,7 @@ export default function Comunidade() {
           post={postComentario}
           userIdLogado={userIdLogado}
           nomeLogado={nomeLogado}
+          fotoLogado={fotoLogado}
           visible={!!postComentario}
           onClose={() => setPostComentario(null)}
           onOpenPerfil={abrirPerfilCard}
@@ -1584,7 +1556,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: colors.background,
   },
-
   tipoBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -1594,13 +1565,11 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderWidth: 1,
   },
-
   tipoBadgeText: {
     fontSize: 10,
     fontWeight: "600",
     letterSpacing: 0.2,
   },
-
   topBar: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -1608,13 +1577,11 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     gap: 12,
   },
-
   titulo: {
     fontSize: 28,
     fontWeight: "600",
     color: colors.white,
   },
-
   subtitulo: {
     color: colors.subtitle,
     marginTop: 4,
@@ -1622,12 +1589,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     fontWeight: "400",
   },
-
   userBadge: {
     alignItems: "flex-end",
     gap: 6,
   },
-
   tabs: {
     flexDirection: "row",
     backgroundColor: colors.softWhite,
@@ -1635,7 +1600,6 @@ const styles = StyleSheet.create({
     padding: 4,
     marginBottom: 18,
   },
-
   tab: {
     flex: 1,
     paddingVertical: 10,
@@ -1645,7 +1609,6 @@ const styles = StyleSheet.create({
     gap: 6,
     borderRadius: 12,
   },
-
   tabActive: {
     flex: 1,
     paddingVertical: 10,
@@ -1656,19 +1619,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 6,
   },
-
   tabText: {
     color: colors.white,
     fontWeight: "500",
     fontSize: 12,
   },
-
   tabTextActive: {
     color: colors.primaryDark,
     fontWeight: "600",
     fontSize: 12,
   },
-
   inputFake: {
     backgroundColor: colors.white,
     padding: 14,
@@ -1679,14 +1639,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
   },
-
   inputFakeText: {
     flex: 1,
     color: colors.textSoft,
     fontSize: 13,
     fontWeight: "400",
   },
-
   inputFakeBtn: {
     width: 31,
     height: 31,
@@ -1695,15 +1653,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-
   lista: {
     paddingBottom: 40,
   },
-
   listaProfissionais: {
     paddingBottom: 40,
   },
-
   profCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -1715,65 +1670,55 @@ const styles = StyleSheet.create({
     borderColor: colors.borderSoft,
     elevation: 1,
   },
-
   profInfo: {
     flex: 1,
     marginLeft: 14,
   },
-
   profNome: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.textDark,
     marginBottom: 3,
   },
-
   profEsp: {
     fontSize: 12,
     color: colors.textMuted,
     fontWeight: "400",
   },
-
   profCrm: {
     fontSize: 11,
     color: colors.primary,
     fontWeight: "600",
     marginTop: 2,
   },
-
   empty: {
     alignItems: "center",
     paddingVertical: 60,
     gap: 10,
   },
-
   emptyTitle: {
     fontSize: 16,
     fontWeight: "600",
     color: colors.white,
     textAlign: "center",
   },
-
   emptySubtitle: {
     fontSize: 13,
     color: colors.subtitle,
     fontWeight: "400",
     textAlign: "center",
   },
-
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
     backgroundColor: colors.overlay,
     padding: 20,
   },
-
   modalSheet: {
     backgroundColor: colors.cardWhite,
     padding: 20,
     borderRadius: 18,
   },
-
   modalTitulo: {
     fontSize: 18,
     fontWeight: "600",
@@ -1781,7 +1726,6 @@ const styles = StyleSheet.create({
     color: colors.primaryDark,
     textAlign: "center",
   },
-
   autorPreview: {
     flexDirection: "row",
     alignItems: "center",
@@ -1790,18 +1734,15 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 14,
   },
-
   autorPreviewInfo: {
     marginLeft: 10,
   },
-
   autorPreviewNome: {
     fontSize: 14,
     fontWeight: "600",
     color: colors.primaryDark,
     marginBottom: 4,
   },
-
   modalTextArea: {
     borderWidth: 1,
     borderColor: colors.border,
@@ -1814,20 +1755,17 @@ const styles = StyleSheet.create({
     color: colors.primaryDark,
     marginBottom: 15,
   },
-
   visibilidadeLabel: {
     marginBottom: 8,
     fontSize: 13,
     fontWeight: "500",
     color: colors.textMuted,
   },
-
   visibilidadeRow: {
     flexDirection: "row",
     gap: 10,
     marginBottom: 10,
   },
-
   visBtn: {
     flex: 1,
     padding: 10,
@@ -1836,24 +1774,20 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     alignItems: "center",
   },
-
   visBtnActive: {
     borderColor: colors.primary,
     backgroundColor: colors.cardSoft,
   },
-
   visBtnText: {
     color: colors.textMuted,
     fontSize: 12,
     fontWeight: "400",
   },
-
   visBtnTextActive: {
     color: colors.primary,
     fontWeight: "600",
     fontSize: 12,
   },
-
   modalBtn: {
     backgroundColor: colors.primary,
     padding: 15,
@@ -1861,19 +1795,16 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
   },
-
   modalBtnText: {
     color: colors.white,
     fontWeight: "600",
     fontSize: 14,
   },
-
   cancelarBtn: {
     marginTop: 15,
     padding: 10,
     alignItems: "center",
   },
-
   cancelarText: {
     color: colors.primary,
     fontWeight: "500",

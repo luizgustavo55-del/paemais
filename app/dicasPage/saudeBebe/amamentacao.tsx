@@ -1,5 +1,5 @@
+import BemEstarTemplate from "@/src/components/BemEstarTemplate";
 import React from "react";
-import BemEstarTemplate from "@/src/components/bemEstarTemplate";
 
 export default function Amamentacao() {
   return (

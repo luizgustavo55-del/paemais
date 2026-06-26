@@ -20,8 +20,8 @@ export const theme = {
   },
 
   texts: {
-    text: 16,
-    subtitle: 18,
+    text: 18,
+    subtitle: 22,
     title: 26,
   },
 };

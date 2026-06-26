@@ -25,6 +25,7 @@ import {
   RefreshControl,
   ScrollView,
   Share,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -42,10 +43,10 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export default function Compartilhar() {
+export default function CompartilharPais() {
   const { theme } = useTheme();
-  const styles = getStyles(theme);
   const router = useRouter();
+
   const [nomeUser, setNomeUser] = useState("...");
   const [codigo, setCodigo] = useState("------");
   const [tipoUser, setTipoUser] = useState<"gestante" | "pai" | "mae" | "">("");
@@ -69,10 +70,9 @@ export default function Compartilhar() {
   const qtdSolicitacoesRef = useRef(0);
   const primeiraCargaRef = useRef(true);
 
-  const corPrimaria =
-    tipoUser === "gestante"
-      ? theme.colors.gestantesPrimary || "#a339b8"
-      : theme.colors.paisSecondary || "#5407b8";
+  // Cores ESTÁTICAS para a interface de Pais
+  const corPrimaria = theme.colors.paisSecondary || "#7050b3";
+  const styles = getStyles(theme, corPrimaria);
 
   const getTipoTexto = (tipo: string) => {
     if (tipo === "gestante") return "Gestante";
@@ -171,8 +171,12 @@ export default function Compartilhar() {
                   title: "Novo Pedido de Amizade! 🤝",
                   body: "Alguém adicionou o seu código de compartilhamento.",
                   sound: true,
+                  autoDismiss: false,
                 },
-                trigger: null,
+                trigger: {
+                  seconds: 1,
+                  channelId: "lembretes-dia-a-dia",
+                },
               });
             }
           }
@@ -203,7 +207,7 @@ export default function Compartilhar() {
         await carregarDadosListas(dados);
       }
     } catch (error) {
-      console.log("Erro ao atualizar dados:", error);
+      console.log(error);
     } finally {
       setRefreshing(false);
     }
@@ -243,7 +247,7 @@ export default function Compartilhar() {
         }
       }
     } catch (error) {
-      console.log("Erro ao buscar detalhes:", error);
+      console.log(error);
     } finally {
       setCarregandoDetalhes(false);
     }
@@ -365,176 +369,200 @@ export default function Compartilhar() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={{ flexGrow: 1, paddingBottom: 30 }}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-      automaticallyAdjustKeyboardInsets={true}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          colors={[corPrimaria]}
-          tintColor={corPrimaria}
-        />
-      }
-    >
-      <View style={[styles.card, { borderColor: corPrimaria, borderWidth: 1 }]}>
-        <View style={styles.iconCircle}>
-          <Ionicons name="qr-code" size={30} color={corPrimaria} />
-        </View>
-        <Text
-          style={{
-            fontSize: theme.texts.subtitle,
-            fontWeight: "600",
-            color: theme.colors.text,
-          }}
-        >
-          Olá, {nomeUser}
-        </Text>
-        <Text
-          style={{
-            color: theme.colors.subtitle,
-            marginTop: 2,
-            fontSize: theme.texts.text,
-          }}
-        >
-          {getTipoTexto(tipoUser)}
-        </Text>
-        <Text style={[styles.title, { marginTop: 10 }]}>Seu Código</Text>
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
 
-        <View style={styles.codeRow}>
-          <Text style={[styles.codeText, { color: corPrimaria }]}>
-            {codigo}
+      {/* HEADER DE NAVEGAÇÃO COM BOTÃO VOLTAR */}
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="arrow-back" size={18} color="#fff" />
+          </TouchableOpacity>
+
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>Comunidade</Text>
+          </View>
+        </View>
+
+        <Text style={styles.titleScreen}>Compartilhar Perfil</Text>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets={true}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[corPrimaria]}
+            tintColor={corPrimaria}
+          />
+        }
+      >
+        <View
+          style={[styles.card, { borderColor: corPrimaria, borderWidth: 1 }]}
+        >
+          <View style={styles.iconCircle}>
+            <Ionicons name="qr-code" size={30} color={corPrimaria} />
+          </View>
+          <Text
+            style={{
+              fontSize: theme.texts.subtitle,
+              fontWeight: "600",
+              color: "#333",
+            }}
+          >
+            Olá, {nomeUser}
+          </Text>
+          <Text
+            style={{
+              color: "#666",
+              marginTop: 2,
+              fontSize: theme.texts.text,
+            }}
+          >
+            {getTipoTexto(tipoUser)}
+          </Text>
+          <Text style={[styles.title, { marginTop: 10 }]}>Seu Código</Text>
+
+          <View style={styles.codeRow}>
+            <Text style={[styles.codeText, { color: corPrimaria }]}>
+              {codigo}
+            </Text>
+            <TouchableOpacity
+              style={[styles.copyBtn, { backgroundColor: corPrimaria }]}
+              onPress={() =>
+                Share.share({
+                  message: `Me adicione no app! Meu código de compartilhamento é: ${codigo}`,
+                })
+              }
+            >
+              <Ionicons name="share-social-outline" size={20} color="white" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.vincularSection}>
+          <Text style={styles.sectionLabel}>Adicionar Amigos</Text>
+          <View style={styles.inputRow}>
+            <TextInput
+              style={styles.input}
+              placeholder="Digite o código do amigo"
+              autoCapitalize="characters"
+              value={codigoInput}
+              onChangeText={setCodigoInput}
+            />
+            <TouchableOpacity
+              style={[styles.btnVincular, { backgroundColor: corPrimaria }]}
+              onPress={enviarSolicitacao}
+            >
+              {carregandoVinculo ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Ionicons name="send" size={20} color="white" />
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.headerAmigosRow}>
+          <Text style={styles.sectionLabelSemMargem}>
+            Amigos ({amigos.length})
           </Text>
           <TouchableOpacity
-            style={[styles.copyBtn, { backgroundColor: corPrimaria }]}
-            onPress={() =>
-              Share.share({
-                message: `Me adicione no app! Meu código de compartilhamento é: ${codigo}`,
-              })
-            }
+            style={styles.btnSolicitacoes}
+            onPress={() => setModalSolicitacoesVisivel(true)}
           >
-            <Ionicons name="share-social-outline" size={20} color="white" />
+            <Ionicons name="person-add-outline" size={24} color={corPrimaria} />
+            {solicitacoes.length > 0 && <View style={styles.badgeVermelho} />}
           </TouchableOpacity>
         </View>
-      </View>
 
-      <View style={styles.vincularSection}>
-        <Text style={styles.sectionLabel}>Adicionar Amigos</Text>
-        <View style={styles.inputRow}>
-          <TextInput
-            style={styles.input}
-            placeholder="Digite o código do amigo"
-            autoCapitalize="characters"
-            value={codigoInput}
-            onChangeText={setCodigoInput}
-          />
-          <TouchableOpacity
-            style={[styles.btnVincular, { backgroundColor: corPrimaria }]}
-            onPress={enviarSolicitacao}
-          >
-            {carregandoVinculo ? (
-              <ActivityIndicator color="#FFF" />
-            ) : (
-              <Ionicons name="send" size={20} color="white" />
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.headerAmigosRow}>
-        <Text style={styles.sectionLabelSemMargem}>
-          Amigos ({amigos.length})
-        </Text>
-        <TouchableOpacity
-          style={styles.btnSolicitacoes}
-          onPress={() => setModalSolicitacoesVisivel(true)}
-        >
-          <Ionicons name="person-add-outline" size={24} color={corPrimaria} />
-          {solicitacoes.length > 0 && <View style={styles.badgeVermelho} />}
-        </TouchableOpacity>
-      </View>
-
-      {amigos.length > 0 ? (
-        amigos.map((amigo) => (
-          <View
-            key={amigo.id}
-            style={[styles.personCardDestaque, { borderColor: corPrimaria }]}
-          >
-            <View style={styles.row}>
-              <View
-                style={[
-                  styles.avatar,
-                  { backgroundColor: corPrimaria, overflow: "hidden" },
-                ]}
-              >
-                {amigo.fotoPerfil ? (
-                  <Image
-                    source={{ uri: amigo.fotoPerfil }}
-                    style={{ width: "100%", height: "100%" }}
-                  />
-                ) : (
-                  <MaterialCommunityIcons
-                    name={
-                      amigo.tipo === "gestante"
-                        ? "human-pregnant"
-                        : "baby-face-outline"
-                    }
-                    size={24}
-                    color="white"
-                  />
-                )}
-              </View>
-
-              <View style={{ flex: 1 }}>
-                <Text style={styles.nomeText}>{amigo.nome}</Text>
-                <Text style={styles.subText}>{getTipoTexto(amigo.tipo)}</Text>
-              </View>
-            </View>
-
+        {amigos.length > 0 ? (
+          amigos.map((amigo) => (
             <View
-              style={{
-                flexDirection: "row",
-                width: "100%",
-                paddingTop: 10,
-                justifyContent: "space-between",
-                gap: 10,
-              }}
+              key={amigo.id}
+              style={[styles.personCardDestaque, { borderColor: corPrimaria }]}
             >
-              <TouchableOpacity
-                style={[
-                  styles.btnVerPerfil,
-                  { backgroundColor: corPrimaria, flex: 1 },
-                ]}
-                onPress={() => buscarDetalhesAmigo(amigo)}
-              >
-                <Text style={styles.btnVerPerfilText}>Ver Perfil</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.btnVerPerfil,
-                  { backgroundColor: corPrimaria, flex: 1 },
-                ]}
-                onPress={() =>
-                  router.push({
-                    pathname: "/chat",
-                    params: { id: amigo.id, nomeAmigo: amigo.nome },
-                  })
-                }
-              >
-                <Text style={styles.btnVerPerfilText}>Chat</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))
-      ) : (
-        <View style={styles.vazioCard}>
-          <Text style={styles.vazioText}>Nenhuma amizade ainda.</Text>
-        </View>
-      )}
+              <View style={styles.row}>
+                <View
+                  style={[
+                    styles.avatar,
+                    { backgroundColor: corPrimaria, overflow: "hidden" },
+                  ]}
+                >
+                  {amigo.fotoPerfil ? (
+                    <Image
+                      source={{ uri: amigo.fotoPerfil }}
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  ) : (
+                    <MaterialCommunityIcons
+                      name={
+                        amigo.tipo === "gestante"
+                          ? "human-pregnant"
+                          : "baby-face-outline"
+                      }
+                      size={24}
+                      color="white"
+                    />
+                  )}
+                </View>
 
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.nomeText}>{amigo.nome}</Text>
+                  <Text style={styles.subText}>{getTipoTexto(amigo.tipo)}</Text>
+                </View>
+              </View>
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  width: "100%",
+                  paddingTop: 10,
+                  justifyContent: "space-between",
+                  gap: 10,
+                }}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.btnVerPerfil,
+                    { backgroundColor: corPrimaria, flex: 1 },
+                  ]}
+                  onPress={() => buscarDetalhesAmigo(amigo)}
+                >
+                  <Text style={styles.btnVerPerfilText}>Ver Perfil</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.btnVerPerfil,
+                    { backgroundColor: corPrimaria, flex: 1 },
+                  ]}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/chat",
+                      params: { id: amigo.id, nomeAmigo: amigo.nome },
+                    })
+                  }
+                >
+                  <Text style={styles.btnVerPerfilText}>Chat</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))
+        ) : (
+          <View style={styles.vazioCard}>
+            <Text style={styles.vazioText}>Nenhuma amizade ainda.</Text>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* MODALS */}
       <Modal
         animationType="slide"
         transparent={true}
@@ -548,48 +576,51 @@ export default function Compartilhar() {
               <TouchableOpacity
                 onPress={() => setModalSolicitacoesVisivel(false)}
               >
-                <Ionicons name="close" size={28} color="#333" />
+                <Feather name="x" size={24} color="#333" />
               </TouchableOpacity>
             </View>
 
-            <ScrollView
-              style={styles.modalBody}
-              showsVerticalScrollIndicator={false}
-            >
+            <ScrollView style={styles.modalBody}>
               {solicitacoes.length > 0 ? (
-                solicitacoes.map((solicitacao) => (
+                solicitacoes.map((sol) => (
                   <View
-                    key={solicitacao.id}
+                    key={sol.id}
                     style={[
                       styles.itemSolicitacaoModal,
                       { borderLeftColor: corPrimaria },
                     ]}
                   >
                     <Text style={styles.solicitacaoTexto}>
-                      <Text style={{ fontWeight: "bold" }}>
-                        {solicitacao.nome}
-                      </Text>{" "}
-                      te enviou um pedido de amizade.
+                      <Text style={{ fontWeight: "bold" }}>{sol.nome}</Text>{" "}
+                      quer ser seu amigo(a).
                     </Text>
-                    <View style={styles.botoesAlerta}>
+                    <View style={styles.rowBotoesAcao}>
                       <TouchableOpacity
-                        style={[styles.btnAcao, { backgroundColor: "#4CAF50" }]}
-                        onPress={() => aceitarSolicitacao(solicitacao)}
+                        style={[
+                          styles.btnAcaoList,
+                          { backgroundColor: corPrimaria },
+                        ]}
+                        onPress={() => aceitarSolicitacao(sol)}
                       >
                         <Text style={styles.btnAcaoText}>Aceitar</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        style={[styles.btnAcao, { backgroundColor: "#F44336" }]}
-                        onPress={() => recusarSolicitacao(solicitacao.id)}
+                        style={[
+                          styles.btnAcaoList,
+                          { backgroundColor: "#E0E0E0" },
+                        ]}
+                        onPress={() => recusarSolicitacao(sol.id)}
                       >
-                        <Text style={styles.btnAcaoText}>Recusar</Text>
+                        <Text style={[styles.btnAcaoText, { color: "#333" }]}>
+                          Recusar
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   </View>
                 ))
               ) : (
                 <Text style={styles.textoVazioDetalhes}>
-                  Nenhuma solicitação pendente.
+                  Nenhuma solicitação no momento.
                 </Text>
               )}
             </ScrollView>
@@ -607,7 +638,6 @@ export default function Compartilhar() {
           <View style={styles.modalCard}>
             <View style={styles.headerModalPerfil}>
               <Text style={styles.modalTituloPerfil}>Perfil do Amigo</Text>
-
               <View style={styles.botoesAcaoModal}>
                 {amigoSelecionado && (
                   <TouchableOpacity
@@ -619,7 +649,6 @@ export default function Compartilhar() {
                     <Feather name="user-x" size={24} color="#F44336" />
                   </TouchableOpacity>
                 )}
-
                 <TouchableOpacity
                   onPress={() => setModalVisivel(false)}
                   style={styles.fecharModalPerfilBtn}
@@ -665,9 +694,7 @@ export default function Compartilhar() {
                 <View style={styles.containerBio}>
                   {amigoSelecionado.bio ? (
                     <Text style={styles.textoBio}>
-                      {'"'}
-                      {amigoSelecionado.bio}
-                      {'"'}
+                      {'"'} {amigoSelecionado.bio} {'"'}
                     </Text>
                   ) : (
                     <Text style={[styles.textoBio, { color: "#999" }]}>
@@ -708,16 +735,12 @@ export default function Compartilhar() {
                   />
                 ) : (
                   <>
+                    {/* AQUI ESTÁ O DUM RETORNANDO EXATAMENTE COMO NO CÓDIGO ANTIGO */}
                     {amigoSelecionado.tipo === "gestante" &&
                       detalhesGestacao && (
                         <View style={{ marginTop: 5 }}>
-                          <Text
-                            style={[
-                              styles.tituloSubsecao,
-                              { color: corPrimaria },
-                            ]}
-                          >
-                            Gravidez
+                          <Text style={styles.tituloSubsecao}>
+                            Detalhes da Gestação
                           </Text>
                           <View
                             style={[
@@ -726,10 +749,19 @@ export default function Compartilhar() {
                             ]}
                           >
                             <Text style={styles.labelExtra}>
-                              DUM (Data da Última Menstruação):
+                              DUM (Última Menstruação)
                             </Text>
                             <Text style={styles.valorExtra}>
-                              {detalhesGestacao.dataUltimaMenstruacao}
+                              {detalhesGestacao.dum || "--"}
+                            </Text>
+
+                            <Text
+                              style={[styles.labelExtra, { marginTop: 10 }]}
+                            >
+                              Data Prevista do Parto
+                            </Text>
+                            <Text style={styles.valorExtra}>
+                              {detalhesGestacao.dataPrevistaParto || "--"}
                             </Text>
                           </View>
                         </View>
@@ -738,55 +770,28 @@ export default function Compartilhar() {
                     {amigoSelecionado.tipo !== "gestante" &&
                       detalhesFilhos.length > 0 && (
                         <View style={{ marginTop: 5 }}>
-                          <Text
-                            style={[
-                              styles.tituloSubsecao,
-                              { color: corPrimaria },
-                            ]}
-                          >
-                            Filhos
-                          </Text>
-                          {detalhesFilhos.map((filho) => (
+                          <Text style={styles.tituloSubsecao}>Filhos</Text>
+                          {detalhesFilhos.map((f) => (
                             <View
-                              key={filho.id}
+                              key={f.id}
                               style={[
                                 styles.cardDadosExtras,
                                 { borderLeftColor: corPrimaria },
                               ]}
                             >
-                              <View
-                                style={{
-                                  flexDirection: "row",
-                                  justifyContent: "space-between",
-                                }}
-                              >
-                                <Text style={styles.nomeFilhoText}>
-                                  {filho.nome}
-                                </Text>
-                                <Text
-                                  style={{ fontSize: theme.texts.subtitle }}
-                                >
-                                  {filho.sexo === "menino" ? "👦" : "👧"}
-                                </Text>
-                              </View>
+                              <Text style={styles.nomeFilhoText}>{f.nome}</Text>
                               <Text style={styles.dataFilhoText}>
-                                Nascimento: {filho.dataNascimento}
+                                Nascimento: {f.dataNascimento}
                               </Text>
                             </View>
                           ))}
                         </View>
                       )}
 
-                    {amigoSelecionado.tipo === "gestante" &&
-                      !detalhesGestacao && (
-                        <Text style={styles.textoVazioInterno}>
-                          Sem informações de gestação ativa de momento.
-                        </Text>
-                      )}
                     {amigoSelecionado.tipo !== "gestante" &&
                       detalhesFilhos.length === 0 && (
-                        <Text style={styles.textoVazioInterno}>
-                          Nenhum filho cadastrado por este utilizador.
+                        <Text style={styles.textoVazioDetalhes}>
+                          Nenhum filho cadastrado.
                         </Text>
                       )}
                   </>
@@ -819,37 +824,100 @@ export default function Compartilhar() {
           )}
         </View>
       </Modal>
-    </ScrollView>
+    </View>
   );
 }
 
-const getStyles = (theme: any) =>
+const getStyles = (theme: any, corPrimaria: string) =>
   StyleSheet.create({
-    container: { flex: 1, padding: 16, backgroundColor: "#F8F9FA" },
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.paisBackground || "#F4F0FB",
+    },
+    header: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 999,
+      backgroundColor: corPrimaria,
+      paddingTop: 42,
+      paddingHorizontal: 22,
+      paddingBottom: 22,
+      elevation: 10,
+      shadowColor: "#2A1852",
+      shadowOpacity: 0.25,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 4 },
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
+    },
+    headerTop: {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+    backButton: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: "#8D6ECA",
+      justifyContent: "center",
+      alignItems: "center",
+      marginRight: 12,
+    },
+    badge: {
+      backgroundColor: "#8D6ECA",
+      paddingHorizontal: 14,
+      paddingVertical: 7,
+      borderRadius: 18,
+    },
+    badgeText: {
+      color: "#FFFFFF",
+      fontSize: theme.texts.text,
+      fontWeight: "700",
+      letterSpacing: 0.3,
+    },
+    titleScreen: {
+      color: "#FFFFFF",
+      fontSize: theme.texts.title,
+      fontWeight: "bold",
+      marginTop: 16,
+      lineHeight: 32,
+    },
+    content: {
+      padding: 16,
+      paddingTop: 180, // Espaço exato para descer além do Header
+      paddingBottom: 40,
+    },
     card: {
-      backgroundColor: theme.colors.gestantesCard || "#FFF",
+      backgroundColor: "#FFF",
       padding: 20,
       borderRadius: 20,
       alignItems: "center",
       marginBottom: 20,
       elevation: 2,
+      shadowColor: "#000",
+      shadowOpacity: 0.1,
+      shadowRadius: 5,
+      shadowOffset: { width: 0, height: 2 },
     },
     iconCircle: {
-      backgroundColor: "#fff",
+      backgroundColor: "#F9F9F9",
       padding: 12,
       borderRadius: 50,
       marginBottom: 10,
+      elevation: 1,
     },
     title: {
       fontSize: theme.texts.title,
       fontWeight: "bold",
-      color: theme.colors.text,
+      color: "#333",
     },
     codeRow: {
       flexDirection: "row",
       alignItems: "center",
       marginTop: 10,
-      backgroundColor: "#F8F9FA",
+      backgroundColor: "#F9F9F9",
       padding: 10,
       borderRadius: 12,
       width: "100%",
@@ -864,17 +932,19 @@ const getStyles = (theme: any) =>
       padding: 10,
       borderRadius: 10,
     },
-    vincularSection: { marginBottom: 25 },
+    vincularSection: {
+      marginBottom: 25,
+    },
     sectionLabel: {
       fontWeight: "bold",
       fontSize: theme.texts.subtitle,
       marginBottom: 10,
-      color: theme.colors.subtitle,
+      color: corPrimaria,
     },
     sectionLabelSemMargem: {
       fontWeight: "bold",
       fontSize: theme.texts.subtitle,
-      color: theme.colors.subtitle,
+      color: corPrimaria,
     },
     headerAmigosRow: {
       flexDirection: "row",
@@ -885,7 +955,7 @@ const getStyles = (theme: any) =>
     btnSolicitacoes: {
       position: "relative",
       padding: 8,
-      backgroundColor: "white",
+      backgroundColor: "#FFF",
       borderRadius: 10,
       elevation: 1,
     },
@@ -900,76 +970,79 @@ const getStyles = (theme: any) =>
       borderWidth: 1,
       borderColor: "white",
     },
-    itemSolicitacaoModal: {
-      backgroundColor: "#F8F9FA",
-      padding: 15,
-      borderRadius: 12,
-      marginBottom: 12,
-      borderLeftWidth: 4,
+    inputRow: {
+      flexDirection: "row",
+      gap: 10,
     },
-    solicitacaoTexto: {
-      fontSize: theme.texts.text,
-      color: "#333",
-      marginBottom: 10,
-    },
-    inputRow: { flexDirection: "row", gap: 10 },
     input: {
       flex: 1,
-      fontSize: theme.texts.text,
-      backgroundColor: "white",
+      backgroundColor: "#FFF",
       borderRadius: 12,
       paddingHorizontal: 15,
+      paddingVertical: 12,
       borderWidth: 1,
-      borderColor: "#DDD",
+      borderColor: "#EEE",
+      color: "#333",
+      fontSize: theme.texts.text,
     },
     btnVincular: {
-      width: 50,
-      height: 50,
+      padding: 12,
       borderRadius: 12,
       justifyContent: "center",
       alignItems: "center",
+      width: 50,
     },
     personCardDestaque: {
-      backgroundColor: "white",
+      backgroundColor: "#FFF",
       padding: 15,
-      borderRadius: 15,
-      marginBottom: 10,
-      flexDirection: "column",
-      borderWidth: 2,
+      borderRadius: 16,
+      marginBottom: 12,
+      borderWidth: 1,
+      elevation: 1,
+    },
+    row: {
+      flexDirection: "row",
+      alignItems: "center",
       gap: 12,
     },
-    row: { flexDirection: "row", gap: 12, alignItems: "center" },
     avatar: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: 50,
+      height: 50,
+      borderRadius: 25,
       justifyContent: "center",
       alignItems: "center",
     },
-    nomeText: { fontWeight: "bold", fontSize: theme.texts.subtitle },
-    subText: { fontSize: theme.texts.text, color: "#666" },
+    nomeText: {
+      fontSize: theme.texts.subtitle,
+      fontWeight: "bold",
+      color: "#333",
+    },
+    subText: {
+      fontSize: theme.texts.text,
+      color: corPrimaria,
+      marginTop: 2,
+    },
     btnVerPerfil: {
       paddingVertical: 8,
+      paddingHorizontal: 15,
       borderRadius: 10,
       alignItems: "center",
-      justifyContent: "center",
     },
     btnVerPerfilText: {
-      color: theme.colors.text,
+      color: "white",
       fontWeight: "bold",
       fontSize: theme.texts.text,
     },
-    vazioCard: { padding: 20, alignItems: "center" },
+    vazioCard: {
+      backgroundColor: "#FFF",
+      padding: 20,
+      borderRadius: 15,
+      alignItems: "center",
+      justifyContent: "center",
+    },
     vazioText: {
       color: "#999",
       fontStyle: "italic",
-      fontSize: theme.texts.text,
-    },
-    botoesAlerta: { flexDirection: "row", gap: 10 },
-    btnAcao: { flex: 1, padding: 10, borderRadius: 10, alignItems: "center" },
-    btnAcaoText: {
-      color: "white",
-      fontWeight: "bold",
       fontSize: theme.texts.text,
     },
     modalBackground: {
@@ -993,7 +1066,7 @@ const getStyles = (theme: any) =>
       marginBottom: 15,
       paddingBottom: 8,
       borderBottomWidth: 1,
-      borderBottomColor: "#F0F0F0",
+      borderBottomColor: "#EEE",
     },
     modalTitle: {
       fontSize: theme.texts.subtitle,
@@ -1002,6 +1075,33 @@ const getStyles = (theme: any) =>
     },
     modalBody: {
       width: "100%",
+    },
+    itemSolicitacaoModal: {
+      backgroundColor: "#F9F9F9",
+      padding: 15,
+      borderRadius: 12,
+      marginBottom: 12,
+      borderLeftWidth: 4,
+    },
+    solicitacaoTexto: {
+      fontSize: theme.texts.text,
+      color: "#333",
+      marginBottom: 10,
+    },
+    rowBotoesAcao: {
+      flexDirection: "row",
+      gap: 10,
+    },
+    btnAcaoList: {
+      flex: 1,
+      paddingVertical: 8,
+      borderRadius: 8,
+      alignItems: "center",
+    },
+    btnAcaoText: {
+      color: "white",
+      fontWeight: "bold",
+      fontSize: theme.texts.text,
     },
     modalFundo: {
       flex: 1,
@@ -1026,24 +1126,25 @@ const getStyles = (theme: any) =>
       marginBottom: 15,
       paddingBottom: 8,
       borderBottomWidth: 1,
-      borderBottomColor: "#F0F0F0",
+      borderBottomColor: "#EEE",
     },
     modalTituloPerfil: {
-      fontSize: theme.texts.title,
+      fontSize: theme.texts.subtitle,
       fontWeight: "bold",
       color: "#333",
     },
     botoesAcaoModal: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 15,
+      gap: 10,
     },
     fecharModalPerfilBtn: {
-      padding: 4,
+      padding: 5,
     },
     containerFoto: {
       alignItems: "center",
-      marginVertical: 10,
+      marginTop: 10,
+      marginBottom: 15,
     },
     bordaFoto: {
       width: 110,
@@ -1052,7 +1153,7 @@ const getStyles = (theme: any) =>
       borderWidth: 3,
       justifyContent: "center",
       alignItems: "center",
-      backgroundColor: "#F4F4F4",
+      backgroundColor: "#F9F9F9",
       overflow: "hidden",
     },
     foto: {
@@ -1062,48 +1163,43 @@ const getStyles = (theme: any) =>
     nomePerfilExibicao: {
       fontSize: theme.texts.title,
       fontWeight: "bold",
-      textAlign: "center",
       color: "#333",
-      marginTop: 5,
+      textAlign: "center",
     },
     tipoContaExibicao: {
-      fontSize: theme.texts.text,
-      color: "#777",
+      fontSize: theme.texts.subtitle,
+      color: corPrimaria,
       textAlign: "center",
-      marginBottom: 10,
-      fontWeight: "500",
+      marginTop: 2,
     },
     containerBio: {
-      backgroundColor: "#F9F9F9",
-      padding: 12,
-      borderRadius: 12,
-      marginVertical: 5,
+      marginTop: 15,
+      paddingHorizontal: 10,
+      marginBottom: 20,
     },
     textoBio: {
       fontSize: theme.texts.text,
-      color: "#555",
-      textAlign: "center",
       fontStyle: "italic",
+      color: "#666",
+      textAlign: "center",
+      lineHeight: 22,
     },
     blocoCampos: {
       width: "100%",
-      marginTop: 10,
+      gap: 15,
     },
     labelCampo: {
       fontSize: theme.texts.text,
-      fontWeight: "600",
       color: "#666",
-      marginBottom: 4,
-      marginTop: 8,
+      fontWeight: "600",
+      marginBottom: 5,
     },
     containerCampoLeitura: {
-      backgroundColor: "#F5F5F5",
+      backgroundColor: "#F9F9F9",
+      padding: 15,
       borderRadius: 12,
-      paddingHorizontal: 16,
-      height: 50,
-      justifyContent: "center",
       borderWidth: 1,
-      borderColor: "#EAEAEA",
+      borderColor: "#EEE",
     },
     textoCampoLeitura: {
       fontSize: theme.texts.text,
@@ -1114,6 +1210,7 @@ const getStyles = (theme: any) =>
       fontWeight: "bold",
       marginBottom: 10,
       marginTop: 5,
+      color: "#333",
     },
     cardDadosExtras: {
       backgroundColor: "#F9F9F9",
@@ -1171,7 +1268,7 @@ const getStyles = (theme: any) =>
       padding: 10,
     },
     fotoZoom: {
-      width: "100%",
-      height: "80%",
+      width: "90%",
+      height: "70%",
     },
   });
