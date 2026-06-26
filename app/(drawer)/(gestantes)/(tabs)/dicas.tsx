@@ -356,6 +356,69 @@ export default function DicasScreen() {
                 "Lei voltada ao desenvolvimento infantil.",
                 "/dicasPage/marcoLegal",
               )}
+
+              {renderTip(
+                "document-text-outline",
+                "Estabilidade Provisória",
+                "Proteção contra demissão sem justa causa durante a gestação.",
+                "/dicasPage/estabilidadeProvisoria",
+              )}
+
+              {renderTip(
+                "document-text-outline",
+                "Licença-Maternidade",
+                "Afastamento remunerado de 120 a 180 dias após o parto.",
+                "/dicasPage/licencaMaternidade",
+              )}
+
+              {renderTip(
+                "document-text-outline",
+                "Consultas e Exames",
+                "Dispensa do trabalho para realização de exames e consultas.",
+                "/dicasPage/consultasExames",
+              )}
+
+              {renderTip(
+                "document-text-outline",
+                "Mudança de Função",
+                "Transferência temporária de cargo caso haja riscos à saúde.",
+                "/dicasPage/mudancaFuncao",
+              )}
+
+              {renderTip(
+                "document-text-outline",
+                "Pausas para Amamentação",
+                "Dois descansos diários de 30 minutos até o bebê fazer 6 meses.",
+                "/dicasPage/pausasAmamentacao",
+              )}
+
+              {renderTip(
+                "document-text-outline",
+                "Acompanhante no Parto",
+                "Direito a um acompanhante durante o parto e pós-parto imediato.",
+                "/dicasPage/acompanhanteParto",
+              )}
+
+              {renderTip(
+                "document-text-outline",
+                "Atendimento pelo SUS",
+                "Acesso gratuito ao pré-natal, exames e assistência ao parto.",
+                "/dicasPage/atendimentoSus",
+              )}
+
+              {renderTip(
+                "document-text-outline",
+                "Atendimento Prioritário",
+                "Prioridade em filas de bancos, comércio e órgãos públicos.",
+                "/dicasPage/atendimentoPrioritario",
+              )}
+
+              {renderTip(
+                "document-text-outline",
+                "Assentos Preferenciais",
+                "Garantia de lugares reservados nos transportes públicos.",
+                "/dicasPage/assentosPreferenciais",
+              )}
             </View>
           </View>
         )}

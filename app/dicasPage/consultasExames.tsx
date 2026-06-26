@@ -1,26 +1,24 @@
 import React from "react";
 import {
-  Image,
-  Linking,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Image,
+    Linking,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
-import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
-export default function MarcoLegalScreen() {
+// Importação do hook customizado de tema
+import { useTheme } from "@/src/context/ThemeContext";
+
+export default function ConsultasExamesScreen() {
   const router = useRouter();
-
-  // Consumindo o theme dinâmico que possui as propriedades .colors e .texts
   const { theme } = useTheme();
-
-  // Gerando os estilos passando o tema atualizado
   const styles = getStyles(theme);
 
   return (
@@ -37,138 +35,126 @@ export default function MarcoLegalScreen() {
           </TouchableOpacity>
 
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>Direitos e Leis</Text>
+            <Text style={styles.badgeText}>Direitos e Saúde</Text>
           </View>
         </View>
 
-        <Text style={styles.title}>Marco Legal da Primeira Infância</Text>
+        <Text style={styles.title}>Consultas e Exames</Text>
       </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        {/* CARD 1: O QUE É */}
+        {/* CARTÃO 1: O QUE É */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="document-text-outline" size={22} color="#C54286" />
-            <Text style={styles.cardTitle}>O que é a Lei?</Text>
+            <Ionicons name="medical-outline" size={22} color="#C54286" />
+            <Text style={styles.cardTitle}>Dispensa do Trabalho</Text>
           </View>
 
           <Text style={styles.cardText}>
-            O{" "}
+            A lei assegura que a mulher grávida se possa ausentar do trabalho
+            para realizar o acompanhamento médico (pré-natal){" "}
             <Text style={styles.boldText}>
-              Marco Legal da Primeira Infância (Lei nº 13.257/2016)
+              sem qualquer desconto no seu salário
             </Text>{" "}
-            é um conjunto de regras que estabelece princípios e diretrizes para
-            políticas públicas voltadas à proteção e desenvolvimento de crianças
-            de <Text style={styles.boldText}>0 a 6 anos de idade</Text>{" "}
-            (primeiros 72 meses de vida).
+            ou prejuízo nos seus direitos.
           </Text>
         </View>
 
-        {/* CARD 2: DIREITOS DA GESTANTE E BEBÊ */}
+        {/* CARTÃO 2: QUANTAS CONSULTAS? */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
-            <Ionicons
-              name="shield-checkmark-outline"
-              size={22}
-              color="#8B2F61"
-            />
-            <Text style={styles.cardTitle}>Proteção à Gestante e ao Bebê</Text>
+            <Ionicons name="list-outline" size={22} color="#8B2F61" />
+            <Text style={styles.cardTitle}>Qual é o limite?</Text>
           </View>
 
           <Text style={styles.cardText}>
-            A lei garante que as gestantes recebam apoio contínuo em saúde,
-            nutrição e educação. Além disso, reforça:
+            Segundo a CLT (Artigo 392, § 4º), a gestante tem direito a dispensa
+            pelo tempo necessário para a realização de,{" "}
+            <Text style={styles.boldText}>
+              no mínimo, 6 (seis) consultas médicas
+            </Text>{" "}
+            e demais exames complementares durante todo o período de gravidez.
           </Text>
-          {[
-            "Atenção humanizada durante a gravidez, parto e puerpério.",
-            "Apoio e promoção do aleitamento materno.",
-            "Garantia de que mães em privação de liberdade possam permanecer com seus bebês.",
-            "Direito a políticas que envolvam a família na criação e cuidado.",
-          ].map((item, index) => (
-            <View key={index} style={styles.listItem}>
-              <View style={styles.bullet} />
-              <Text style={styles.listText}>{item}</Text>
-            </View>
-          ))}
         </View>
 
-        {/* CARD 3: LICENÇA PATERNIDADE */}
+        {/* CARTÃO 3: DIREITO DO ACOMPANHANTE */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
             <Ionicons name="people-outline" size={22} color="#C54286" />
-            <Text style={styles.cardTitle}>
-              Ampliação da Licença-Paternidade
-            </Text>
+            <Text style={styles.cardTitle}>Direito do Acompanhante</Text>
           </View>
 
           <Text style={styles.cardText}>
-            Um dos grandes avanços dessa lei foi permitir que a
-            licença-paternidade seja estendida de{" "}
-            <Text style={styles.boldText}>5 para 20 dias</Text>. Isso visa
-            incentivar a presença do pai nos primeiros dias de vida, promovendo
-            o vínculo afetivo e dividindo as responsabilidades do cuidado com a
-            mãe.
+            Uma alteração recente na lei também garantiu direitos ao parceiro ou
+            parceira. O trabalhador(a) pode ausentar-se do trabalho, sem
+            desconto no salário, para{" "}
+            <Text style={styles.boldText}>
+              acompanhar a sua esposa ou companheira em até 6 (seis) consultas
+              médicas
+            </Text>{" "}
+            ou exames durante a gravidez.
           </Text>
         </View>
 
-        {/* CARD 4: OBSERVAÇÃO IMPORTANTE (Destaque) */}
+        {/* CARTÃO 4: OBSERVAÇÃO IMPORTANTE (Comprovação) */}
         <View style={[styles.card, styles.highlightCard]}>
           <View style={styles.cardTitleRow}>
             <Ionicons name="alert-circle-outline" size={22} color="#E53935" />
-            <Text style={styles.cardTitle}>Importante: Regras da Licença</Text>
+            <Text style={styles.cardTitle}>Importante: Como justificar?</Text>
           </View>
 
           <Text style={styles.cardText}>
-            Para garantir o direito à licença-paternidade estendida de 20 dias,
-            é fundamental cumprir três requisitos básicos:{"\n\n"}
-            1. A empresa onde o pai trabalha deve fazer parte do{" "}
-            <Text style={styles.boldText}>Programa Empresa Cidadã</Text>.{"\n"}
-            2. O pai deve solicitar a prorrogação no prazo de{" "}
-            <Text style={styles.boldText}>até 2 dias úteis</Text> após o parto.
-            {"\n"}
-            3. É necessário comprovar a participação em um{" "}
+            Para garantir que as horas ou o dia de ausência não sejam
+            descontados, é{" "}
             <Text style={styles.boldText}>
-              programa ou atividade de orientação sobre paternidade responsável
+              obrigatório apresentar o comprovativo
             </Text>
-            .
+            .{"\n\n"}
+            Sempre que for a uma consulta ou exame, peça ao médico ou na receção
+            uma{" "}
+            <Text style={styles.boldText}>
+              Declaração de Comparecimento
+            </Text>{" "}
+            (com a data, horário e carimbo do profissional de saúde) e entregue
+            nos Recursos Humanos da sua empresa.
           </Text>
         </View>
 
-        {/* CARD 5: DIREITO AO BRINCAR */}
+        {/* CARTÃO 5: ACESSO À SAÚDE PÚBLICA */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="happy-outline" size={22} color="#8B2F61" />
-            <Text style={styles.cardTitle}>O Direito ao Brincar</Text>
+            <Ionicons name="business-outline" size={22} color="#8B2F61" />
+            <Text style={styles.cardTitle}>Atendimento Gratuito</Text>
           </View>
 
           <Text style={styles.cardText}>
-            A lei inovou ao reconhecer o brincar como uma necessidade essencial
-            e um <Text style={styles.boldText}>direito da criança</Text>,
-            orientando que espaços públicos e escolas sejam adaptados para
-            incentivar atividades lúdicas seguras e inclusivas.
+            Todas as gestantes têm direito ao acompanhamento pré-natal gratuito
+            através do sistema público de saúde. Isto inclui consultas de
+            rotina, ecografias, exames de sangue, vacinação e assistência no
+            parto.
           </Text>
         </View>
 
-        {/* LINK PARA O GOVERNO */}
+        {/* LINK PARA O MINISTÉRIO DA SAÚDE */}
         <TouchableOpacity
           style={styles.card}
           onPress={() =>
             Linking.openURL(
-              "https://www.gov.br/mdh/pt-br/navegue-por-temas/crianca-e-adolescente/acoes-e-programas-de-gestoes-anteriores/primeira-infancia",
+              "https://www.gov.br/saude/pt-br/assuntos/saude-de-a-a-z/p/pre-natal",
             )
           }
         >
           <View style={styles.cardTitleRow}>
             <Ionicons name="globe-outline" size={22} color="#8B2F61" />
-            <Text style={styles.cardTitle}>Página Oficial do Governo</Text>
+            <Text style={styles.cardTitle}>Guia do Pré-Natal</Text>
           </View>
 
           <Text style={styles.cardText}>
-            Toque aqui para acessar a cartilha completa e oficial do Ministério
-            dos Direitos Humanos sobre a Primeira Infância.
+            Toque aqui para aceder ao guia oficial de saúde sobre a importância
+            das consultas e os exames recomendados em cada trimestre.
           </Text>
         </TouchableOpacity>
 
@@ -178,13 +164,15 @@ export default function MarcoLegalScreen() {
             style={styles.youtubeCard}
             onPress={() =>
               Linking.openURL(
-                "https://youtu.be/bV6bQNMFhq4?si=3vg2bncM8bcmhD1x",
+                "https://www.youtube.com/results?search_query=direitos+gestante+consultas+exames+clt",
               )
             }
           >
             <View style={styles.thumbnailContainer}>
               <Image
-                source={require("../../assets/images/marcoLegal.jpg")}
+                source={{
+                  uri: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=105&q=80",
+                }}
                 style={styles.thumbnail}
               />
               <View style={styles.playButton}>
@@ -195,11 +183,12 @@ export default function MarcoLegalScreen() {
             <View style={styles.videoInfo}>
               <View style={styles.cardTitleRow}>
                 <Ionicons name="logo-youtube" size={20} color="red" />
-                <Text style={styles.videoTitle}>Resumo em Vídeo</Text>
+                <Text style={styles.videoTitle}>Entenda a Lei</Text>
               </View>
 
               <Text style={styles.videoText}>
-                Assista a uma explicação simples e rápida sobre o Marco Legal.
+                Veja dicas sobre como apresentar atestados e declarações na
+                empresa.
               </Text>
             </View>
           </TouchableOpacity>
@@ -209,14 +198,13 @@ export default function MarcoLegalScreen() {
   );
 }
 
-// Função geradora de estilos baseada no ThemeContext fornecido
+// Função geradora de estilos baseada no ThemeContext
 const getStyles = (theme: any) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: "#F4C7DD", // Mantém o fundo rosa do alimentacao.tsx
+      backgroundColor: "#F4C7DD",
     },
-
     header: {
       position: "absolute",
       top: 0,
@@ -231,17 +219,12 @@ const getStyles = (theme: any) =>
       shadowColor: "#6E2C50",
       shadowOpacity: 0.25,
       shadowRadius: 8,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
+      shadowOffset: { width: 0, height: 4 },
     },
-
     headerTop: {
       flexDirection: "row",
       alignItems: "center",
     },
-
     backButton: {
       width: 42,
       height: 42,
@@ -251,41 +234,34 @@ const getStyles = (theme: any) =>
       alignItems: "center",
       marginRight: 12,
     },
-
     badge: {
       backgroundColor: "#D97AA8",
       paddingHorizontal: 14,
       paddingVertical: 7,
       borderRadius: 18,
     },
-
     badgeText: {
       color: "#fff",
-      // Ajusta dinamicamente diminuindo 2pt em relação ao tamanho de texto padrão
       fontSize: (theme?.texts?.text || 14) - 2,
       fontWeight: "700",
       letterSpacing: 0.3,
     },
-
     boldText: {
       fontWeight: "bold",
       color: "#8B2F61",
     },
-
     title: {
       color: "#fff",
-      fontSize: theme?.texts?.title || 24, // Usa o tamanho de título do contexto ("pequeno", "padrao", "grande")
+      fontSize: theme?.texts?.title || 24,
       fontWeight: "bold",
       marginTop: 16,
       lineHeight: (theme?.texts?.title || 24) * 1.3,
     },
-
     content: {
       padding: 20,
       paddingTop: 190,
       paddingBottom: 40,
     },
-
     card: {
       backgroundColor: "#FCE1EC",
       borderRadius: 24,
@@ -294,46 +270,37 @@ const getStyles = (theme: any) =>
       shadowColor: "#7B3057",
       shadowOpacity: 0.12,
       shadowRadius: 10,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
+      shadowOffset: { width: 0, height: 4 },
       elevation: 4,
     },
-
     highlightCard: {
       borderWidth: 1,
       borderColor: "#E53935",
       backgroundColor: "#FFF0F0",
     },
-
     cardTitleRow: {
       flexDirection: "row",
       alignItems: "center",
       marginBottom: 16,
     },
-
     cardTitle: {
-      fontSize: theme?.texts?.subtitle || 21, // Usa o tamanho de subtítulo do contexto
+      fontSize: theme?.texts?.subtitle || 21,
       fontWeight: "700",
       color: "#8B2F61",
       marginLeft: 10,
       flex: 1,
     },
-
     cardText: {
-      fontSize: theme?.texts?.text || 16, // Usa o tamanho de texto normal do contexto
+      fontSize: theme?.texts?.text || 16,
       color: "#694257",
-      lineHeight: (theme?.texts?.text || 16) * 1.6, // Mantém o espaçamento proporcional ao tamanho de fonte
+      lineHeight: (theme?.texts?.text || 16) * 1.6,
     },
-
     listItem: {
       flexDirection: "row",
       alignItems: "flex-start",
       marginBottom: 14,
       marginTop: 10,
     },
-
     bullet: {
       width: 8,
       height: 8,
@@ -342,54 +309,46 @@ const getStyles = (theme: any) =>
       marginTop: 10,
       marginRight: 12,
     },
-
     listText: {
       flex: 1,
-      fontSize: theme?.texts?.text || 16, // Usa o tamanho dinâmico para os itens de lista
+      fontSize: theme?.texts?.text || 16,
       color: "#694257",
       lineHeight: (theme?.texts?.text || 16) * 1.6,
     },
-
     youtubeCard: {
       flexDirection: "row",
       alignItems: "center",
     },
-
     thumbnailContainer: {
       position: "relative",
       justifyContent: "center",
       alignItems: "center",
     },
-
     thumbnail: {
       width: 105,
       height: 105,
       borderRadius: 18,
     },
-
     playButton: {
       position: "absolute",
       backgroundColor: "rgba(139, 47, 97, 0.85)",
       padding: 10,
       borderRadius: 50,
     },
-
     videoInfo: {
       flex: 1,
       paddingLeft: 16,
       justifyContent: "center",
     },
-
     videoTitle: {
-      fontSize: theme?.texts?.subtitle || 17, // Subtítulo para o vídeo explicativo
+      fontSize: theme?.texts?.subtitle || 17,
       fontWeight: "700",
       color: "#8B2F61",
       marginLeft: 8,
       marginBottom: 6,
     },
-
     videoText: {
-      fontSize: theme?.texts?.text || 15, // Texto normal para a legenda do vídeo
+      fontSize: theme?.texts?.text || 15,
       color: "#694257",
       lineHeight: (theme?.texts?.text || 15) * 1.4,
     },

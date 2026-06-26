@@ -10,17 +10,15 @@ import {
   View,
 } from "react-native";
 
-import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
-export default function MarcoLegalScreen() {
+// Importação do hook customizado de tema atualizada conforme solicitado
+import { useTheme } from "@/src/context/ThemeContext";
+
+export default function PausasAmamentacaoScreen() {
   const router = useRouter();
-
-  // Consumindo o theme dinâmico que possui as propriedades .colors e .texts
   const { theme } = useTheme();
-
-  // Gerando os estilos passando o tema atualizado
   const styles = getStyles(theme);
 
   return (
@@ -37,11 +35,11 @@ export default function MarcoLegalScreen() {
           </TouchableOpacity>
 
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>Direitos e Leis</Text>
+            <Text style={styles.badgeText}>Direitos Pós-Parto</Text>
           </View>
         </View>
 
-        <Text style={styles.title}>Marco Legal da Primeira Infância</Text>
+        <Text style={styles.title}>Pausas para Amamentação</Text>
       </View>
 
       <ScrollView
@@ -51,42 +49,36 @@ export default function MarcoLegalScreen() {
         {/* CARD 1: O QUE É */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="document-text-outline" size={22} color="#C54286" />
-            <Text style={styles.cardTitle}>O que é a Lei?</Text>
+            <Ionicons name="time-outline" size={22} color="#C54286" />
+            <Text style={styles.cardTitle}>O que é esse direito?</Text>
           </View>
 
           <Text style={styles.cardText}>
-            O{" "}
+            A lei garante que a mãe, ao regressar da licença-maternidade, tem
+            direito a pausas especiais durante a jornada de trabalho para
+            amamentar o seu próprio filho. Essas pausas{" "}
             <Text style={styles.boldText}>
-              Marco Legal da Primeira Infância (Lei nº 13.257/2016)
+              não podem ser descontadas do salário/vencimento
             </Text>{" "}
-            é um conjunto de regras que estabelece princípios e diretrizes para
-            políticas públicas voltadas à proteção e desenvolvimento de crianças
-            de <Text style={styles.boldText}>0 a 6 anos de idade</Text>{" "}
-            (primeiros 72 meses de vida).
+            nem compensadas com horas extras.
           </Text>
         </View>
 
-        {/* CARD 2: DIREITOS DA GESTANTE E BEBÊ */}
+        {/* CARD 2: DURAÇÃO E PERÍODO */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
-            <Ionicons
-              name="shield-checkmark-outline"
-              size={22}
-              color="#8B2F61"
-            />
-            <Text style={styles.cardTitle}>Proteção à Gestante e ao Bebê</Text>
+            <Ionicons name="hourglass-outline" size={22} color="#8B2F61" />
+            <Text style={styles.cardTitle}>Duração e Prazos</Text>
           </View>
 
           <Text style={styles.cardText}>
-            A lei garante que as gestantes recebam apoio contínuo em saúde,
-            nutrição e educação. Além disso, reforça:
+            Segundo a CLT (Artigo 396.º), as regras básicas são:
           </Text>
           {[
-            "Atenção humanizada durante a gravidez, parto e puerpério.",
-            "Apoio e promoção do aleitamento materno.",
-            "Garantia de que mães em privação de liberdade possam permanecer com seus bebês.",
-            "Direito a políticas que envolvam a família na criação e cuidado.",
+            "Dois descansos especiais de 30 minutos cada um por dia.",
+            "O direito é válido até o bebé completar 6 (seis) meses de idade.",
+            "O prazo de 6 meses pode ser estendido caso a saúde do bebé exija (mediante laudo médico).",
+            "Aplica-se também a mães adotivas.",
           ].map((item, index) => (
             <View key={index} style={styles.listItem}>
               <View style={styles.bullet} />
@@ -95,80 +87,75 @@ export default function MarcoLegalScreen() {
           ))}
         </View>
 
-        {/* CARD 3: LICENÇA PATERNIDADE */}
+        {/* CARD 3: FLEXIBILIDADE */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="people-outline" size={22} color="#C54286" />
-            <Text style={styles.cardTitle}>
-              Ampliação da Licença-Paternidade
-            </Text>
+            <Ionicons name="git-compare-outline" size={22} color="#C54286" />
+            <Text style={styles.cardTitle}>Flexibilidade de Horários</Text>
           </View>
 
           <Text style={styles.cardText}>
-            Um dos grandes avanços dessa lei foi permitir que a
-            licença-paternidade seja estendida de{" "}
-            <Text style={styles.boldText}>5 para 20 dias</Text>. Isso visa
-            incentivar a presença do pai nos primeiros dias de vida, promovendo
-            o vínculo afetivo e dividindo as responsabilidades do cuidado com a
-            mãe.
+            Muitas empresas e trabalhadoras preferem juntar os dois períodos de
+            30 minutos. Assim, a mãe pode optar por{" "}
+            <Text style={styles.boldText}>entrar 1 hora mais tarde</Text> ou{" "}
+            <Text style={styles.boldText}>sair 1 hora mais cedo</Text> do
+            trabalho para amamentar o bebé em casa.
           </Text>
         </View>
 
-        {/* CARD 4: OBSERVAÇÃO IMPORTANTE (Destaque) */}
+        {/* CARD 4: OBSERVAÇÃO IMPORTANTE (Acordo Escrito) */}
         <View style={[styles.card, styles.highlightCard]}>
           <View style={styles.cardTitleRow}>
             <Ionicons name="alert-circle-outline" size={22} color="#E53935" />
-            <Text style={styles.cardTitle}>Importante: Regras da Licença</Text>
+            <Text style={styles.cardTitle}>Importante: Acordo por Escrito</Text>
           </View>
 
           <Text style={styles.cardText}>
-            Para garantir o direito à licença-paternidade estendida de 20 dias,
-            é fundamental cumprir três requisitos básicos:{"\n\n"}
-            1. A empresa onde o pai trabalha deve fazer parte do{" "}
-            <Text style={styles.boldText}>Programa Empresa Cidadã</Text>.{"\n"}
-            2. O pai deve solicitar a prorrogação no prazo de{" "}
-            <Text style={styles.boldText}>até 2 dias úteis</Text> após o parto.
-            {"\n"}
-            3. É necessário comprovar a participação em um{" "}
+            A definição dos horários das pausas deve ser acordada diretamente
+            entre a mulher e a empresa. Para a sua segurança jurídica, é{" "}
             <Text style={styles.boldText}>
-              programa ou atividade de orientação sobre paternidade responsável
+              essencial formalizar este acordo por escrito
             </Text>
-            .
+            .{"\n\n"}
+            Crie um documento simples especificando os horários escolhidos (ex:
+            das 10h às 10h30 e das 15h às 15h30, ou a saída antecipada), assine
+            e peça a assinatura do responsável pelos Recursos Humanos (RH).
           </Text>
         </View>
 
-        {/* CARD 5: DIREITO AO BRINCAR */}
+        {/* CARD 5: ESPAÇO NA EMPRESA */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="happy-outline" size={22} color="#8B2F61" />
-            <Text style={styles.cardTitle}>O Direito ao Brincar</Text>
+            <Ionicons name="business-outline" size={22} color="#8B2F61" />
+            <Text style={styles.cardTitle}>Espaço para Extração de Leite</Text>
           </View>
 
           <Text style={styles.cardText}>
-            A lei inovou ao reconhecer o brincar como uma necessidade essencial
-            e um <Text style={styles.boldText}>direito da criança</Text>,
-            orientando que espaços públicos e escolas sejam adaptados para
-            incentivar atividades lúdicas seguras e inclusivas.
+            As empresas que possuam mais de 30 funcionárias com mais de 16 anos
+            são obrigadas por lei a disponibilizar um local apropriado onde as
+            mães possam guardar os seus bebés ou, de forma mais moderna, extrair
+            e armazenar o leite materno com higiene e privacidade durante estas
+            pausas.
           </Text>
         </View>
 
-        {/* LINK PARA O GOVERNO */}
+        {/* LINK PARA O MINISTÉRIO DO TRABALHO / CLT */}
         <TouchableOpacity
           style={styles.card}
           onPress={() =>
             Linking.openURL(
-              "https://www.gov.br/mdh/pt-br/navegue-por-temas/crianca-e-adolescente/acoes-e-programas-de-gestoes-anteriores/primeira-infancia",
+              "https://www.jusbrasil.com.br/topicos/10714774/artigo-396-da-decreto-lei-n-5452-de-01-de-maio-de-1943",
             )
           }
         >
           <View style={styles.cardTitleRow}>
             <Ionicons name="globe-outline" size={22} color="#8B2F61" />
-            <Text style={styles.cardTitle}>Página Oficial do Governo</Text>
+            <Text style={styles.cardTitle}>Consultar o Artigo 396.º</Text>
           </View>
 
           <Text style={styles.cardText}>
-            Toque aqui para acessar a cartilha completa e oficial do Ministério
-            dos Direitos Humanos sobre a Primeira Infância.
+            Toque aqui para aceder ao texto integral da lei e entender os
+            detalhes jurídicos sobre a amamentação no trabalho.
           </Text>
         </TouchableOpacity>
 
@@ -178,13 +165,15 @@ export default function MarcoLegalScreen() {
             style={styles.youtubeCard}
             onPress={() =>
               Linking.openURL(
-                "https://youtu.be/bV6bQNMFhq4?si=3vg2bncM8bcmhD1x",
+                "https://www.youtube.com/results?search_query=pausa+para+amamentacao+clt+como+funciona",
               )
             }
           >
             <View style={styles.thumbnailContainer}>
               <Image
-                source={require("../../assets/images/marcoLegal.jpg")}
+                source={{
+                  uri: "https://images.unsplash.com/photo-1546111811-9a7dc92ec92f?auto=format&fit=crop&w=105&q=80",
+                }}
                 style={styles.thumbnail}
               />
               <View style={styles.playButton}>
@@ -195,11 +184,12 @@ export default function MarcoLegalScreen() {
             <View style={styles.videoInfo}>
               <View style={styles.cardTitleRow}>
                 <Ionicons name="logo-youtube" size={20} color="red" />
-                <Text style={styles.videoTitle}>Resumo em Vídeo</Text>
+                <Text style={styles.videoTitle}>Guia Prático em Vídeo</Text>
               </View>
 
               <Text style={styles.videoText}>
-                Assista a uma explicação simples e rápida sobre o Marco Legal.
+                Assista a explicações sobre como negociar o horário da
+                amamentação com o seu chefe.
               </Text>
             </View>
           </TouchableOpacity>
@@ -209,14 +199,13 @@ export default function MarcoLegalScreen() {
   );
 }
 
-// Função geradora de estilos baseada no ThemeContext fornecido
+// Função geradora de estilos baseada no ThemeContext
 const getStyles = (theme: any) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: "#F4C7DD", // Mantém o fundo rosa do alimentacao.tsx
+      backgroundColor: "#F4C7DD",
     },
-
     header: {
       position: "absolute",
       top: 0,
@@ -231,17 +220,12 @@ const getStyles = (theme: any) =>
       shadowColor: "#6E2C50",
       shadowOpacity: 0.25,
       shadowRadius: 8,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
+      shadowOffset: { width: 0, height: 4 },
     },
-
     headerTop: {
       flexDirection: "row",
       alignItems: "center",
     },
-
     backButton: {
       width: 42,
       height: 42,
@@ -251,41 +235,34 @@ const getStyles = (theme: any) =>
       alignItems: "center",
       marginRight: 12,
     },
-
     badge: {
       backgroundColor: "#D97AA8",
       paddingHorizontal: 14,
       paddingVertical: 7,
       borderRadius: 18,
     },
-
     badgeText: {
       color: "#fff",
-      // Ajusta dinamicamente diminuindo 2pt em relação ao tamanho de texto padrão
       fontSize: (theme?.texts?.text || 14) - 2,
       fontWeight: "700",
       letterSpacing: 0.3,
     },
-
     boldText: {
       fontWeight: "bold",
       color: "#8B2F61",
     },
-
     title: {
       color: "#fff",
-      fontSize: theme?.texts?.title || 24, // Usa o tamanho de título do contexto ("pequeno", "padrao", "grande")
+      fontSize: theme?.texts?.title || 24,
       fontWeight: "bold",
       marginTop: 16,
       lineHeight: (theme?.texts?.title || 24) * 1.3,
     },
-
     content: {
       padding: 20,
       paddingTop: 190,
       paddingBottom: 40,
     },
-
     card: {
       backgroundColor: "#FCE1EC",
       borderRadius: 24,
@@ -294,46 +271,37 @@ const getStyles = (theme: any) =>
       shadowColor: "#7B3057",
       shadowOpacity: 0.12,
       shadowRadius: 10,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
+      shadowOffset: { width: 0, height: 4 },
       elevation: 4,
     },
-
     highlightCard: {
       borderWidth: 1,
       borderColor: "#E53935",
       backgroundColor: "#FFF0F0",
     },
-
     cardTitleRow: {
       flexDirection: "row",
       alignItems: "center",
       marginBottom: 16,
     },
-
     cardTitle: {
-      fontSize: theme?.texts?.subtitle || 21, // Usa o tamanho de subtítulo do contexto
+      fontSize: theme?.texts?.subtitle || 21,
       fontWeight: "700",
       color: "#8B2F61",
       marginLeft: 10,
       flex: 1,
     },
-
     cardText: {
-      fontSize: theme?.texts?.text || 16, // Usa o tamanho de texto normal do contexto
+      fontSize: theme?.texts?.text || 16,
       color: "#694257",
-      lineHeight: (theme?.texts?.text || 16) * 1.6, // Mantém o espaçamento proporcional ao tamanho de fonte
+      lineHeight: (theme?.texts?.text || 16) * 1.6,
     },
-
     listItem: {
       flexDirection: "row",
       alignItems: "flex-start",
       marginBottom: 14,
       marginTop: 10,
     },
-
     bullet: {
       width: 8,
       height: 8,
@@ -342,54 +310,46 @@ const getStyles = (theme: any) =>
       marginTop: 10,
       marginRight: 12,
     },
-
     listText: {
       flex: 1,
-      fontSize: theme?.texts?.text || 16, // Usa o tamanho dinâmico para os itens de lista
+      fontSize: theme?.texts?.text || 16,
       color: "#694257",
       lineHeight: (theme?.texts?.text || 16) * 1.6,
     },
-
     youtubeCard: {
       flexDirection: "row",
       alignItems: "center",
     },
-
     thumbnailContainer: {
       position: "relative",
       justifyContent: "center",
       alignItems: "center",
     },
-
     thumbnail: {
       width: 105,
       height: 105,
       borderRadius: 18,
     },
-
     playButton: {
       position: "absolute",
       backgroundColor: "rgba(139, 47, 97, 0.85)",
       padding: 10,
       borderRadius: 50,
     },
-
     videoInfo: {
       flex: 1,
       paddingLeft: 16,
       justifyContent: "center",
     },
-
     videoTitle: {
-      fontSize: theme?.texts?.subtitle || 17, // Subtítulo para o vídeo explicativo
+      fontSize: theme?.texts?.subtitle || 17,
       fontWeight: "700",
       color: "#8B2F61",
       marginLeft: 8,
       marginBottom: 6,
     },
-
     videoText: {
-      fontSize: theme?.texts?.text || 15, // Texto normal para a legenda do vídeo
+      fontSize: theme?.texts?.text || 15,
       color: "#694257",
       lineHeight: (theme?.texts?.text || 15) * 1.4,
     },

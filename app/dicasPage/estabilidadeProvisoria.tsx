@@ -1,26 +1,24 @@
 import React from "react";
 import {
-  Image,
-  Linking,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Image,
+    Linking,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
-import { useTheme } from "@/src/context/ThemeContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 
-export default function MarcoLegalScreen() {
+// Importação do seu hook customizado de tema
+import { useTheme } from "@/src/context/ThemeContext";
+
+export default function EstabilidadeProvisoriaScreen() {
   const router = useRouter();
-
-  // Consumindo o theme dinâmico que possui as propriedades .colors e .texts
   const { theme } = useTheme();
-
-  // Gerando os estilos passando o tema atualizado
   const styles = getStyles(theme);
 
   return (
@@ -37,11 +35,11 @@ export default function MarcoLegalScreen() {
           </TouchableOpacity>
 
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>Direitos e Leis</Text>
+            <Text style={styles.badgeText}>Direitos Trabalhistas</Text>
           </View>
         </View>
 
-        <Text style={styles.title}>Marco Legal da Primeira Infância</Text>
+        <Text style={styles.title}>Estabilidade Provisória</Text>
       </View>
 
       <ScrollView
@@ -51,42 +49,56 @@ export default function MarcoLegalScreen() {
         {/* CARD 1: O QUE É */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="document-text-outline" size={22} color="#C54286" />
-            <Text style={styles.cardTitle}>O que é a Lei?</Text>
-          </View>
-
-          <Text style={styles.cardText}>
-            O{" "}
-            <Text style={styles.boldText}>
-              Marco Legal da Primeira Infância (Lei nº 13.257/2016)
-            </Text>{" "}
-            é um conjunto de regras que estabelece princípios e diretrizes para
-            políticas públicas voltadas à proteção e desenvolvimento de crianças
-            de <Text style={styles.boldText}>0 a 6 anos de idade</Text>{" "}
-            (primeiros 72 meses de vida).
-          </Text>
-        </View>
-
-        {/* CARD 2: DIREITOS DA GESTANTE E BEBÊ */}
-        <View style={styles.card}>
-          <View style={styles.cardTitleRow}>
             <Ionicons
               name="shield-checkmark-outline"
               size={22}
-              color="#8B2F61"
+              color="#C54286"
             />
-            <Text style={styles.cardTitle}>Proteção à Gestante e ao Bebê</Text>
+            <Text style={styles.cardTitle}>O que é esse direito?</Text>
           </View>
 
           <Text style={styles.cardText}>
-            A lei garante que as gestantes recebam apoio contínuo em saúde,
-            nutrição e educação. Além disso, reforça:
+            A estabilidade provisória é a garantia de que a mulher grávida{" "}
+            <Text style={styles.boldText}>
+              não pode ser demitida sem justa causa
+            </Text>
+            . O objetivo dessa lei é proteger o emprego da mãe e garantir o
+            sustento do bebê que está a caminho.
+          </Text>
+        </View>
+
+        {/* CARD 2: PERÍODO DE PROTEÇÃO */}
+        <View style={styles.card}>
+          <View style={styles.cardTitleRow}>
+            <Ionicons name="calendar-outline" size={22} color="#8B2F61" />
+            <Text style={styles.cardTitle}>Qual o período de proteção?</Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            Segundo a Constituição Federal (ADCT, Art. 10, II, b), a proteção
+            contra a demissão inicia no{" "}
+            <Text style={styles.boldText}>
+              momento da concepção (confirmação da gravidez)
+            </Text>{" "}
+            e vai até <Text style={styles.boldText}>5 meses após o parto</Text>.
+          </Text>
+        </View>
+
+        {/* CARD 3: QUEM TEM DIREITO */}
+        <View style={styles.card}>
+          <View style={styles.cardTitleRow}>
+            <Ionicons name="people-outline" size={22} color="#C54286" />
+            <Text style={styles.cardTitle}>Quem tem direito?</Text>
+          </View>
+
+          <Text style={styles.cardText}>
+            Esse direito não é exclusivo apenas para quem tem muitos anos de
+            empresa. Ele também é válido para:
           </Text>
           {[
-            "Atenção humanizada durante a gravidez, parto e puerpério.",
-            "Apoio e promoção do aleitamento materno.",
-            "Garantia de que mães em privação de liberdade possam permanecer com seus bebês.",
-            "Direito a políticas que envolvam a família na criação e cuidado.",
+            "Trabalhadoras com carteira assinada (CLT) e Empregadas Domésticas.",
+            "Trabalhadoras em Contrato de Experiência ou Temporário (Súmula 244 do TST).",
+            "Gestantes que estão cumprindo o Aviso Prévio (trabalhado ou indenizado).",
           ].map((item, index) => (
             <View key={index} style={styles.listItem}>
               <View style={styles.bullet} />
@@ -95,80 +107,63 @@ export default function MarcoLegalScreen() {
           ))}
         </View>
 
-        {/* CARD 3: LICENÇA PATERNIDADE */}
-        <View style={styles.card}>
-          <View style={styles.cardTitleRow}>
-            <Ionicons name="people-outline" size={22} color="#C54286" />
-            <Text style={styles.cardTitle}>
-              Ampliação da Licença-Paternidade
-            </Text>
-          </View>
-
-          <Text style={styles.cardText}>
-            Um dos grandes avanços dessa lei foi permitir que a
-            licença-paternidade seja estendida de{" "}
-            <Text style={styles.boldText}>5 para 20 dias</Text>. Isso visa
-            incentivar a presença do pai nos primeiros dias de vida, promovendo
-            o vínculo afetivo e dividindo as responsabilidades do cuidado com a
-            mãe.
-          </Text>
-        </View>
-
-        {/* CARD 4: OBSERVAÇÃO IMPORTANTE (Destaque) */}
+        {/* CARD 4: OBSERVAÇÃO IMPORTANTE (Comunicação) */}
         <View style={[styles.card, styles.highlightCard]}>
           <View style={styles.cardTitleRow}>
             <Ionicons name="alert-circle-outline" size={22} color="#E53935" />
-            <Text style={styles.cardTitle}>Importante: Regras da Licença</Text>
+            <Text style={styles.cardTitle}>Importante: Como garantir?</Text>
           </View>
 
           <Text style={styles.cardText}>
-            Para garantir o direito à licença-paternidade estendida de 20 dias,
-            é fundamental cumprir três requisitos básicos:{"\n\n"}
-            1. A empresa onde o pai trabalha deve fazer parte do{" "}
-            <Text style={styles.boldText}>Programa Empresa Cidadã</Text>.{"\n"}
-            2. O pai deve solicitar a prorrogação no prazo de{" "}
-            <Text style={styles.boldText}>até 2 dias úteis</Text> após o parto.
-            {"\n"}
-            3. É necessário comprovar a participação em um{" "}
+            Para garantir a maioria dos direitos trabalhistas e evitar dores de
+            cabeça judiciais, é{" "}
             <Text style={styles.boldText}>
-              programa ou atividade de orientação sobre paternidade responsável
-            </Text>
-            .
+              fundamental que a gestante comunique oficialmente
+            </Text>{" "}
+            o empregador sobre a gravidez.{"\n\n"}
+            Entregue um atestado médico, exame de sangue (Beta hCG) ou ultrassom
+            no RH e{" "}
+            <Text style={styles.boldText}>
+              exija a assinatura em um comprovante de recebimento
+            </Text>{" "}
+            (uma cópia do documento assinada pelo chefe ou RH com a data).
           </Text>
         </View>
 
-        {/* CARD 5: DIREITO AO BRINCAR */}
+        {/* CARD 5: DEMISSÃO INDEVIDA */}
         <View style={styles.card}>
           <View style={styles.cardTitleRow}>
-            <Ionicons name="happy-outline" size={22} color="#8B2F61" />
-            <Text style={styles.cardTitle}>O Direito ao Brincar</Text>
+            <Ionicons name="warning-outline" size={22} color="#8B2F61" />
+            <Text style={styles.cardTitle}>Fui demitida grávida, e agora?</Text>
           </View>
 
           <Text style={styles.cardText}>
-            A lei inovou ao reconhecer o brincar como uma necessidade essencial
-            e um <Text style={styles.boldText}>direito da criança</Text>,
-            orientando que espaços públicos e escolas sejam adaptados para
-            incentivar atividades lúdicas seguras e inclusivas.
+            Se você foi demitida e descobriu a gravidez depois (mas a concepção
+            ocorreu enquanto ainda trabalhava na empresa), o direito permanece.
+            Você deve notificar a empresa imediatamente. A empresa é obrigada a
+            fazer a sua{" "}
+            <Text style={styles.boldText}>reintegração ao trabalho</Text> ou
+            pagar uma{" "}
+            <Text style={styles.boldText}>indenização financeira</Text>{" "}
+            correspondente a todo o período de estabilidade.
           </Text>
         </View>
 
-        {/* LINK PARA O GOVERNO */}
+        {/* LINK PARA O TST (Tribunal Superior do Trabalho) */}
         <TouchableOpacity
           style={styles.card}
           onPress={() =>
-            Linking.openURL(
-              "https://www.gov.br/mdh/pt-br/navegue-por-temas/crianca-e-adolescente/acoes-e-programas-de-gestoes-anteriores/primeira-infancia",
-            )
+            Linking.openURL("https://www.tst.jus.br/direitos-da-gestante")
           }
         >
           <View style={styles.cardTitleRow}>
             <Ionicons name="globe-outline" size={22} color="#8B2F61" />
-            <Text style={styles.cardTitle}>Página Oficial do Governo</Text>
+            <Text style={styles.cardTitle}>Portal do TST</Text>
           </View>
 
           <Text style={styles.cardText}>
-            Toque aqui para acessar a cartilha completa e oficial do Ministério
-            dos Direitos Humanos sobre a Primeira Infância.
+            Toque aqui para acessar a página oficial do Tribunal Superior do
+            Trabalho com todas as cartilhas de proteção à gestante.
           </Text>
         </TouchableOpacity>
 
@@ -178,13 +173,15 @@ export default function MarcoLegalScreen() {
             style={styles.youtubeCard}
             onPress={() =>
               Linking.openURL(
-                "https://youtu.be/bV6bQNMFhq4?si=3vg2bncM8bcmhD1x",
+                "https://www.youtube.com/results?search_query=estabilidade+provisoria+gestante+direitos",
               )
             }
           >
             <View style={styles.thumbnailContainer}>
               <Image
-                source={require("../../assets/images/marcoLegal.jpg")}
+                source={{
+                  uri: "https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=105&q=80",
+                }}
                 style={styles.thumbnail}
               />
               <View style={styles.playButton}>
@@ -195,11 +192,11 @@ export default function MarcoLegalScreen() {
             <View style={styles.videoInfo}>
               <View style={styles.cardTitleRow}>
                 <Ionicons name="logo-youtube" size={20} color="red" />
-                <Text style={styles.videoTitle}>Resumo em Vídeo</Text>
+                <Text style={styles.videoTitle}>Entenda seus Direitos</Text>
               </View>
 
               <Text style={styles.videoText}>
-                Assista a uma explicação simples e rápida sobre o Marco Legal.
+                Assista a advogados explicando o que fazer em caso de demissão.
               </Text>
             </View>
           </TouchableOpacity>
@@ -209,14 +206,13 @@ export default function MarcoLegalScreen() {
   );
 }
 
-// Função geradora de estilos baseada no ThemeContext fornecido
+// Função geradora de estilos baseada no ThemeContext
 const getStyles = (theme: any) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: "#F4C7DD", // Mantém o fundo rosa do alimentacao.tsx
+      backgroundColor: "#F4C7DD",
     },
-
     header: {
       position: "absolute",
       top: 0,
@@ -231,17 +227,12 @@ const getStyles = (theme: any) =>
       shadowColor: "#6E2C50",
       shadowOpacity: 0.25,
       shadowRadius: 8,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
+      shadowOffset: { width: 0, height: 4 },
     },
-
     headerTop: {
       flexDirection: "row",
       alignItems: "center",
     },
-
     backButton: {
       width: 42,
       height: 42,
@@ -251,41 +242,34 @@ const getStyles = (theme: any) =>
       alignItems: "center",
       marginRight: 12,
     },
-
     badge: {
       backgroundColor: "#D97AA8",
       paddingHorizontal: 14,
       paddingVertical: 7,
       borderRadius: 18,
     },
-
     badgeText: {
       color: "#fff",
-      // Ajusta dinamicamente diminuindo 2pt em relação ao tamanho de texto padrão
       fontSize: (theme?.texts?.text || 14) - 2,
       fontWeight: "700",
       letterSpacing: 0.3,
     },
-
     boldText: {
       fontWeight: "bold",
       color: "#8B2F61",
     },
-
     title: {
       color: "#fff",
-      fontSize: theme?.texts?.title || 24, // Usa o tamanho de título do contexto ("pequeno", "padrao", "grande")
+      fontSize: theme?.texts?.title || 24,
       fontWeight: "bold",
       marginTop: 16,
       lineHeight: (theme?.texts?.title || 24) * 1.3,
     },
-
     content: {
       padding: 20,
       paddingTop: 190,
       paddingBottom: 40,
     },
-
     card: {
       backgroundColor: "#FCE1EC",
       borderRadius: 24,
@@ -294,46 +278,37 @@ const getStyles = (theme: any) =>
       shadowColor: "#7B3057",
       shadowOpacity: 0.12,
       shadowRadius: 10,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
+      shadowOffset: { width: 0, height: 4 },
       elevation: 4,
     },
-
     highlightCard: {
       borderWidth: 1,
       borderColor: "#E53935",
       backgroundColor: "#FFF0F0",
     },
-
     cardTitleRow: {
       flexDirection: "row",
       alignItems: "center",
       marginBottom: 16,
     },
-
     cardTitle: {
-      fontSize: theme?.texts?.subtitle || 21, // Usa o tamanho de subtítulo do contexto
+      fontSize: theme?.texts?.subtitle || 21,
       fontWeight: "700",
       color: "#8B2F61",
       marginLeft: 10,
       flex: 1,
     },
-
     cardText: {
-      fontSize: theme?.texts?.text || 16, // Usa o tamanho de texto normal do contexto
+      fontSize: theme?.texts?.text || 16,
       color: "#694257",
-      lineHeight: (theme?.texts?.text || 16) * 1.6, // Mantém o espaçamento proporcional ao tamanho de fonte
+      lineHeight: (theme?.texts?.text || 16) * 1.6,
     },
-
     listItem: {
       flexDirection: "row",
       alignItems: "flex-start",
       marginBottom: 14,
       marginTop: 10,
     },
-
     bullet: {
       width: 8,
       height: 8,
@@ -342,54 +317,46 @@ const getStyles = (theme: any) =>
       marginTop: 10,
       marginRight: 12,
     },
-
     listText: {
       flex: 1,
-      fontSize: theme?.texts?.text || 16, // Usa o tamanho dinâmico para os itens de lista
+      fontSize: theme?.texts?.text || 16,
       color: "#694257",
       lineHeight: (theme?.texts?.text || 16) * 1.6,
     },
-
     youtubeCard: {
       flexDirection: "row",
       alignItems: "center",
     },
-
     thumbnailContainer: {
       position: "relative",
       justifyContent: "center",
       alignItems: "center",
     },
-
     thumbnail: {
       width: 105,
       height: 105,
       borderRadius: 18,
     },
-
     playButton: {
       position: "absolute",
       backgroundColor: "rgba(139, 47, 97, 0.85)",
       padding: 10,
       borderRadius: 50,
     },
-
     videoInfo: {
       flex: 1,
       paddingLeft: 16,
       justifyContent: "center",
     },
-
     videoTitle: {
-      fontSize: theme?.texts?.subtitle || 17, // Subtítulo para o vídeo explicativo
+      fontSize: theme?.texts?.subtitle || 17,
       fontWeight: "700",
       color: "#8B2F61",
       marginLeft: 8,
       marginBottom: 6,
     },
-
     videoText: {
-      fontSize: theme?.texts?.text || 15, // Texto normal para a legenda do vídeo
+      fontSize: theme?.texts?.text || 15,
       color: "#694257",
       lineHeight: (theme?.texts?.text || 15) * 1.4,
     },
